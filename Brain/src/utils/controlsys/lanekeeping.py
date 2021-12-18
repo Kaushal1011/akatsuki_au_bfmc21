@@ -10,7 +10,7 @@ from multiprocessing    import Process
 from threading          import Thread
 from simple_pid         import PID
 
-from templates.workerprocess import WorkerProcess
+from src.templates.workerprocess import WorkerProcess
 
 class LaneKeeping(WorkerProcess):
     pid = PID(Kp = 1.0, Ki = 1.45, Kd = 0.15)

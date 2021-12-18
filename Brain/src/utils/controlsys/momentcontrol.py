@@ -2,7 +2,7 @@ import time
 
 from threading import Thread
 
-from templates.workerprocess import WorkerProcess
+from src.templates.workerprocess import WorkerProcess
 
 class MovementControl(WorkerProcess):
     # ===================================== Worker process =========================================
