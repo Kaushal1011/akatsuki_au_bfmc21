@@ -99,8 +99,8 @@ class MovementControl(WorkerProcess):
         #     data['action'] = 'BRAK'
 
         # Set lateral control
-        data["action"] = "STER"
-        data['steerAngle'] = self.angle
+        data["action"] = "2"
+        data['steerAngle'] = float(self.angle)
         
         # Send data
         try:

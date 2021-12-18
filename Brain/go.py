@@ -53,8 +53,8 @@ from src.utils.controlsys.momentcontrol import MovementControl
 # =============================== CONFIG =================================================
 enableStream = True
 enableCameraSpoof = False
-enableRc = True
-enableLaneKeeping = False
+enableRc = False
+enableLaneKeeping = True
 # =============================== INITIALIZING PROCESSES =================================
 allProcesses = list()
 # Pipe collections
@@ -68,6 +68,16 @@ camOutPs = list()
 # LocSysProc = LocalisationSystemProcess([], [LocStS])
 # allProcesses.append(LocSysProc)
 
+# Pipes:
+
+# Camera process -> Lane keeping
+lkR, lkS = Pipe(duplex = False)
+
+# Lane keeping -> Movement control
+lcR, lcS = Pipe(duplex = False)
+
+# Movement control -> Serial handler
+cfR, cfS = Pipe(duplex = False)
 
 # =============================== CONTROL =================================================
 if enableRc:
@@ -80,31 +90,6 @@ if enableRc:
     rcProc = RemoteControlReceiverProcess([], [rcShS])
     allProcesses.append(rcProc)
 
-
-# ===================================== LANE KEEPING  ===================================
-if enableLaneKeeping:
-    # Pipes:
-
-    # Camera process -> Lane keeping
-    lkR, lkS = Pipe(duplex = False)
-
-    # Lane keeping -> Movement control
-    lcR, lcS = Pipe(duplex = False)
-
-    # Movement control -> Serial handler
-    cfR, cfS = Pipe(duplex = False)
-    camOutPs.append(lkS)
-    movementControlR.append(lcR)
-    lkProc = LaneKeeping([lkR], [lcS])
-    allProcesses.append(lkProc)
-
-    # Movement control
-    cfProc = MovementControl(movementControlR, [cfS])
-    allProcesses.append(cfProc)
-
-    # Serial handler
-    shProc = SerialHandlerProcess([cfR], [])
-    allProcesses.append(shProc)
 
 # =============================== HARDWARE ===============================================
 if enableStream:
@@ -120,6 +105,22 @@ if enableStream:
 
     streamProc = CameraStreamerProcess([camStR], [])
     allProcesses.append(streamProc)
+
+# ===================================== LANE KEEPING  ===================================
+if enableLaneKeeping:
+
+    camOutPs.append(lkS)
+    movementControlR.append(lcR)
+    lkProc = LaneKeeping([lkR], [lcS])
+    allProcesses.append(lkProc)
+
+    # Movement control
+    cfProc = MovementControl(movementControlR, [cfS])
+    allProcesses.append(cfProc)
+
+    # Serial handler
+    shProc = SerialHandlerProcess([cfR], [])
+    allProcesses.append(shProc)
 
 
 # ===================================== START PROCESSES ==================================

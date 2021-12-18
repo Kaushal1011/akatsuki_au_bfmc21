@@ -103,6 +103,7 @@ class LaneKeeping(WorkerProcess):
         return total
 
     def computeSteeringAngle(self, val):
+        
         # Apply pid
         newVal = self.pid(val)
 
@@ -111,7 +112,9 @@ class LaneKeeping(WorkerProcess):
 
         newVal = -newVal
 
-        newVal += 3.1
+        newVal += 0
+        print("steer angle is:")
+        print(newVal)
 
         return newVal
         

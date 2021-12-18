@@ -94,6 +94,7 @@ class MessageConverter:
                 command += '{0:d};'.format(value)   
                          
         command += ';\r\n'
+        print(command)
         return command
 
     # ===================================== VERIFY COMMAND ===============================
@@ -107,9 +108,9 @@ class MessageConverter:
         commandDict : dict
             The dictionary with the names and values of command parameters, it has to contain all parameters defined in the commands dictionary. 
         """
-        
         assert len(commandDict.keys()) == len(MessageConverter.commands[action][0]), \
                 'Number of arguments does not match'
+        
         for i, [key, value] in enumerate(commandDict.items()):
             assert key in MessageConverter.commands[action][0], \
                     action + "should not contain key:" + key
