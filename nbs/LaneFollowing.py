@@ -374,7 +374,7 @@ def average_slope_intercept(frame, line_segments):
     if len(right_fit) > 0:
         lane_lines.append(make_points(frame, right_fit_average))
 
-    return lane_lines
+    return lane_lines, left_fit_average, right_fit_average
 
 
 def find_lanes(thresh_canny):
