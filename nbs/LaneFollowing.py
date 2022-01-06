@@ -248,13 +248,13 @@ def compute_steering_angle_lanelinecoord(frame, lane_lines):
     """Find the steering angle based on lane line coordinate
     We assume that camera is calibrated to point to dead center
     """
-    if len(lane_lines) == 0:
-        print("No lane lines detected, do nothing")
+    if lane_lines is None or len(lane_lines) == 0:
+        # print("No lane lines detected, do nothing")
         return -90
 
     height, width = frame.shape
     if len(lane_lines) == 1:
-        print("Only detected one lane line, just follow it. %s" % lane_lines[0])
+        # print("Only detected one lane line, just follow it. %s" % lane_lines[0])
         x1, _, x2, _ = lane_lines[0][0]
         x_offset = x2 - x1
     else:
@@ -275,7 +275,7 @@ def compute_steering_angle_lanelinecoord(frame, lane_lines):
     # this is the steering angle needed by picar front wheel
     steering_angle = angle_to_mid_deg + 90
 
-    print("new steering angle: %s" % steering_angle)
+    # print("new steering angle: %s" % steering_angle)
     return steering_angle
 
 
@@ -359,7 +359,7 @@ def average_slope_intercept(frame, line_segments):
     """
     lane_lines = []
     if line_segments is None:
-        print("No line_segment segments detected")
+        # print("No line_segment segments detected")
         return lane_lines
 
     height, width, _ = frame.shape
@@ -393,7 +393,7 @@ def average_slope_intercept(frame, line_segments):
     right_fit_average = np.average(right_fit, axis=0)
     if len(right_fit) > 0:
         lane_lines.append(make_points(frame, right_fit_average))
-
+    return lane_lines
     return lane_lines, left_fit_average, right_fit_average
 
 
