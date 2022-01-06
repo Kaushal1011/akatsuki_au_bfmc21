@@ -19,7 +19,7 @@ def processImage(inpImage):
         inpImage ([np.ndarray]): input image to be process
 
     Returns:
-        Tuple(np.Array): [HLS_THRESHOLDED,Grey Converted, Gray Thresholed, Gaussian Blurred, Canny Edge Detected Image] 
+        Tuple(np.Array): [HLS_THRESHOLDED,Grey Converted, Gray Thresholed, Gaussian Blurred, Canny Edge Detected Image]
     """
 
     # Apply HLS color filtering to filter out white lane lines
@@ -72,10 +72,10 @@ def perspectiveWarp(inpImage, luroi=0.25, ruroi=0.75, lbroi=0, rbroi=1, hroi=0.5
     """
 
     roi = [
-        (luroi*((inpImage.shape[1]-1)), hroi*(inpImage.shape[0]-1)),
-        (ruroi*((inpImage.shape[1]-1)), hroi*(inpImage.shape[0]-1)),
-        (lbroi*((inpImage.shape[1]-1)), inpImage.shape[0]-1),
-        (rbroi*((inpImage.shape[1]-1)), inpImage.shape[0]-1),
+        (luroi * ((inpImage.shape[1] - 1)), hroi * (inpImage.shape[0] - 1)),
+        (ruroi * ((inpImage.shape[1] - 1)), hroi * (inpImage.shape[0] - 1)),
+        (lbroi * ((inpImage.shape[1] - 1)), inpImage.shape[0] - 1),
+        (rbroi * ((inpImage.shape[1] - 1)), inpImage.shape[0] - 1),
     ]
     # roi = [[90, 500],       [800, 500],       [200, 1200],       [1600, 1200]]
     print(roi)
@@ -87,10 +87,14 @@ def perspectiveWarp(inpImage, luroi=0.25, ruroi=0.75, lbroi=0, rbroi=1, hroi=0.5
     src = np.float32(roi)
 
     # Window to be shown
-    dst = np.float32([[0, 0],
-                      [inpImage.shape[1], 0],
-                      [0, inpImage.shape[0]],
-                      [inpImage.shape[1], inpImage.shape[0]]])
+    dst = np.float32(
+        [
+            [0, 0],
+            [inpImage.shape[1], 0],
+            [0, inpImage.shape[0]],
+            [inpImage.shape[1], inpImage.shape[0]],
+        ]
+    )
 
     # Matrix to warp the image for birdseye window
     matrix = cv2.getPerspectiveTransform(src, dst)
@@ -102,8 +106,8 @@ def perspectiveWarp(inpImage, luroi=0.25, ruroi=0.75, lbroi=0, rbroi=1, hroi=0.5
     height, width = birdseye.shape[:2]
 
     # Divide the birdseye view into 2 halves to separate left & right lanes
-    birdseyeLeft = birdseye[0:height, 0:width // 2]
-    birdseyeRight = birdseye[0:height, width // 2:width]
+    birdseyeLeft = birdseye[0:height, 0 : width // 2]
+    birdseyeRight = birdseye[0:height, width // 2 : width]
 
     # Display birdseye view image
     # cv2.imshow("Birdseye" , birdseye)
@@ -115,7 +119,7 @@ def perspectiveWarp(inpImage, luroi=0.25, ruroi=0.75, lbroi=0, rbroi=1, hroi=0.5
 
 def slide_window_search(inpimage, histogram, margin=150):
     """
-    returns left and right lane line slope and intercept by employing a sliding window search and Lin Reg 
+    returns left and right lane line slope and intercept by employing a sliding window search and Lin Reg
     requires histogram of white pixels
 
     Args:
@@ -153,14 +157,32 @@ def slide_window_search(inpimage, histogram, margin=150):
         win_xleft_high = leftx_current + margin
         win_xright_low = rightx_current - margin
         win_xright_high = rightx_current + margin
-        cv2.rectangle(out_img, (win_xleft_low, win_y_low), (win_xleft_high, win_y_high),
-                      (0, 255, 0), 2)
-        cv2.rectangle(out_img, (win_xright_low, win_y_low), (win_xright_high, win_y_high),
-                      (0, 255, 0), 2)
-        good_left_inds = ((nonzeroy >= win_y_low) & (nonzeroy < win_y_high) &
-                          (nonzerox >= win_xleft_low) & (nonzerox < win_xleft_high)).nonzero()[0]
-        good_right_inds = ((nonzeroy >= win_y_low) & (nonzeroy < win_y_high) &
-                           (nonzerox >= win_xright_low) & (nonzerox < win_xright_high)).nonzero()[0]
+        cv2.rectangle(
+            out_img,
+            (win_xleft_low, win_y_low),
+            (win_xleft_high, win_y_high),
+            (0, 255, 0),
+            2,
+        )
+        cv2.rectangle(
+            out_img,
+            (win_xright_low, win_y_low),
+            (win_xright_high, win_y_high),
+            (0, 255, 0),
+            2,
+        )
+        good_left_inds = (
+            (nonzeroy >= win_y_low)
+            & (nonzeroy < win_y_high)
+            & (nonzerox >= win_xleft_low)
+            & (nonzerox < win_xleft_high)
+        ).nonzero()[0]
+        good_right_inds = (
+            (nonzeroy >= win_y_low)
+            & (nonzeroy < win_y_high)
+            & (nonzerox >= win_xright_low)
+            & (nonzerox < win_xright_high)
+        ).nonzero()[0]
         left_lane_inds.append(good_left_inds)
         right_lane_inds.append(good_right_inds)
         if len(good_left_inds) > minpix:
@@ -182,7 +204,7 @@ def slide_window_search(inpimage, histogram, margin=150):
     plt.xlim(0, out_img.shape[1])
     plt.ylim(0, out_img.shape[0])
 
-    ploty = np.linspace(0, inpimage.shape[0]-1, inpimage.shape[0])
+    ploty = np.linspace(0, inpimage.shape[0] - 1, inpimage.shape[0])
     # Apply 2nd degree polynomial fit to fit curves
     plt.gca().invert_yaxis()
     try:
@@ -223,17 +245,16 @@ def slide_window_search(inpimage, histogram, margin=150):
 
 
 def compute_steering_angle_lanelinecoord(frame, lane_lines):
-    """ Find the steering angle based on lane line coordinate
-        We assume that camera is calibrated to point to dead center
+    """Find the steering angle based on lane line coordinate
+    We assume that camera is calibrated to point to dead center
     """
     if len(lane_lines) == 0:
-        print('No lane lines detected, do nothing')
+        print("No lane lines detected, do nothing")
         return -90
 
     height, width = frame.shape
     if len(lane_lines) == 1:
-        print(
-            'Only detected one lane line, just follow it. %s' % lane_lines[0])
+        print("Only detected one lane line, just follow it. %s" % lane_lines[0])
         x1, _, x2, _ = lane_lines[0][0]
         x_offset = x2 - x1
     else:
@@ -254,30 +275,30 @@ def compute_steering_angle_lanelinecoord(frame, lane_lines):
     # this is the steering angle needed by picar front wheel
     steering_angle = angle_to_mid_deg + 90
 
-    print('new steering angle: %s' % steering_angle)
+    print("new steering angle: %s" % steering_angle)
     return steering_angle
 
 
-def compute_steering_angle_lanelineslope(leftline=None, rightline=None, invert=True):
+def compute_steering_angle_lanelineslope(leftline=[], rightline=[], invert=True):
 
     if invert:
-        if leftline == None and rightline == None:
+        if len(leftline) == 0 and len(rightline) == 0:
             return 90
-        elif leftline == None:
-            return math.degrees(math.atan(-1/rightline[0])) + 90
-        elif rightline == None:
-            return math.degrees(math.atan(-1/leftline[0])) + 90
+        elif len(leftline) == 0:
+            return math.degrees(math.atan(-1 / rightline[0])) + 90
+        elif len(rightline) == 0:
+            return math.degrees(math.atan(-1 / leftline[0])) + 90
         else:
-            return math.degrees(math.atan(-2/(leftline[0]+rightline[0]))) + 90
+            return math.degrees(math.atan(-2 / (leftline[0] + rightline[0]))) + 90
     else:
-        if leftline == None and rightline == None:
+        if len(leftline) == 0 and len(rightline) == 0:
             return 90
-        elif leftline == None:
+        elif len(leftline) == 0:
             return math.degrees(math.atan(rightline[0])) + 90
-        elif rightline == None:
+        elif len(rightline) == 0:
             return math.degrees(math.atan(leftline[0])) + 90
         else:
-            return math.degrees(math.atan((leftline[0]+rightline[0])/2)) + 90
+            return math.degrees(math.atan((leftline[0] + rightline[0]) / 2)) + 90
 
 
 def roi_func(gimg, luroi=0.25, ruroi=0.75, lbroi=0, rbroi=1, hroi=0.55):
@@ -296,13 +317,12 @@ def roi_func(gimg, luroi=0.25, ruroi=0.75, lbroi=0, rbroi=1, hroi=0.55):
         [type]: [description]
     """
     roi = [
-        (int(luroi*((gimg.shape[1]-1))), int(hroi*(gimg.shape[0]-1))),
-        (int(lbroi*((gimg.shape[1]-1))), int(gimg.shape[0]-1)),
-        (int(rbroi*((gimg.shape[1]-1))), int(gimg.shape[0]-1)),
-        (int(ruroi*((gimg.shape[1]-1))), int(hroi*(gimg.shape[0]-1))),
-
+        (int(luroi * ((gimg.shape[1] - 1))), int(hroi * (gimg.shape[0] - 1))),
+        (int(lbroi * ((gimg.shape[1] - 1))), int(gimg.shape[0] - 1)),
+        (int(rbroi * ((gimg.shape[1] - 1))), int(gimg.shape[0] - 1)),
+        (int(ruroi * ((gimg.shape[1] - 1))), int(hroi * (gimg.shape[0] - 1))),
     ]
-    stencil = np.zeros_like(gimg, dtype='uint8')
+    stencil = np.zeros_like(gimg, dtype="uint8")
     # print(roi, stencil_coords)
     # specify coordinates of the polygon
     polygon = np.array(roi)
@@ -339,14 +359,14 @@ def average_slope_intercept(frame, line_segments):
     """
     lane_lines = []
     if line_segments is None:
-        print('No line_segment segments detected')
+        print("No line_segment segments detected")
         return lane_lines
 
     height, width, _ = frame.shape
     left_fit = []
     right_fit = []
 
-    boundary = 2/3
+    boundary = 2 / 3
     # left lane line segment should be on left 2/3 of the screen
     left_region_boundary = width * (1 - boundary)
     # right lane line segment should be on left 2/3 of the screen
@@ -387,7 +407,7 @@ def find_lanes(thresh_canny):
     Returns:
         [type]: [description]
     """
-    lines = cv2.HoughLinesP(thresh_canny, 1, np.pi/180, 30, maxLineGap=200)
+    lines = cv2.HoughLinesP(thresh_canny, 1, np.pi / 180, 30, maxLineGap=200)
     return lines
 
 
@@ -402,7 +422,7 @@ def plotHistogram(inpImage):
         Tuple(List,List,List): histogram, lextxBase, rightxBase
     """
 
-    histogram = np.sum(inpImage[inpImage.shape[0] // 2:, :], axis=0)
+    histogram = np.sum(inpImage[inpImage.shape[0] // 2 :, :], axis=0)
 
     midpoint = np.int(histogram.shape[0] / 2)
     leftxBase = np.argmax(histogram[:midpoint])
