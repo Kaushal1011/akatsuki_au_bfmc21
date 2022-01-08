@@ -57,7 +57,8 @@ class LaneKeepingProcess(WorkerProcess):
     #     return self.lk(img)
 
     def computeSteeringAnglePID(self, val):
-        
+        # keep the angle between max steer angle
+        val = max(-17, min(val - 90, 17))   
         # # Apply pid
         # newVal = self.pid(val)
 
@@ -85,7 +86,7 @@ class LaneKeepingProcess(WorkerProcess):
                 # Obtain image
                 stamps, img = inP.recv()
                 # Apply image processing
-                val = self.lk(img)
+                val = self.computeSteeringAnglePID(self.lk(img))
 
                 # Compute steering angle
                 # val = self.computeSteeringAngle(val)
