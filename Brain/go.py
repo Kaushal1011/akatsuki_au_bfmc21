@@ -47,11 +47,11 @@ from src.utils.camerastreamer.CameraStreamerProcess import CameraStreamerProcess
 from src.utils.remotecontrol.RemoteControlReceiverProcess import (
     RemoteControlReceiverProcess,
 )
-from src.utils.controlsys.lanekeeping import LaneKeeping
+from src.utils.controlsys.lanekeeping import LaneKeepingProcess as LaneKeeping
 from src.utils.controlsys.momentcontrol import MovementControl
 
 # =============================== CONFIG =================================================
-enableStream = True
+enableStream = False
 enableCameraSpoof = False
 enableRc = False
 enableLaneKeeping = True
@@ -122,6 +122,14 @@ if enableLaneKeeping:
     shProc = SerialHandlerProcess([cfR], [])
     allProcesses.append(shProc)
 
+
+if enableCameraSpoof:
+    camSpoofer = CameraSpooferProcess([], camOutPs, "vid")
+    allProcesses.append(camSpoofer)
+
+else:
+    camProc = CameraProcess([], camOutPs)
+    allProcesses.append(camProc)
 
 # ===================================== START PROCESSES ==================================
 print("Starting the processes!", allProcesses)

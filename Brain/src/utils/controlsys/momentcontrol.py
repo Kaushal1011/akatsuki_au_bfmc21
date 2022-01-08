@@ -101,7 +101,7 @@ class MovementControl(WorkerProcess):
         # Set lateral control
         data["action"] = "2"
         data['steerAngle'] = float(self.angle)
-        
+        print(data)
         # Send data
         try:
             for outP in outPs:
