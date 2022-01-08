@@ -1,15 +1,11 @@
-import os
-import re
 import cv2
-from cv2 import VideoCapture
 import numpy as np
-from tqdm.notebook import tqdm, trange
 import matplotlib.pyplot as plt
 from typing import List, Any, Union, Tuple
 import os
 import math
-import random
 from functools import reduce
+
 
 class LaneKeep:
     def __init__(
@@ -80,7 +76,7 @@ class LaneKeep:
 
     def __call__(self, img: np.ndarray) -> float:
         if self.computation_method == "sliding_window":
-            return self.sliding_window_search(img) 
+            return self.sliding_window_search(img)
         else:
             return self.houghlines_angle(img)
 
@@ -192,8 +188,11 @@ class LaneKeep:
         """Given processed image compute steering angle"""
         processed_img = self.preprocess_pipeline(img)
         hist, _, _ = plotHistogram(processed_img)
-        left_fit, right_fit, lx,rx, out_img = slide_window_search(processed_img, hist)
-        return compute_steering_angle_lanelineslope(left_fit, right_fit, invert=True), out_img
+        left_fit, right_fit, lx, rx, out_img = slide_window_search(processed_img, hist)
+        return (
+            compute_steering_angle_lanelineslope(left_fit, right_fit, invert=True),
+            out_img,
+        )
 
 
 def processImage(inpImage):
@@ -476,7 +475,7 @@ def compute_steering_angle_lanelineslope(leftline=[], rightline=[], invert=True)
         else:
             n = -(leftline[0] + rightline[0])
             d = leftline[0] * rightline[0]
-            return math.degrees(math.atan(n/2*d)) + 90
+            return math.degrees(math.atan(n / 2 * d)) + 90
     else:
         if len(leftline) == 0 and len(rightline) == 0:
             return 90
@@ -621,4 +620,3 @@ def plotHistogram(inpImage):
     # Return histogram and x-coordinates of left & right lanes to calculate
     # lane width in pixels
     return histogram, leftxBase, rightxBase
-
