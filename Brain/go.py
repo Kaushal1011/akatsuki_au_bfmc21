@@ -96,7 +96,7 @@ if enableStream:
     camStR, camStS = Pipe(duplex=False)  # camera  ->  streamer
     camOutPs.append(camStS)
     if enableCameraSpoof:
-        camSpoofer = CameraSpooferProcess([], [camStS], "vid")
+        camSpoofer = CameraSpooferProcess([], camOutPs, "vid")
         allProcesses.append(camSpoofer)
 
     else:

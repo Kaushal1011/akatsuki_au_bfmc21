@@ -12,6 +12,30 @@ from simple_pid         import PID
 from src.lib.lanekeeputils import LaneKeep as LaneKeepMethod
 from src.templates.workerprocess import WorkerProcess
 
+def display_heading_line(frame, steering_angle, line_color=(0, 0, 255), line_width=5, ):
+    heading_image = np.zeros_like(frame)
+    height, width, _ = frame.shape
+
+    # figure out the heading line from steering angle
+    # heading line (x1,y1) is always center bottom of the screen
+    # (x2, y2) requires a bit of trigonometry
+
+    # Note: the steering angle of:
+    # 0-89 degree: turn left
+    # 90 degree: going straight
+    # 91-180 degree: turn right
+    steering_angle_radian = steering_angle / 180.0 * math.pi
+    x1 = int(width / 2)
+    y1 = height
+    x2 = int(x1 - height / 2 / math.tan(steering_angle_radian))
+    y2 = int(height / 2)
+
+    cv2.line(heading_image, (x1, y1), (x2, y2), line_color, line_width)
+    heading_image = cv2.addWeighted(frame, 0.8, heading_image, 1, 1)
+
+    return heading_image
+
+
 class LaneKeepingProcess(WorkerProcess):
     pid = PID(Kp = 1.0, Ki = 1.45, Kd = 0.15)
     
@@ -81,13 +105,20 @@ class LaneKeepingProcess(WorkerProcess):
         outP : Pipe
             Output pipe to send the steering angle value to other process.
         """
+        firstimage = True
         while True:
             try:
                 # Obtain image
                 stamps, img = inP.recv()
                 # Apply image processing
-                val = self.computeSteeringAnglePID(self.lk(img))
-
+                val = self.lk(img)
+                print(f"Computed angle :{val}")
+                angle = self.computeSteeringAnglePID(val)
+                
+                if firstimage:
+                    final_img = display_heading_line(img, angle)
+                    cv2.imwrite("./sampleimage.jpg", final_img)
+                    firstimage=False
                 # Compute steering angle
                 # val = self.computeSteeringAngle(val)
 
@@ -95,7 +126,7 @@ class LaneKeepingProcess(WorkerProcess):
                 # print(f"Steer angle is: {val}")
                 # Send steering angle value
                 
-                outP.send(val)
+                outP.send(angle)
 
             except Exception as e:
                 print("Lane keeping error:")

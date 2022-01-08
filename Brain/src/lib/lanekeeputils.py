@@ -179,6 +179,7 @@ class LaneKeep:
         """Given processed image compute steering angle"""
         # find lanes takes processed image
         processed_img = self.preprocess_pipeline(img)
+        cv2.imwrite("proccessed_img.jpg", processed_img)
         lines = find_lanes(processed_img)
         # average slop takes original image
         lanelines = average_slope_intercept(img, lines)
@@ -434,7 +435,7 @@ def compute_steering_angle_lanelinecoord(frame, lane_lines):
     """
     if lane_lines is None or len(lane_lines) == 0:
         # print("No lane lines detected, do nothing")
-        return -90
+        return 90
 
     height, width = frame.shape
     if len(lane_lines) == 1:
