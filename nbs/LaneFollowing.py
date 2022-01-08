@@ -289,7 +289,9 @@ def compute_steering_angle_lanelineslope(leftline=[], rightline=[], invert=True)
         elif len(rightline) == 0:
             return math.degrees(math.atan(-1 / leftline[0])) + 90
         else:
-            return math.degrees(math.atan(-2 / (leftline[0] + rightline[0]))) + 90
+            n = -(leftline[0] + rightline[0])
+            d = leftline[0] * rightline[0]
+            return math.degrees(math.atan(n/2*d)) + 90
     else:
         if len(leftline) == 0 and len(rightline) == 0:
             return 90
