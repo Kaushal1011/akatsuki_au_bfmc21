@@ -95,7 +95,7 @@ if enableRc:
 if enableStream:
     camStR, camStS = Pipe(duplex=False)  # lanekeep  ->  streamer
     # camStS is input to lane keeping
-    # camOutPs.append(camStS)
+    camOutPs.append(camStS)
     if enableCameraSpoof:
         camSpoofer = CameraSpooferProcess([], camOutPs, "vid")
         allProcesses.append(camSpoofer)
@@ -112,7 +112,7 @@ if enableLaneKeeping:
 
     camOutPs.append(lkS)
     movementControlR.append(lcR)
-    lkProc = LaneKeeping([lkR], [lcS, camStS])
+    lkProc = LaneKeeping([lkR], [lcS])
     allProcesses.append(lkProc)
 
     # Movement control
