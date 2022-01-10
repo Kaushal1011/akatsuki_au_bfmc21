@@ -114,7 +114,7 @@ class LaneKeepingProcess(WorkerProcess):
                 val = self.lk(img)
                 print(f"Computed angle :{val}")
                 angle = self.computeSteeringAnglePID(val)
-                
+                outimage = display_heading_line(img, angle)
                 if firstimage:
                     final_img = display_heading_line(img, angle)
                     cv2.imwrite("./sampleimage.jpg", final_img)

@@ -117,7 +117,7 @@ class LaneKeep:
         """Preprocess image for edge detection"""
         # Apply HLS color filtering to filter out white lane lines
         hls = cv2.cvtColor(img, cv2.COLOR_BGR2HLS)
-        lower_white = np.array([180, 180, 180])
+        lower_white = np.array([90, 90, 90]) # change here if it fails to detect
         upper_white = np.array([255, 255, 255])
         mask = cv2.inRange(img, lower_white, upper_white)
         hls_result = cv2.bitwise_and(img, img, mask=mask)
