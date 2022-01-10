@@ -7,6 +7,30 @@ import math
 from functools import reduce
 
 
+def display_heading_line(frame, steering_angle, line_color=(0, 0, 255), line_width=5, ) -> np.ndarray:
+    heading_image = np.zeros_like(frame)
+    height, width, _ = frame.shape
+
+    # figure out the heading line from steering angle
+    # heading line (x1,y1) is always center bottom of the screen
+    # (x2, y2) requires a bit of trigonometry
+
+    # Note: the steering angle of:
+    # 0-89 degree: turn left
+    # 90 degree: going straight
+    # 91-180 degree: turn right
+    steering_angle_radian = steering_angle / 180.0 * math.pi
+    x1 = int(width / 2)
+    y1 = height
+    x2 = int(x1 - height / 2 / math.tan(steering_angle_radian))
+    y2 = int(height / 2)
+
+    cv2.line(heading_image, (x1, y1), (x2, y2), line_color, line_width)
+    heading_image = cv2.addWeighted(frame, 0.8, heading_image, 1, 1)
+
+    return heading_image
+
+
 class LaneKeep:
     def __init__(
         self,
@@ -96,8 +120,10 @@ class LaneKeep:
                     int(self.luroi * ((img.shape[1] - 1))),
                     int(self.hroi * (img.shape[0] - 1)),
                 ),
-                (int(self.lbroi * ((img.shape[1] - 1))), int(img.shape[0] - 1)),
-                (int(self.rbroi * ((img.shape[1] - 1))), int(img.shape[0] - 1)),
+                (int(self.lbroi * ((img.shape[1] - 1))),
+                 int(img.shape[0] - 1)),
+                (int(self.rbroi * ((img.shape[1] - 1))),
+                 int(img.shape[0] - 1)),
                 (
                     int(self.ruroi * ((img.shape[1] - 1))),
                     int(self.hroi * (img.shape[0] - 1)),
@@ -141,8 +167,10 @@ class LaneKeep:
     def persepective_wrap(self, img: np.ndarray) -> np.ndarray:
         """ROI of image and Perform perspective wrapping on the image"""
         roi = [
-            (self.luroi * ((img.shape[1] - 1)), self.hroi * (img.shape[0] - 1)),
-            (self.ruroi * ((img.shape[1] - 1)), self.hroi * (img.shape[0] - 1)),
+            (self.luroi * ((img.shape[1] - 1)),
+             self.hroi * (img.shape[0] - 1)),
+            (self.ruroi * ((img.shape[1] - 1)),
+             self.hroi * (img.shape[0] - 1)),
             (self.lbroi * ((img.shape[1] - 1)), img.shape[0] - 1),
             (self.rbroi * ((img.shape[1] - 1)), img.shape[0] - 1),
         ]
@@ -152,7 +180,8 @@ class LaneKeep:
         src = np.float32(roi)
         # Window to be shown
         dst = np.float32(
-            [[0, 0], [img.shape[1], 0], [0, img.shape[0]], [img.shape[1], img.shape[0]]]
+            [[0, 0], [img.shape[1], 0], [0, img.shape[0]],
+                [img.shape[1], img.shape[0]]]
         )
 
         # Matrix to warp the image for birdseye window
@@ -188,9 +217,11 @@ class LaneKeep:
         """Given processed image compute steering angle"""
         processed_img = self.preprocess_pipeline(img)
         hist, _, _ = plotHistogram(processed_img)
-        left_fit, right_fit, lx, rx, out_img = slide_window_search(processed_img, hist)
+        left_fit, right_fit, lx, rx, out_img = slide_window_search(
+            processed_img, hist)
         return (
-            compute_steering_angle_lanelineslope(left_fit, right_fit, invert=True),
+            compute_steering_angle_lanelineslope(
+                left_fit, right_fit, invert=True),
             out_img,
         )
 
@@ -290,8 +321,8 @@ def perspectiveWarp(inpImage, luroi=0.25, ruroi=0.75, lbroi=0, rbroi=1, hroi=0.5
     height, width = birdseye.shape[:2]
 
     # Divide the birdseye view into 2 halves to separate left & right lanes
-    birdseyeLeft = birdseye[0:height, 0 : width // 2]
-    birdseyeRight = birdseye[0:height, width // 2 : width]
+    birdseyeLeft = birdseye[0:height, 0: width // 2]
+    birdseyeRight = birdseye[0:height, width // 2: width]
 
     # Display birdseye view image
     # cv2.imshow("Birdseye" , birdseye)
@@ -608,7 +639,7 @@ def plotHistogram(inpImage):
         Tuple(List,List,List): histogram, lextxBase, rightxBase
     """
 
-    histogram = np.sum(inpImage[inpImage.shape[0] // 2 :, :], axis=0)
+    histogram = np.sum(inpImage[inpImage.shape[0] // 2:, :], axis=0)
 
     midpoint = np.int(histogram.shape[0] / 2)
     leftxBase = np.argmax(histogram[:midpoint])

@@ -37,6 +37,7 @@ import cv2
 
 from src.templates.workerprocess import WorkerProcess
 
+
 class CameraStreamerProcess(WorkerProcess):
     # ===================================== INIT =========================================
     def __init__(self, inPs, outPs):
@@ -44,7 +45,7 @@ class CameraStreamerProcess(WorkerProcess):
         (no feedback required). The image is compressed before sending it. 
 
         Used for visualizing your raspicam images on remote PC.
-        
+
         Parameters
         ----------
         inPs : list(Pipe) 
@@ -52,14 +53,14 @@ class CameraStreamerProcess(WorkerProcess):
         outPs : list(Pipe) 
             List of output pipes (not used at the moment)
         """
-        super(CameraStreamerProcess,self).__init__( inPs, outPs)
-        
+        super(CameraStreamerProcess, self).__init__(inPs, outPs)
+
     # ===================================== RUN ==========================================
     def run(self):
         """Apply the initializing methods and start the threads.
         """
         self._init_socket()
-        super(CameraStreamerProcess,self).run()
+        super(CameraStreamerProcess, self).run()
 
     # ===================================== INIT THREADS =================================
     def _init_threads(self):
@@ -67,7 +68,8 @@ class CameraStreamerProcess(WorkerProcess):
         """
         if self._blocker.is_set():
             return
-        streamTh = Thread(name='StreamSendingThread',target = self._send_thread, args= (self.inPs[0], ))
+        streamTh = Thread(name='StreamSendingThread',
+                          target=self._send_thread, args=(self.inPs[0], ))
         streamTh.daemon = True
         self.threads.append(streamTh)
 
@@ -75,8 +77,8 @@ class CameraStreamerProcess(WorkerProcess):
     def _init_socket(self):
         """Initialize the socket client. 
         """
-        self.serverIp   =  '192.168.43.13' # PC ip
-        self.port       =  2244            # com port
+        self.serverIp = '192.168.43.13'  # PC ip
+        self.port = 2244            # com port
 
         self.client_socket = socket.socket()
         self.connection = None
@@ -85,8 +87,9 @@ class CameraStreamerProcess(WorkerProcess):
             while self.connection is None and not self._blocker.is_set():
                 try:
                     self.client_socket.connect((self.serverIp, self.port))
-                    self.client_socket.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
-                    self.connection = self.client_socket.makefile('wb') 
+                    self.client_socket.setsockopt(
+                        socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                    self.connection = self.client_socket.makefile('wb')
                 except ConnectionRefusedError as error:
                     time.sleep(0.5)
                     pass
@@ -94,11 +97,11 @@ class CameraStreamerProcess(WorkerProcess):
             self._blocker.set()
             pass
 
-        
     # ===================================== SEND THREAD ==================================
+
     def _send_thread(self, inP):
         """Sending the frames received thought the input pipe to remote client by using the created socket connection. 
-        
+
         Parameters
         ----------
         inP : Pipe
@@ -109,19 +112,17 @@ class CameraStreamerProcess(WorkerProcess):
         while True:
             try:
                 stamps, image = inP.recv()
-                 
-                result, image = cv2.imencode('.jpg', image, encode_param)
-                data   =  image.tobytes()
-                size   =  len(data)
 
-                self.connection.write(struct.pack("<L",size))
+                result, image = cv2.imencode('.jpg', image, encode_param)
+                data = image.tobytes()
+                size = len(data)
+
+                self.connection.write(struct.pack("<L", size))
                 self.connection.write(data)
 
             except Exception as e:
-                print("CameraStreamer failed to stream images:",e,"\n")
-                # Reinitialize the socket for reconnecting to client.  
+                print("CameraStreamer failed to stream images:", e, "\n")
+                # Reinitialize the socket for reconnecting to client.
                 self.connection = None
                 self._init_socket()
                 pass
-
-            

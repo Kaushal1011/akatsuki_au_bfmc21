@@ -29,26 +29,26 @@
 # ========================================================================
 # SCRIPT USED FOR WIRING ALL COMPONENTS
 # ========================================================================
+from src.utils.controlsys.momentcontrol import MovementControl
+from src.utils.controlsys.lanekeeping import LaneKeepingProcess as LaneKeeping
+from src.utils.remotecontrol.RemoteControlReceiverProcess import (
+    RemoteControlReceiverProcess,
+)
+from src.utils.camerastreamer.CameraStreamerProcess import CameraStreamerProcess
+from src.hardware.serialhandler.SerialHandlerProcess import SerialHandlerProcess
+from src.hardware.camera.CameraSpooferProcess import CameraSpooferProcess
+from src.hardware.camera.cameraprocess import CameraProcess
+from multiprocessing import Pipe, Process, Event
+import signal
+import time
 import sys
 
 sys.path.append(".")
 
-import time
-import signal
-from multiprocessing import Pipe, Process, Event
 
 # hardware imports
-from src.hardware.camera.cameraprocess import CameraProcess
-from src.hardware.camera.CameraSpooferProcess import CameraSpooferProcess
-from src.hardware.serialhandler.SerialHandlerProcess import SerialHandlerProcess
 
 # utility imports
-from src.utils.camerastreamer.CameraStreamerProcess import CameraStreamerProcess
-from src.utils.remotecontrol.RemoteControlReceiverProcess import (
-    RemoteControlReceiverProcess,
-)
-from src.utils.controlsys.lanekeeping import LaneKeepingProcess as LaneKeeping
-from src.utils.controlsys.momentcontrol import MovementControl
 
 # =============================== CONFIG =================================================
 enableStream = False
@@ -71,13 +71,13 @@ camOutPs = list()
 # Pipes:
 
 # Camera process -> Lane keeping
-lkR, lkS = Pipe(duplex = False)
+lkR, lkS = Pipe(duplex=False)
 
 # Lane keeping -> Movement control
-lcR, lcS = Pipe(duplex = False)
+lcR, lcS = Pipe(duplex=False)
 
 # Movement control -> Serial handler
-cfR, cfS = Pipe(duplex = False)
+cfR, cfS = Pipe(duplex=False)
 
 # =============================== CONTROL =================================================
 if enableRc:
@@ -93,10 +93,11 @@ if enableRc:
 
 # =============================== HARDWARE ===============================================
 if enableStream:
-    camStR, camStS = Pipe(duplex=False)  # camera  ->  streamer
-    camOutPs.append(camStS)
+    camStR, camStS = Pipe(duplex=False)  # lanekeep  ->  streamer
+    # camStS is input to lane keeping
+    # camOutPs.append(camStS)
     if enableCameraSpoof:
-        camSpoofer = CameraSpooferProcess([], [camStS], "vid")
+        camSpoofer = CameraSpooferProcess([], camOutPs, "vid")
         allProcesses.append(camSpoofer)
 
     else:
@@ -111,7 +112,7 @@ if enableLaneKeeping:
 
     camOutPs.append(lkS)
     movementControlR.append(lcR)
-    lkProc = LaneKeeping([lkR], [lcS])
+    lkProc = LaneKeeping([lkR], [lcS, camStS])
     allProcesses.append(lkProc)
 
     # Movement control

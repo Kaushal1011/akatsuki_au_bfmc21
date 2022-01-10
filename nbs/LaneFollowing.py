@@ -11,6 +11,17 @@ import math
 import random
 
 
+def display_lines(frame, lines, line_color=(0, 255, 0), line_width=2):
+    line_image = np.zeros_like(frame)
+    if lines is not None:
+        for line in lines:
+            for x1, y1, x2, y2 in line:
+                cv2.line(line_image, (x1, y1), (x2, y2),
+                         line_color, line_width)
+    line_image = cv2.addWeighted(frame, 0.8, line_image, 1, 1)
+    return line_image
+
+
 def processImage(inpImage):
     """
     function used to preprocess image
@@ -106,8 +117,8 @@ def perspectiveWarp(inpImage, luroi=0.25, ruroi=0.75, lbroi=0, rbroi=1, hroi=0.5
     height, width = birdseye.shape[:2]
 
     # Divide the birdseye view into 2 halves to separate left & right lanes
-    birdseyeLeft = birdseye[0:height, 0 : width // 2]
-    birdseyeRight = birdseye[0:height, width // 2 : width]
+    birdseyeLeft = birdseye[0:height, 0: width // 2]
+    birdseyeRight = birdseye[0:height, width // 2: width]
 
     # Display birdseye view image
     # cv2.imshow("Birdseye" , birdseye)
@@ -424,7 +435,7 @@ def plotHistogram(inpImage):
         Tuple(List,List,List): histogram, lextxBase, rightxBase
     """
 
-    histogram = np.sum(inpImage[inpImage.shape[0] // 2 :, :], axis=0)
+    histogram = np.sum(inpImage[inpImage.shape[0] // 2:, :], axis=0)
 
     midpoint = np.int(histogram.shape[0] / 2)
     leftxBase = np.argmax(histogram[:midpoint])
