@@ -28,6 +28,7 @@ repos:
     rev: v0.3.0
     hooks:
       - id: absolufy-imports
+  # isort conflict with black
   # - repo: https://github.com/pycqa/isort
   #   rev: 5.9.3
   #   hooks:
