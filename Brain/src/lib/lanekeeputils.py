@@ -1,3 +1,4 @@
+from multiprocessing import process
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
@@ -7,10 +8,56 @@ import math
 from functools import reduce
 
 
+def draw_line(img, lines):
+    # create a copy of the original frame
+    try:
+        dmy = img
+        # draw Hough lines
+        for line in lines:
+            x1, y1, x2, y2 = line[0]
+            cv2.line(dmy, (x1, y1), (x2, y2), (255, 0, 0), 3)
+
+        return dmy
+    except:
+        return img
+
+
+def display_heading_line(
+    frame,
+    steering_angle,
+    line_color=(0, 0, 255),
+    line_width=5,
+):
+    heading_image = np.zeros_like(frame)
+    if len(frame.shape) == 3:
+        height, width, _ = frame.shape
+    else:
+        height, width = frame.shape
+    # figure out the heading line from steering angle
+    # heading line (x1,y1) is always center bottom of the screen
+    # (x2, y2) requires a bit of trigonometry
+
+    # Note: the steering angle of:
+    # 0-89 degree: turn left
+    # 90 degree: going straight
+    # 91-180 degree: turn right
+    steering_angle_radian = steering_angle / 180.0 * math.pi
+    x1 = int(width / 2)
+    y1 = height
+    x2 = int(x1 - height / 2 / math.tan(steering_angle_radian))
+    y2 = int(height / 2)
+
+    cv2.line(heading_image, (x1, y1), (x2, y2), line_color, line_width)
+    heading_image = cv2.addWeighted(frame, 0.8, heading_image, 1, 1)
+
+    return heading_image
+
+
 class LaneKeep:
     def __init__(
         self,
         use_perspective: bool = True,
+        hls_lower: List[int] = [90, 90, 90],
         computation_method: str = "hough",
         blur_size: Tuple[int, int] = (7, 7),
         adpt_Th_blk_size: int = 21,
@@ -29,6 +76,7 @@ class LaneKeep:
             use_perspective: (bool) change preprocess pipeline
                         False -> [roi_func, preprocess]
                         True  -> [persepective_wrap, preprocess]
+            hls_lower: (list) change the hls filter lower bound
             computation_method:(str) [ hough | sliding_window]
             blur_size: (Tuple[int, int]) Blur kernel size (preprocess)
             adpt_Th_blk_size: (int) Adaptive thresholding block size (preprocess)
@@ -46,7 +94,16 @@ class LaneKeep:
             computation_method == "hough" or computation_method == "sliding_window"
         ), f"Expected computation_method to be either 'hough' or 'sliding_window'"
 
+        assert (
+            len(hls_lower) == 3
+        ), f"Expected a list of [hue, sat, light], got {hls_lower}"
+
+        assert (
+            max(hls_lower) < 255 and min(hls_lower) >= 0
+        ), f"Value range for hls is 0~255, got {hls_lower}"
+
         self.computation_method = computation_method
+        self.hls_lower = hls_lower
         self.blur_size = blur_size
         # Size of a pixel neighborhood that is used to calculate a threshold value for the pixel
         self.adpt_Th_blk_size = adpt_Th_blk_size
@@ -117,7 +174,7 @@ class LaneKeep:
         """Preprocess image for edge detection"""
         # Apply HLS color filtering to filter out white lane lines
         hls = cv2.cvtColor(img, cv2.COLOR_BGR2HLS)
-        lower_white = np.array([180, 180, 180])
+        lower_white = np.array(self.hls_lower)  # change here if it fails to detect
         upper_white = np.array([255, 255, 255])
         mask = cv2.inRange(img, lower_white, upper_white)
         hls_result = cv2.bitwise_and(img, img, mask=mask)
@@ -179,20 +236,31 @@ class LaneKeep:
         """Given processed image compute steering angle"""
         # find lanes takes processed image
         processed_img = self.preprocess_pipeline(img)
+        # cv2.imwrite("proccessed_img.jpg", processed_img)
         lines = find_lanes(processed_img)
         # average slop takes original image
         lanelines = average_slope_intercept(img, lines)
-        return compute_steering_angle_lanelinecoord(img[:, :, 0], lane_lines=lanelines)
+        angle = compute_steering_angle_lanelinecoord(img[:, :, 0], lane_lines=lanelines)
+
+        processed_img = cv2.cvtColor(processed_img, cv2.COLOR_GRAY2RGB)
+        # draw lanelines
+        processed_img = draw_line(processed_img, lanelines)
+        # draw heading lines
+        outimage = display_heading_line(processed_img, angle)
+        # outimage = cv2.hconcat([processed_out, outimage])
+        return angle, outimage
 
     def sliding_window_search(self, img: np.ndarray) -> float:
         """Given processed image compute steering angle"""
         processed_img = self.preprocess_pipeline(img)
         hist, _, _ = plotHistogram(processed_img)
         left_fit, right_fit, lx, rx, out_img = slide_window_search(processed_img, hist)
-        return (
-            compute_steering_angle_lanelineslope(left_fit, right_fit, invert=True),
-            out_img,
-        )
+        angle = compute_steering_angle_lanelineslope(left_fit, right_fit, invert=True)
+
+        # out_img = cv2.cvtColor(out_img, cv2.COLOR_GRAY2RGB)
+        out_img = display_heading_line(out_img, angle)
+
+        return angle, out_img
 
 
 def processImage(inpImage):
@@ -226,15 +294,6 @@ def processImage(inpImage):
     # ret, thresh = cv2.threshold(gray, 160, 255, cv2.THRESH_BINARY)
     blur = cv2.GaussianBlur(thresh, (7, 7), 0)
     canny = cv2.Canny(blur, 40, 60)
-
-    # Display the processed images
-    # plt.imshow("Image", inpImage)
-    # plt.imshow("HLS Filtered", hls_result)
-    # plt.imshow("Grayscale", gray)
-    # plt.imshow("Thresholded", thresh)
-    # plt.imshow("Blurred", blur)
-    # plt.imshow("Canny Edges", canny)
-
     return hls_result, gray, thresh, blur, canny
 
 
@@ -434,7 +493,7 @@ def compute_steering_angle_lanelinecoord(frame, lane_lines):
     """
     if lane_lines is None or len(lane_lines) == 0:
         # print("No lane lines detected, do nothing")
-        return -90
+        return 90
 
     height, width = frame.shape
     if len(lane_lines) == 1:

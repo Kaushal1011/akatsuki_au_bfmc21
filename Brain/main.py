@@ -47,7 +47,7 @@ from src.utils.remotecontrol.RemoteControlReceiverProcess   import RemoteControl
 
 # =============================== CONFIG =================================================
 enableStream        =  True
-enableCameraSpoof   =  False 
+enableCameraSpoof   =  False
 enableRc            =  True
 
 # =============================== INITIALIZING PROCESSES =================================

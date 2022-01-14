@@ -4,45 +4,52 @@ from threading import Thread
 
 from src.templates.workerprocess import WorkerProcess
 
+
 class MovementControl(WorkerProcess):
     # ===================================== Worker process =========================================
     def __init__(self, inPs, outPs):
         """Controls the speed and steering of the vehicle
-        
+
         Parameters
         ------------
         inPs  : list(Pipe)
             List of input pipes (0 - steering angle)
-        outPs : list(Pipe) 
+        outPs : list(Pipe)
             List of output pipes (order does not matter)
         """
         # Initialize parameters
         self.angle = 0.0
         self.speed = 21.0
 
-        super(MovementControl,self).__init__(inPs, outPs)
+        super(MovementControl, self).__init__(inPs, outPs)
 
     def _init_threads(self):
-        """Initialize the a thread for initial start and a thread for listening for the steering angle.
-        """
+        """Initialize the a thread for initial start and a thread for listening for the steering angle."""
 
-        startTh = Thread(name='InitialStart', target = self._singleUpdate, args=(self.outPs, ))
+        startTh = Thread(
+            name="InitialStart", target=self._singleUpdate, args=(self.outPs,)
+        )
         self.threads.append(startTh)
 
-        sendTh = Thread(name='SteeringListen',target = self._listen_for_steering, args = (self.inPs[0], self.outPs, ))
+        sendTh = Thread(
+            name="SteeringListen",
+            target=self._listen_for_steering,
+            args=(
+                self.inPs[0],
+                self.outPs,
+            ),
+        )
         self.threads.append(sendTh)
 
         # signTh = Thread(name='SignListen',target = self._listen_for_stop, args = (self.inPs[1], self.outPs, ))
         # self.threads.append(signTh)
-        
+
     def run(self):
-        """Apply the initializing methods and start the threads
-        """
-        super(MovementControl,self).run()
+        """Apply the initializing methods and start the threads"""
+        super(MovementControl, self).run()
 
     def stop(self):
-        """Apply the stopping methods and stops the threads
-        """
+        """Apply the stopping methods and stops the threads"""
         # Make a reset before stop
         self.speed = 0.0
         self.angle = 0.0
@@ -52,12 +59,11 @@ class MovementControl(WorkerProcess):
 
     # ===================================== Custom methods =========================================
     def _listen_for_steering(self, inP, outPs):
-        """Get the current needed value for the steering angle
-        """
+        """Get the current needed value for the steering angle"""
         while True:
             try:
                 # Get the value through the pipe
-                value = inP.recv()
+                value, _ = inP.recv()
 
                 # Write the value
                 self.angle = float(value)
@@ -86,8 +92,7 @@ class MovementControl(WorkerProcess):
                 print(e)
 
     def _singleUpdate(self, outPs):
-        """Update the state of the controls
-        """
+        """Update the state of the controls"""
         # Initialize the data array to be sent
         data = {}
 
@@ -100,7 +105,7 @@ class MovementControl(WorkerProcess):
 
         # Set lateral control
         data["action"] = "2"
-        data['steerAngle'] = float(self.angle)
+        data["steerAngle"] = float(self.angle)
         print(data)
         # Send data
         try:
@@ -108,4 +113,3 @@ class MovementControl(WorkerProcess):
                 outP.send(data)
         except Exception as e:
             print(e)
-            

@@ -7,13 +7,12 @@ import numpy as np
 def roi_func(gimg, luroi=0.25, ruroi=0.75, lbroi=0, rbroi=1, hroi=0.55):
 
     roi = [
-        (int(luroi*((gimg.shape[1]-1))), int(hroi*(gimg.shape[0]-1))),
-        (int(lbroi*((gimg.shape[1]-1))), int(gimg.shape[0]-1)),
-        (int(rbroi*((gimg.shape[1]-1))), int(gimg.shape[0]-1)),
-        (int(ruroi*((gimg.shape[1]-1))), int(hroi*(gimg.shape[0]-1))),
-
+        (int(luroi * ((gimg.shape[1] - 1))), int(hroi * (gimg.shape[0] - 1))),
+        (int(lbroi * ((gimg.shape[1] - 1))), int(gimg.shape[0] - 1)),
+        (int(rbroi * ((gimg.shape[1] - 1))), int(gimg.shape[0] - 1)),
+        (int(ruroi * ((gimg.shape[1] - 1))), int(hroi * (gimg.shape[0] - 1))),
     ]
-    stencil = np.zeros_like(gimg, dtype='uint8')
+    stencil = np.zeros_like(gimg, dtype="uint8")
     # print(roi, stencil_coords)
     # specify coordinates of the polygon
     polygon = np.array(roi)
@@ -37,7 +36,7 @@ def find_lanes(thresh_canny):
     Returns:
         [type]: [description]
     """
-    lines = cv2.HoughLinesP(thresh_canny, 1, np.pi/180, 30, maxLineGap=200)
+    lines = cv2.HoughLinesP(thresh_canny, 1, np.pi / 180, 30, maxLineGap=200)
     return lines
 
 
@@ -53,6 +52,16 @@ def draw_line(img, lines):
         return dmy
     except:
         return img
+
+
+def display_lines(frame, lines, line_color=(0, 255, 0), line_width=2):
+    line_image = np.zeros_like(frame)
+    if lines is not None:
+        for line in lines:
+            for x1, y1, x2, y2 in line:
+                cv2.line(line_image, (x1, y1), (x2, y2), line_color, line_width)
+    line_image = cv2.addWeighted(frame, 0.8, line_image, 1, 1)
+    return line_image
 
 
 def make_points(frame, line):
@@ -78,14 +87,14 @@ def average_slope_intercept(frame, line_segments):
     """
     lane_lines = []
     if line_segments is None:
-        logging.info('No line_segment segments detected')
+        logging.info("No line_segment segments detected")
         return lane_lines
 
     height, width, _ = frame.shape
     left_fit = []
     right_fit = []
 
-    boundary = 2/3
+    boundary = 2 / 3
     # left lane line segment should be on left 2/3 of the screen
     left_region_boundary = width * (1 - boundary)
     # right lane line segment should be on left 2/3 of the screen
@@ -117,17 +126,16 @@ def average_slope_intercept(frame, line_segments):
 
 
 def compute_steering_angle(frame, lane_lines):
-    """ Find the steering angle based on lane line coordinate
-        We assume that camera is calibrated to point to dead center
+    """Find the steering angle based on lane line coordinate
+    We assume that camera is calibrated to point to dead center
     """
     if len(lane_lines) == 0:
-        logging.info('No lane lines detected, do nothing')
+        logging.info("No lane lines detected, do nothing")
         return -90
 
     height, width = frame.shape
     if len(lane_lines) == 1:
-        logging.debug(
-            'Only detected one lane line, just follow it. %s' % lane_lines[0])
+        logging.debug("Only detected one lane line, just follow it. %s" % lane_lines[0])
         x1, _, x2, _ = lane_lines[0][0]
         x_offset = x2 - x1
     else:
@@ -148,22 +156,16 @@ def compute_steering_angle(frame, lane_lines):
     # this is the steering angle needed by picar front wheel
     steering_angle = angle_to_mid_deg + 90
 
-    logging.debug('new steering angle: %s' % steering_angle)
+    logging.debug("new steering angle: %s" % steering_angle)
     return steering_angle
 
 
-def display_lines(frame, lines, line_color=(0, 255, 0), line_width=2):
-    line_image = np.zeros_like(frame)
-    if lines is not None:
-        for line in lines:
-            for x1, y1, x2, y2 in line:
-                cv2.line(line_image, (x1, y1), (x2, y2),
-                         line_color, line_width)
-    line_image = cv2.addWeighted(frame, 0.8, line_image, 1, 1)
-    return line_image
-
-
-def display_heading_line(frame, steering_angle, line_color=(0, 0, 255), line_width=5, ):
+def display_heading_line(
+    frame,
+    steering_angle,
+    line_color=(0, 0, 255),
+    line_width=5,
+):
     heading_image = np.zeros_like(frame)
     height, width, _ = frame.shape
 
