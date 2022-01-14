@@ -26,43 +26,44 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-from carclientserver import CarClientServerThread
-from serverconfig import ServerConfig
-from serverbeacon import ServerBeaconThread
-
-from generatedata import GenerateData
-
 import logging
 import time
 
+from carclientserver import CarClientServerThread
+from generatedata import GenerateData
+from serverbeacon import ServerBeaconThread
+from serverconfig import ServerConfig
+
+
 class LocalizationSystemServer:
-    """LocalizationSystemServer aims to serve the car clients with coordinates of robot on the race track. 
-    It involves a ServerConfig object, CarClientServerThread object, ServerBeaconThread object. 
-    The object of ServerConfig accumulates all information about server. The object of ServerBeaconThread 
-    aims to infrom the client about the server ip by sending continuously a broadcast message. The object of 
-    CarClientServerThread are serving the car client with the coordinates of robots. 
+    """LocalizationSystemServer aims to serve the car clients with coordinates of robot on the race track.
+    It involves a ServerConfig object, CarClientServerThread object, ServerBeaconThread object.
+    The object of ServerConfig accumulates all information about server. The object of ServerBeaconThread
+    aims to infrom the client about the server ip by sending continuously a broadcast message. The object of
+    CarClientServerThread are serving the car client with the coordinates of robots.
 
     In this examples, a object of GenerateData is added for create coordinates of a robots, which are moving on circle.
     """
-    def __init__(self,logger):
-        self.serverconfig = ServerConfig('<broadcast>',12345,12356)
-        
-        self.__carclientserverThread = CarClientServerThread(self.serverconfig,logger)
-        self.__beaconserverThread =  ServerBeaconThread(self.serverconfig,1.0,logger)
+
+    def __init__(self, logger):
+        self.serverconfig = ServerConfig("<broadcast>", 12345, 12356)
+
+        self.__carclientserverThread = CarClientServerThread(self.serverconfig, logger)
+        self.__beaconserverThread = ServerBeaconThread(self.serverconfig, 1.0, logger)
 
         self.__generateData = GenerateData(self.__carclientserverThread.carclientserver)
-    
-    def run(self):    
+
+    def run(self):
         self.__carclientserverThread.start()
         self.__beaconserverThread.start()
         self.__generateData.start()
 
         try:
-            while(True):
+            while True:
                 time.sleep(2.0)
         except KeyboardInterrupt:
             pass
-            
+
         self.__carclientserverThread.stop()
         self.__carclientserverThread.join()
         self.__beaconserverThread.stop()
@@ -71,12 +72,9 @@ class LocalizationSystemServer:
         self.__generateData.stop()
         self.__generateData.join()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    logger = logging.getLogger('root')
+    logger = logging.getLogger("root")
     locSysServer = LocalizationSystemServer(logger)
     locSysServer.run()
-
-    
-
-

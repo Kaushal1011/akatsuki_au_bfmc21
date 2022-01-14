@@ -27,25 +27,29 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 import sys
-sys.path.append('.')
 
-import threading
+sys.path.append(".")
+
 import signal
+import threading
 import time
 
 from src.hardware.IMU import imu
 
+
 def exit_handler(signum, frame):
-	IMU.stop()
-	IMU.join()
-	sys.exit(0)
+    IMU.stop()
+    IMU.join()
+    sys.exit(0)
+
 
 def main():
-	global IMU
-	signal.signal(signal.SIGTERM, exit_handler)
-	IMU = imu()
-	while True:
-		IMU.start()
+    global IMU
+    signal.signal(signal.SIGTERM, exit_handler)
+    IMU = imu()
+    while True:
+        IMU.start()
+
 
 if __name__ == "__main__":
-	main()
+    main()

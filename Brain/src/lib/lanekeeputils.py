@@ -1,11 +1,12 @@
-from multiprocessing import process
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt
-from typing import List, Any, Union, Tuple
-import os
 import math
+import os
 from functools import reduce
+from multiprocessing import process
+from typing import Any, List, Tuple, Union
+
+import cv2
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 def draw_line(img, lines):

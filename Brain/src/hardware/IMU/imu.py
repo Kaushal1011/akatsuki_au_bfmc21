@@ -27,15 +27,18 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 import sys
-sys.path.append('.')
-import RTIMU
-import os.path
-import time
+
+sys.path.append(".")
 import math
+import os.path
 import threading
+import time
+
+import RTIMU
+
 
 class imu(threading.Thread):
-    def __init__(self): 
+    def __init__(self):
         threading.Thread.__init__(self)
         self.running = True
 
@@ -46,7 +49,7 @@ class imu(threading.Thread):
         self.s = RTIMU.Settings(self.SETTINGS_FILE)
         self.imu = RTIMU.RTIMU(self.s)
         print("IMU Name: " + self.imu.IMUName())
-        if (not self.imu.IMUInit()):
+        if not self.imu.IMUInit():
             print("IMU Init Failed")
             self.stop()
             sys.exit(1)
@@ -59,23 +62,24 @@ class imu(threading.Thread):
 
         self.poll_interval = self.imu.IMUGetPollInterval()
         print("Recommended Poll Interval: %dmS\n" % self.poll_interval)
-        
+
     def run(self):
         while self.running == True:
             if self.imu.IMURead():
                 self.data = self.imu.getIMUData()
                 self.fusionPose = self.data["fusionPose"]
                 self.accel = self.data["accel"]
-                self.roll  =  math.degrees(self.fusionPose[0])
-                self.pitch =  math.degrees(self.fusionPose[1])
-                self.yaw   =  math.degrees(self.fusionPose[2])
-                self.accelx =  self.accel[0]
-                self.accely =  self.accel[1]
-                self.accelz =  self.accel[2]
+                self.roll = math.degrees(self.fusionPose[0])
+                self.pitch = math.degrees(self.fusionPose[1])
+                self.yaw = math.degrees(self.fusionPose[2])
+                self.accelx = self.accel[0]
+                self.accely = self.accel[1]
+                self.accelz = self.accel[2]
 
+                print(
+                    "roll = %f pitch = %f yaw = %f" % (self.roll, self.pitch, self.yaw)
+                )
+                time.sleep(self.poll_interval * 1.0 / 1000.0)
 
-                print("roll = %f pitch = %f yaw = %f" % (self.roll,self.pitch,self.yaw))
-                time.sleep(self.poll_interval*1.0/1000.0)
-
-    def stop(self): 
+    def stop(self):
         self.running = False

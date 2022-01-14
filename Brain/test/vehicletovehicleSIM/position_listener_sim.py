@@ -27,48 +27,52 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 import sys
-sys.path.insert(0,'.')
-from threading import Thread
+
+sys.path.insert(0, ".")
 import time
+from threading import Thread
 
 
 class PositionListener(Thread):
-	"""PositionListener simulator aims to populate position variable. 
-	"""
-	def __init__(self):
+    """PositionListener simulator aims to populate position variable."""
 
-		self.coor = None
+    def __init__(self):
 
-		self.__running = True
+        self.coor = None
 
-		self.i=1
-		self.j=1
+        self.__running = True
 
-		Thread.__init__(self) 
+        self.i = 1
+        self.j = 1
 
-    ## Method for starting position listener simulation process.
-    #  @param self          The object pointer.
-	def start(self):
-		self.__running = True
+        Thread.__init__(self)
 
-		super(PositionListener,self).start()
+        ## Method for starting position listener simulation process.
+        #  @param self          The object pointer.
 
-    ## Method for stopping position listener simulation process.
-    #  @param self          The object pointer.
-	def stop(self):
-		self.__running = False
-		
-    ## Method for running position listener simulation process.
-    #  @param self          The object pointer.
-	def run(self):
-		""" 
-		Update coordiantes every 0.1 seconds
-		"""
-		while self.__running:
-			# Generate some coordinates
-			self.i = self.i + 2
-			self.j = self.j + 3
-			self.coor = (complex(self.i,self.j),complex(self.i+5,self.j+5))
+    def start(self):
+        self.__running = True
 
-			# Wait for 0.1 s before next adv
-			time.sleep(0.1)
+        super(PositionListener, self).start()
+
+        ## Method for stopping position listener simulation process.
+        #  @param self          The object pointer.
+
+    def stop(self):
+        self.__running = False
+
+        ## Method for running position listener simulation process.
+        #  @param self          The object pointer.
+
+    def run(self):
+        """
+        Update coordiantes every 0.1 seconds
+        """
+        while self.__running:
+            # Generate some coordinates
+            self.i = self.i + 2
+            self.j = self.j + 3
+            self.coor = (complex(self.i, self.j), complex(self.i + 5, self.j + 5))
+
+            # Wait for 0.1 s before next adv
+            time.sleep(0.1)

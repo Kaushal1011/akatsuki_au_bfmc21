@@ -26,30 +26,29 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-import os
-import json
 import datetime
+import json
+import os
 from time import strftime
 
+
 class DataSaver:
-    
     def __init__(self):
 
         dirname = os.path.dirname(__file__)
         fulltime = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
         self.filename = dirname + "/savings/" + fulltime + ".json"
         self.data = {}
-        
+
     def existing_car(self, carID):
         if not self.data.has_key(carID):
             self.data[carID] = []
-        
+
     def ADDobstacle(self, carID, obstacleID, x, y):
         self.existing_car(carID)
         self.data[carID].append([obstacleID, x, y])
-    
+
     def saving(self):
         json_object = json.dumps(self.data, indent=4)
-        with open(self.filename, 'w') as f:
+        with open(self.filename, "w") as f:
             f.writelines(json_object)
-        
