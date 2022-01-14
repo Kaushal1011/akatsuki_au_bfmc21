@@ -51,13 +51,14 @@ from src.utils.controlsys.lanekeeping import LaneKeepingProcess as LaneKeeping
 from src.utils.controlsys.momentcontrol import MovementControl
 
 # =============================== CONFIG =================================================
-enableStream = False
+enableStream = True
 enableCameraSpoof = False
 enableRc = False
 enableLaneKeeping = True
+
 # =============================== INITIALIZING PROCESSES =================================
-allProcesses = list()
 # Pipe collections
+allProcesses = list()
 movementControlR = list()
 camOutPs = list()
 
@@ -69,17 +70,16 @@ camOutPs = list()
 # allProcesses.append(LocSysProc)
 
 # Pipes:
-
 # Camera process -> Lane keeping
-lkR, lkS = Pipe(duplex = False)
+lkR, lkS = Pipe(duplex=False)
 
 # Lane keeping -> Movement control
-lcR, lcS = Pipe(duplex = False)
+lcR, lcS = Pipe(duplex=False)
 
 # Movement control -> Serial handler
-cfR, cfS = Pipe(duplex = False)
+cfR, cfS = Pipe(duplex=False)
 
-# =============================== CONTROL =================================================
+# =============================== RC CONTROL =================================================
 if enableRc:
     rcShR, rcShS = Pipe(duplex=False)  # rc      ->  serial handler
 
@@ -90,28 +90,14 @@ if enableRc:
     rcProc = RemoteControlReceiverProcess([], [rcShS])
     allProcesses.append(rcProc)
 
-
-# =============================== HARDWARE ===============================================
-if enableStream:
-    camStR, camStS = Pipe(duplex=False)  # camera  ->  streamer
-    camOutPs.append(camStS)
-    if enableCameraSpoof:
-        camSpoofer = CameraSpooferProcess([], camOutPs, "vid")
-        allProcesses.append(camSpoofer)
-
-    else:
-        camProc = CameraProcess([], camOutPs)
-        allProcesses.append(camProc)
-
-    streamProc = CameraStreamerProcess([camStR], [])
-    allProcesses.append(streamProc)
-
 # ===================================== LANE KEEPING  ===================================
 if enableLaneKeeping:
+    if enableStream:
+        lkStrR, lkStrS = Pipe(duplex=False)
 
     camOutPs.append(lkS)
     movementControlR.append(lcR)
-    lkProc = LaneKeeping([lkR], [lcS])
+    lkProc = LaneKeeping([lkR], [lcS, lkStrS])
     allProcesses.append(lkProc)
 
     # Movement control
@@ -122,11 +108,21 @@ if enableLaneKeeping:
     shProc = SerialHandlerProcess([cfR], [])
     allProcesses.append(shProc)
 
+# ========================= Streamer =====================================================
+if enableStream:
+    if enableLaneKeeping:
+        streamProc = CameraStreamerProcess([lkStrR], [])
+    else:
+        camStR, camStS = Pipe(duplex=False)  # camera  ->  streamer
+        camOutPs.append(camStS)
+        streamProc = CameraStreamerProcess([camStR], [])
 
+    allProcesses.append(streamProc)
+
+# ========================== Camera process ==============================================
 if enableCameraSpoof:
     camSpoofer = CameraSpooferProcess([], camOutPs, "vid")
     allProcesses.append(camSpoofer)
-
 else:
     camProc = CameraProcess([], camOutPs)
     allProcesses.append(camProc)
