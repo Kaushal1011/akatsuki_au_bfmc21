@@ -7,7 +7,6 @@ jobs:
   linting:
     runs-on: ubuntu-latest
     strategy:
-      max-parallel: 1
       matrix:
         python-version: [3.9]
 
