@@ -26,14 +26,13 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import padding, rsa
-from cryptography.hazmat.primitives.serialization import (
-    load_pem_private_key,
-    load_pem_public_key,
-)
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.serialization import load_pem_private_key, load_pem_public_key
+from cryptography.exceptions import InvalidSignature
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import padding
 
 
 def gen_key():
@@ -47,55 +46,55 @@ def save_private_key(pk, filename):
     pem = pk.private_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PrivateFormat.TraditionalOpenSSL,
-        encryption_algorithm=serialization.NoEncryption(),
+        encryption_algorithm=serialization.NoEncryption()
     )
-    with open(filename, "wb") as pem_out:
+    with open(filename, 'wb') as pem_out:
         pem_out.write(pem)
 
-
-def save_public_key(pk, filename):
+def save_public_key(pk,filename):
     pem = pk.public_bytes(
-        encoding=serialization.Encoding.PEM, format=serialization.PublicFormat.PKCS1
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.PKCS1
     )
-    with open(filename, "wb") as pem_out:
+    with open(filename, 'wb') as pem_out:
         pem_out.write(pem)
 
 
 def load_private_key(filename):
-    with open(filename, "rb") as pem_in:
+    with open(filename, 'rb') as pem_in:
         pemlines = pem_in.read()
     private_key = load_pem_private_key(pemlines, None, default_backend())
     return private_key
 
-
 def load_public_key(filename):
-    with open(filename, "rb") as pem_in:
+    with open(filename, 'rb') as pem_in:
         pemlines = pem_in.read()
     public_key = load_pem_public_key(pemlines, default_backend())
     return public_key
 
 
-def sign_data(private_key, plain_text):
+def sign_data(private_key,plain_text):
     # SIGN DATA/STRING
     signature = private_key.sign(
-        data=plain_text.encode("utf-8"),
+        data=plain_text.encode('utf-8'),
         padding=padding.PSS(
-            mgf=padding.MGF1(hashes.MD5()), salt_length=padding.PSS.MAX_LENGTH
+            mgf=padding.MGF1(hashes.MD5()),
+            salt_length=padding.PSS.MAX_LENGTH
         ),
-        algorithm=hashes.MD5(),
+        algorithm=hashes.MD5()
     )
     return signature
 
-
-def verify_data(public_key, plain_text, signature):
+def verify_data(public_key,plain_text,signature):
     try:
         public_key.verify(
             signature=signature,
-            data=plain_text.encode("utf-8"),
+            data=plain_text.encode('utf-8'),
             padding=padding.PSS(
-                mgf=padding.MGF1(hashes.MD5()), salt_length=padding.PSS.MAX_LENGTH
+                mgf=padding.MGF1(hashes.MD5()),
+                salt_length=padding.PSS.MAX_LENGTH
             ),
-            algorithm=hashes.MD5(),
+            algorithm=hashes.MD5()
         )
         is_signature_correct = True
     except InvalidSignature:

@@ -1,14 +1,14 @@
-import math
 import os
-import random
 import re
-from typing import Any, List, Tuple, Union
-
 import cv2
-import matplotlib.pyplot as plt
-import numpy as np
 from cv2 import VideoCapture
+import numpy as np
 from tqdm.notebook import tqdm, trange
+import matplotlib.pyplot as plt
+from typing import List, Any, Union, Tuple
+import os
+import math
+import random
 
 # convert bfmc_2020 videos to frames
 vid_paths = [
@@ -74,17 +74,13 @@ def display_lines(frame, lines, line_color=(0, 255, 0), line_width=2):
     if lines is not None:
         for line in lines:
             for x1, y1, x2, y2 in line:
-                cv2.line(line_image, (x1, y1), (x2, y2), line_color, line_width)
+                cv2.line(line_image, (x1, y1), (x2, y2),
+                         line_color, line_width)
     line_image = cv2.addWeighted(frame, 0.8, line_image, 1, 1)
     return line_image
 
 
-def display_heading_line(
-    frame,
-    steering_angle,
-    line_color=(0, 0, 255),
-    line_width=5,
-):
+def display_heading_line(frame, steering_angle, line_color=(0, 0, 255), line_width=5, ):
     heading_image = np.zeros_like(frame)
     height, width, _ = frame.shape
 

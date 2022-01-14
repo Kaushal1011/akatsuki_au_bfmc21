@@ -27,65 +27,59 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 import sys
+sys.path.insert(0,'.')
 
-sys.path.insert(0, ".")
-
-import json
 import socket
-
+import json
 from complexdecoder import ComplexDecoder
 
 
+
 class PositionListener:
-    """PositionListener aims to receive all message from the server."""
+	"""PositionListener aims to receive all message from the server. 
+	"""
+	def __init__(self,server_data):
+		
+		self.__server_data = server_data 
+		self.socket_pos = None
 
-    def __init__(self, server_data):
+		self.coor = None
 
-        self.__server_data = server_data
-        self.socket_pos = None
+		self.__running = True
 
-        self.coor = None
+	def stop(self):
+		self.__running = False
+	
+	def listen(self):
+		""" 
+		After the subscription on the server, it's listening the messages on the 
+		previously initialed socket. It decodes the messages and saves in 'coor'
+		member parameter. Each new messages will update this parameter. The server sends 
+		result (robot's coordination) of last detection. If the robot was detected by the localization 
+		system, the client will receive the same coordinate and timestamp. 
+		"""
+		while self.__running:
+			if self.__server_data.socket != None: 
+				try:
+					msg = self.__server_data.socket.recv(4096)
 
-        self.__running = True
-
-    def stop(self):
-        self.__running = False
-
-    def listen(self):
-        """
-        After the subscription on the server, it's listening the messages on the
-        previously initialed socket. It decodes the messages and saves in 'coor'
-        member parameter. Each new messages will update this parameter. The server sends
-        result (robot's coordination) of last detection. If the robot was detected by the localization
-        system, the client will receive the same coordinate and timestamp.
-        """
-        while self.__running:
-            if self.__server_data.socket != None:
-                try:
-                    msg = self.__server_data.socket.recv(4096)
-
-                    msg = msg.decode("utf-8")
-                    if msg == "":
-                        print("Invalid message. Connection can be interrupted.")
-                        break
-
-                    coor = json.loads((msg), cls=ComplexDecoder)
-                    self.coor = coor
-                except socket.timeout:
-                    print("position listener socket_timeout")
-                    # the socket was created successfully, but it wasn't received any message. Car with id wasn't detected before.
-                    pass
-                except Exception as e:
-                    self.__server_data.socket.close()
-                    self.__server_data.socket = None
-                    print(
-                        "Receiving position data from server "
-                        + str(self.__server_data.serverip)
-                        + " failed with error: "
-                        + str(e)
-                    )
-                    self.__server_data.serverip = None
-                    break
-        self.__server_data.is_new_server = False
-        self.__server_data.socket = None
-        self.__server_data.serverip = None
+					msg = msg.decode('utf-8')
+					if(msg == ''):
+						print('Invalid message. Connection can be interrupted.')
+						break
+					
+					coor = json.loads((msg),cls=ComplexDecoder)
+					self.coor = coor
+				except socket.timeout:
+					print("position listener socket_timeout")
+					# the socket was created successfully, but it wasn't received any message. Car with id wasn't detected before. 
+					pass
+				except Exception as e:
+					self.__server_data.socket.close()
+					self.__server_data.socket = None
+					print("Receiving position data from server " + str(self.__server_data.serverip) + " failed with error: " + str(e))
+					self.__server_data.serverip = None
+					break
+		self.__server_data.is_new_server = False
+		self.__server_data.socket = None
+		self.__server_data.serverip = None

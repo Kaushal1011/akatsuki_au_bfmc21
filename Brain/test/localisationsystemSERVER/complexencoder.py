@@ -28,10 +28,9 @@
 
 import json
 
-
 class ComplexEncoder(json.JSONEncoder):
-    def default(self, z):
-        if isinstance(z, complex):
-            return {"type": "complex", "real": z.real, "imag": z.imag}
+    def default(self,z):
+        if isinstance(z,complex):
+            return {'type':'complex','real':z.real,'imag':z.imag}
         else:
             return super().default(z)

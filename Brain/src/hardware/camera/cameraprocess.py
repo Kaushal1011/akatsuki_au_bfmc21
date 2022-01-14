@@ -26,13 +26,12 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-from src.hardware.camera.CameraThread import CameraThread
-from src.templates.workerprocess import WorkerProcess
-
+from src.templates.workerprocess            import WorkerProcess
+from src.hardware.camera.CameraThread       import CameraThread
 
 class CameraProcess(WorkerProcess):
-    # ================================ CAMERA PROCESS =====================================
-    def __init__(self, inPs, outPs, daemon=True):
+    #================================ CAMERA PROCESS =====================================
+    def __init__(self, inPs, outPs, daemon = True):
         """Process that start the raspicam and pipes it to the output pipe, to another process.
 
         Parameters
@@ -44,15 +43,17 @@ class CameraProcess(WorkerProcess):
         daemon : bool, optional
             daemon process flag, by default True
         """
-        super(CameraProcess, self).__init__(inPs, outPs, daemon=True)
+        super(CameraProcess,self).__init__( inPs, outPs, daemon = True)
 
     # ===================================== RUN ==========================================
     def run(self):
-        """Apply the initializing methods and start the threads."""
-        super(CameraProcess, self).run()
+        """Apply the initializing methods and start the threads.
+        """
+        super(CameraProcess,self).run()
 
     # ===================================== INIT TH ======================================
     def _init_threads(self):
-        """Create the Camera Publisher thread and add to the list of threads."""
-        camTh = CameraThread(self.outPs)
+        """Create the Camera Publisher thread and add to the list of threads.
+        """
+        camTh = CameraThread(self.outPs) 
         self.threads.append(camTh)
