@@ -97,6 +97,7 @@ class CameraStreamerProcess(WorkerProcess):
             pass
 
     # ===================================== SEND THREAD ==================================
+
     def _send_thread(self, inP):
         """Sending the frames received thought the input pipe to remote client by using the created socket connection.
 

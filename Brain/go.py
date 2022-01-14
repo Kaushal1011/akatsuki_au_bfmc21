@@ -29,26 +29,26 @@
 # ========================================================================
 # SCRIPT USED FOR WIRING ALL COMPONENTS
 # ========================================================================
+from src.utils.controlsys.momentcontrol import MovementControl
+from src.utils.controlsys.lanekeeping import LaneKeepingProcess as LaneKeeping
+from src.utils.remotecontrol.RemoteControlReceiverProcess import (
+    RemoteControlReceiverProcess,
+)
+from src.utils.camerastreamer.CameraStreamerProcess import CameraStreamerProcess
+from src.hardware.serialhandler.SerialHandlerProcess import SerialHandlerProcess
+from src.hardware.camera.CameraSpooferProcess import CameraSpooferProcess
+from src.hardware.camera.cameraprocess import CameraProcess
+from multiprocessing import Pipe, Process, Event
+import signal
+import time
 import sys
 
 sys.path.append(".")
 
-import time
-import signal
-from multiprocessing import Pipe, Process, Event
 
 # hardware imports
-from src.hardware.camera.cameraprocess import CameraProcess
-from src.hardware.camera.CameraSpooferProcess import CameraSpooferProcess
-from src.hardware.serialhandler.SerialHandlerProcess import SerialHandlerProcess
 
 # utility imports
-from src.utils.camerastreamer.CameraStreamerProcess import CameraStreamerProcess
-from src.utils.remotecontrol.RemoteControlReceiverProcess import (
-    RemoteControlReceiverProcess,
-)
-from src.utils.controlsys.lanekeeping import LaneKeepingProcess as LaneKeeping
-from src.utils.controlsys.momentcontrol import MovementControl
 
 # =============================== CONFIG =================================================
 enableStream = True
