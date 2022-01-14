@@ -1,0 +1,36 @@
+# # PR Tests
+# # To speed up development we don't run all the tests when opening and updating a PR.
+# # Instead we first run the lint check which fails fast and then only run the
+# # `pytest -m fast` tests against Ubuntu and Windows and the notebook examples.
+# # Once these checks pass and we decide to do a merge, the actions in `merge_tests.yml`
+# # get executed.
+# name: PR Tests
+
+# on:
+#   pull_request:
+#     branches:
+#       - main
+# defaults:
+#   run:
+#     working-directory: ./Brain
+
+# jobs:
+#   run_tests:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v2
+
+#       - name: Set up Python 3.9
+#         uses: actions/setup-python@v2
+
+#       - name: Upgrade pip
+#         run: |
+#           pip install --upgrade --user pip
+
+#       - name: Install Dependencies
+#         run: |
+#           pip install -r requirements_remote.txt
+
+#       # - name: Run test
+#       #   run: |
+#       #     python go.py

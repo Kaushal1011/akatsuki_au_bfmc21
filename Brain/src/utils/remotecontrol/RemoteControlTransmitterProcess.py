@@ -28,37 +28,37 @@
 
 import json
 import socket
+from multiprocessing import Pipe
+from threading import Thread
 
-from threading       import  Thread
-from multiprocessing import  Pipe
+from src.templates.workerprocess import WorkerProcess
+from src.utils.remotecontrol.KeyboardListenerThread import KeyboardListenerThread
+from src.utils.remotecontrol.RcBrainThread import RcBrainThread
 
-from src.utils.remotecontrol.RcBrainThread              import RcBrainThread
-from src.utils.remotecontrol.KeyboardListenerThread     import KeyboardListenerThread
-from src.templates.workerprocess                        import WorkerProcess
 
 class RemoteControlTransmitterProcess(Thread):
     # ===================================== INIT==========================================
-    def __init__(self,  inPs = [], outPs = []):
-        """Run on the PC. It forwards the commans from the user via KeboardListenerThread to the RcBrainThread. 
+    def __init__(self, inPs=[], outPs=[]):
+        """Run on the PC. It forwards the commans from the user via KeboardListenerThread to the RcBrainThread.
         The RcBrainThread converts them into actual commands and sends them to the remote via a socket connection.
-        
+
         """
-        super(RemoteControlTransmitterProcess,self).__init__()
+        super(RemoteControlTransmitterProcess, self).__init__()
 
         # Can be change to a multithread.Queue.
         self.lisBrR, self.lisBrS = Pipe(duplex=False)
 
-        self.rcBrain   =  RcBrainThread()
-        self.listener  =  KeyboardListenerThread([self.lisBrS])
+        self.rcBrain = RcBrainThread()
+        self.listener = KeyboardListenerThread([self.lisBrS])
 
-        self.port      =  12244
-        self.serverIp  = '192.168.43.225'
+        self.port = 12244
+        self.serverIp = "192.168.43.225"
 
         self.threads = list()
+
     # ===================================== RUN ==========================================
     def run(self):
-        """Apply initializing methods and start the threads. 
-        """
+        """Apply initializing methods and start the threads."""
         self._init_threads()
         self._init_socket()
         for th in self.threads:
@@ -67,35 +67,37 @@ class RemoteControlTransmitterProcess(Thread):
         for th in self.threads:
             th.join()
 
-        super(RemoteControlTransmitterProcess,self).run()
+        super(RemoteControlTransmitterProcess, self).run()
 
     # ===================================== INIT THREADS =================================
     def _init_threads(self):
-        """Initialize the command sender thread for transmite the receiver process all commands. 
-        """
+        """Initialize the command sender thread for transmite the receiver process all commands."""
         self.listener.daemon = self.daemon
         self.threads.append(self.listener)
-        
-        sendTh = Thread(name = 'SendCommandThread',target = self._send_command_thread, args=(self.lisBrR, ),daemon=self.daemon)
+
+        sendTh = Thread(
+            name="SendCommandThread",
+            target=self._send_command_thread,
+            args=(self.lisBrR,),
+            daemon=self.daemon,
+        )
         self.threads.append(sendTh)
 
     # ===================================== INIT SOCKET ==================================
     def _init_socket(self):
-        """Initialize the communication socket client.
-        """
+        """Initialize the communication socket client."""
         self.client_socket = socket.socket(
-                                family  = socket.AF_INET, 
-                                type    = socket.SOCK_DGRAM
-                            )
+            family=socket.AF_INET, type=socket.SOCK_DGRAM
+        )
 
     # ===================================== SEND COMMAND =================================
     def _send_command_thread(self, inP):
-        """Transmite the command to the remotecontrol receiver. 
-        
+        """Transmite the command to the remotecontrol receiver.
+
         Parameters
         ----------
         inP : Pipe
-            Input pipe. 
+            Input pipe.
         """
         while True:
             key = inP.recv()
@@ -104,4 +106,4 @@ class RemoteControlTransmitterProcess(Thread):
             if command is not None:
                 command = json.dumps(command).encode()
 
-                self.client_socket.sendto(command,(self.serverIp,self.port))
+                self.client_socket.sendto(command, (self.serverIp, self.port))

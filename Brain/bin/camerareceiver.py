@@ -26,17 +26,17 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-from src.utils.camerastreamer.CameraReceiverProcess import CameraReceiverProcess
 from multiprocessing import Event
 
+from src.utils.camerastreamer.CameraReceiverProcess import CameraReceiverProcess
 
 # ===================================== MAIN =============================================
 if __name__ == "__main__":
-    a = CameraReceiverProcess([],[])
+    a = CameraReceiverProcess([], [])
     a.start()
-    blocker =Event()
+    blocker = Event()
     try:
-        blocker.wait() 
+        blocker.wait()
     except KeyboardInterrupt:
         print("\nCatching a KeyboardInterruption exception! Shutdown all processes.")
         a.terminate()

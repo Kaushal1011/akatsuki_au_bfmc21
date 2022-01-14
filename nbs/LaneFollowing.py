@@ -1,14 +1,14 @@
-import os
-import re
-import cv2
-from cv2 import VideoCapture
-import numpy as np
-from tqdm.notebook import tqdm, trange
-import matplotlib.pyplot as plt
-from typing import List, Any, Union, Tuple
-import os
 import math
+import os
 import random
+import re
+from typing import Any, List, Tuple, Union
+
+import cv2
+import matplotlib.pyplot as plt
+import numpy as np
+from cv2 import VideoCapture
+from tqdm.notebook import tqdm, trange
 
 
 def display_lines(frame, lines, line_color=(0, 255, 0), line_width=2):
@@ -16,8 +16,7 @@ def display_lines(frame, lines, line_color=(0, 255, 0), line_width=2):
     if lines is not None:
         for line in lines:
             for x1, y1, x2, y2 in line:
-                cv2.line(line_image, (x1, y1), (x2, y2),
-                         line_color, line_width)
+                cv2.line(line_image, (x1, y1), (x2, y2), line_color, line_width)
     line_image = cv2.addWeighted(frame, 0.8, line_image, 1, 1)
     return line_image
 
@@ -117,8 +116,8 @@ def perspectiveWarp(inpImage, luroi=0.25, ruroi=0.75, lbroi=0, rbroi=1, hroi=0.5
     height, width = birdseye.shape[:2]
 
     # Divide the birdseye view into 2 halves to separate left & right lanes
-    birdseyeLeft = birdseye[0:height, 0: width // 2]
-    birdseyeRight = birdseye[0:height, width // 2: width]
+    birdseyeLeft = birdseye[0:height, 0 : width // 2]
+    birdseyeRight = birdseye[0:height, width // 2 : width]
 
     # Display birdseye view image
     # cv2.imshow("Birdseye" , birdseye)
@@ -302,7 +301,7 @@ def compute_steering_angle_lanelineslope(leftline=[], rightline=[], invert=True)
         else:
             n = -(leftline[0] + rightline[0])
             d = leftline[0] * rightline[0]
-            return math.degrees(math.atan(n/2*d)) + 90
+            return math.degrees(math.atan(n / 2 * d)) + 90
     else:
         if len(leftline) == 0 and len(rightline) == 0:
             return 90
@@ -435,7 +434,7 @@ def plotHistogram(inpImage):
         Tuple(List,List,List): histogram, lextxBase, rightxBase
     """
 
-    histogram = np.sum(inpImage[inpImage.shape[0] // 2:, :], axis=0)
+    histogram = np.sum(inpImage[inpImage.shape[0] // 2 :, :], axis=0)
 
     midpoint = np.int(histogram.shape[0] / 2)
     leftxBase = np.argmax(histogram[:midpoint])

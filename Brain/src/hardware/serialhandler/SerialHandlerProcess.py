@@ -27,20 +27,19 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 import serial
-
-from src.templates.workerprocess            import WorkerProcess
 from src.hardware.serialhandler.filehandler import FileHandler
-from src.hardware.serialhandler.readthread  import ReadThread
+from src.hardware.serialhandler.readthread import ReadThread
 from src.hardware.serialhandler.writethread import WriteThread
+from src.templates.workerprocess import WorkerProcess
 
 
 class SerialHandlerProcess(WorkerProcess):
     # ===================================== INIT =========================================
-    def __init__(self,inPs, outPs):
-        """The functionality of this process is to redirectionate the commands from the RemoteControlReceiverProcess (or other process) to the 
-        micro-controller via the serial port. The default frequency is 256000 and device file /dev/ttyACM0. It automatically save the sent 
-        commands into a log file, named historyFile.txt. 
-        
+    def __init__(self, inPs, outPs):
+        """The functionality of this process is to redirectionate the commands from the RemoteControlReceiverProcess (or other process) to the
+        micro-controller via the serial port. The default frequency is 256000 and device file /dev/ttyACM0. It automatically save the sent
+        commands into a log file, named historyFile.txt.
+
         Parameters
         ----------
         inPs : list(Pipes)
@@ -48,41 +47,29 @@ class SerialHandlerProcess(WorkerProcess):
         outPs : None
             Has no role.
         """
-        super(SerialHandlerProcess,self).__init__(inPs, outPs)
+        super(SerialHandlerProcess, self).__init__(inPs, outPs)
 
-        devFile = '/dev/ttyACM0'
-        logFile = 'historyFile.txt'
-        
-        # comm init       
-        self.serialCom = serial.Serial(devFile,256000,timeout=0.1)
+        devFile = "/dev/ttyACM0"
+        logFile = "historyFile.txt"
+
+        # comm init
+        self.serialCom = serial.Serial(devFile, 256000, timeout=0.1)
         self.serialCom.flushInput()
         self.serialCom.flushOutput()
 
         # log file init
         self.historyFile = FileHandler(logFile)
-        
-    
+
     def run(self):
-        super(SerialHandlerProcess,self).run()
-        #Post running process -> close the history file
+        super(SerialHandlerProcess, self).run()
+        # Post running process -> close the history file
         self.historyFile.close()
 
     # ===================================== INIT THREADS =================================
     def _init_threads(self):
-        """ Initializes the read and the write thread.
-        """
-        # read write thread        
-        readTh  = ReadThread(self.serialCom,self.historyFile)
+        """Initializes the read and the write thread."""
+        # read write thread
+        readTh = ReadThread(self.serialCom, self.historyFile)
         self.threads.append(readTh)
         writeTh = WriteThread(self.inPs[0], self.serialCom, self.historyFile)
         self.threads.append(writeTh)
-    
-
-    
-
-    
-
-
-
-
-
