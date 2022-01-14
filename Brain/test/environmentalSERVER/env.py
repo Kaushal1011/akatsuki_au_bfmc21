@@ -26,51 +26,47 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
+from serverconfig import ServerConfig
+from carclientserver import CarClientServerThread
+from serverbeacon import ServerBeaconThread
+from data_saver import DataSaver
+
 import logging
 import time
 
-from carclientserver import CarClientServerThread
-from data_saver import DataSaver
-from serverbeacon import ServerBeaconThread
-from serverconfig import ServerConfig
-
-
 class ObstacleHandlerSystemServer:
-    """ObstacleHandlerSystemServer aims to serve the car clients by receiving the sent coordinates and the obstacle id encountered on the map.
-    It involves a ServerConfig object, CarClientServerThread object, ServerBeaconThread object.
-    The object of ServerConfig accumulates all information about server. The object of ServerBeaconThread
-    aims to infrom the client about the server ip by sending continuously a broadcast message. The object of
-    CarClientServerThread are serving the car clients.
+    """ObstacleHandlerSystemServer aims to serve the car clients by receiving the sent coordinates and the obstacle id encountered on the map. 
+    It involves a ServerConfig object, CarClientServerThread object, ServerBeaconThread object. 
+    The object of ServerConfig accumulates all information about server. The object of ServerBeaconThread 
+    aims to infrom the client about the server ip by sending continuously a broadcast message. The object of 
+    CarClientServerThread are serving the car clients. 
     In this examples, a object of GenerateData is added for create coordinates of a robots, which are moving on circle.
     """
-
-    def __init__(self, logger):
-        self.serverconfig = ServerConfig("<broadcast>", 23456, 23466)
+    def __init__(self,logger):
+        self.serverconfig = ServerConfig('<broadcast>',23456,23466)
         self.data_saver = DataSaver()
-
-        self.__carclientserverThread = CarClientServerThread(
-            self.serverconfig, self.data_saver, logger
-        )
-        self.__beaconserverThread = ServerBeaconThread(self.serverconfig, 1.0, logger)
-
-    def run(self):
+        
+        self.__carclientserverThread = CarClientServerThread(self.serverconfig, self.data_saver, logger)
+        self.__beaconserverThread =  ServerBeaconThread(self.serverconfig,1.0,logger)
+     
+    def run(self):    
         self.__carclientserverThread.start()
         self.__beaconserverThread.start()
-
+ 
         try:
-            while True:
+            while(True):
                 time.sleep(2.0)
         except KeyboardInterrupt:
             pass
-
+             
         self.__carclientserverThread.stop()
         self.__carclientserverThread.join()
         self.__beaconserverThread.stop()
         self.__beaconserverThread.join()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    logger = logging.getLogger("root")
+    logger = logging.getLogger('root')
     ObsHanServer = ObstacleHandlerSystemServer(logger)
     ObsHanServer.run()

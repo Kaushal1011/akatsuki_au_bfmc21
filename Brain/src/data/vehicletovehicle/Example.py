@@ -28,10 +28,8 @@
 
 # Module imports
 import time
-
 # Module required for getting semaphore broadcast messages
 import vehicletovehicle
-
 
 ## Method for running the listener example.
 #  @param none
@@ -45,25 +43,15 @@ def runListener():
     vehicle.start()
 
     # Wait until 60 seconds passed
-    while time.time() - start_time < 60:
+    while (time.time()-start_time < 60):
         # Clear the screen
         print("\033c")
         print("Example program that gets the info of the last car infos\n")
         # Print each received msg
-        print(
-            "ID "
-            + vehicle.ID
-            + ", code "
-            + vehicle.timestamp
-            + ", coor "
-            + vehicle.pos
-            + ", angle "
-            + vehicle.ang
-        )
+        print("ID " + vehicle.ID + ", code " + vehicle.timestamp + ", coor " + vehicle.pos + ", angle " + vehicle.ang)
         time.sleep(0.5)
     # Stop the listener
     vehicle.stop()
-
 
 if __name__ == "__main__":
     runListener()

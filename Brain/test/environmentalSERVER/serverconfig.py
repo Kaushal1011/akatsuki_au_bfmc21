@@ -26,16 +26,15 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-import os
 import socket
-
+import os
 
 class ServerConfig:
-    """ServerConfig contains all data for creating and running the server."""
-
-    def __init__(self, broadcast_ip, negotiation_port, carClientPort):
-        self.negotiation_port = negotiation_port
-        self.broadcast_ip = broadcast_ip
+    """ ServerConfig contains all data for creating and running the server. 
+    """
+    def __init__(self,broadcast_ip,negotiation_port,carClientPort):
+        self.negotiation_port=negotiation_port
+        self.broadcast_ip=broadcast_ip
         self.carClientPort = carClientPort
         self.localip = ServerConfig.getlocalip()
 

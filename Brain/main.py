@@ -26,46 +26,43 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# ========================================================================
+#========================================================================
 # SCRIPT USED FOR WIRING ALL COMPONENTS
-# ========================================================================
+#========================================================================
 import sys
+sys.path.append('.')
 
-sys.path.append(".")
-
-import signal
 import time
-from multiprocessing import Event, Pipe, Process
+import signal
+from multiprocessing import Pipe, Process, Event 
 
 # hardware imports
-from src.hardware.camera.cameraprocess import CameraProcess
-from src.hardware.camera.CameraSpooferProcess import CameraSpooferProcess
-from src.hardware.serialhandler.SerialHandlerProcess import SerialHandlerProcess
+from src.hardware.camera.cameraprocess                      import CameraProcess
+from src.hardware.camera.CameraSpooferProcess               import CameraSpooferProcess
+from src.hardware.serialhandler.SerialHandlerProcess        import SerialHandlerProcess
 
 # utility imports
-from src.utils.camerastreamer.CameraStreamerProcess import CameraStreamerProcess
-from src.utils.remotecontrol.RemoteControlReceiverProcess import (
-    RemoteControlReceiverProcess,
-)
+from src.utils.camerastreamer.CameraStreamerProcess         import CameraStreamerProcess
+from src.utils.remotecontrol.RemoteControlReceiverProcess   import RemoteControlReceiverProcess
 
 # =============================== CONFIG =================================================
-enableStream = True
-enableCameraSpoof = False
-enableRc = True
+enableStream        =  True
+enableCameraSpoof   =  False
+enableRc            =  True
 
 # =============================== INITIALIZING PROCESSES =================================
 allProcesses = list()
 
 # =============================== HARDWARE ===============================================
 if enableStream:
-    camStR, camStS = Pipe(duplex=False)  # camera  ->  streamer
+    camStR, camStS = Pipe(duplex = False)           # camera  ->  streamer
 
     if enableCameraSpoof:
-        camSpoofer = CameraSpooferProcess([], [camStS], "vid")
+        camSpoofer = CameraSpooferProcess([],[camStS],'vid')
         allProcesses.append(camSpoofer)
 
     else:
-        camProc = CameraProcess([], [camStS])
+        camProc = CameraProcess([],[camStS])
         allProcesses.append(camProc)
 
     streamProc = CameraStreamerProcess([camStR], [])
@@ -73,45 +70,46 @@ if enableStream:
 
 
 # =============================== DATA ===================================================
-# LocSys client process
+#LocSys client process
 # LocStR, LocStS = Pipe(duplex = False)           # LocSys  ->  brain
 # from data.localisationsystem.locsys import LocalisationSystemProcess
 # LocSysProc = LocalisationSystemProcess([], [LocStS])
 # allProcesses.append(LocSysProc)
 
 
+
 # =============================== CONTROL =================================================
 if enableRc:
-    rcShR, rcShS = Pipe(duplex=False)  # rc      ->  serial handler
+    rcShR, rcShS   = Pipe(duplex = False)           # rc      ->  serial handler
 
     # serial handler process
     shProc = SerialHandlerProcess([rcShR], [])
     allProcesses.append(shProc)
 
-    rcProc = RemoteControlReceiverProcess([], [rcShS])
+    rcProc = RemoteControlReceiverProcess([],[rcShS])
     allProcesses.append(rcProc)
 
 
 # ===================================== START PROCESSES ==================================
-print("Starting the processes!", allProcesses)
+print("Starting the processes!",allProcesses)
 for proc in allProcesses:
     proc.daemon = True
     proc.start()
 
 
 # ===================================== STAYING ALIVE ====================================
-blocker = Event()
+blocker = Event()  
 
 try:
     blocker.wait()
 except KeyboardInterrupt:
     print("\nCatching a KeyboardInterruption exception! Shutdown all processes.\n")
     for proc in allProcesses:
-        if hasattr(proc, "stop") and callable(getattr(proc, "stop")):
-            print("Process with stop", proc)
+        if hasattr(proc,'stop') and callable(getattr(proc,'stop')):
+            print("Process with stop",proc)
             proc.stop()
             proc.join()
         else:
-            print("Process witouth stop", proc)
+            print("Process witouth stop",proc)
             proc.terminate()
             proc.join()
