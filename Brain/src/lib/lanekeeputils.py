@@ -173,6 +173,7 @@ class LaneKeep:
     def preprocess(self, img: np.ndarray) -> np.ndarray:
         """Preprocess image for edge detection"""
         # Apply HLS color filtering to filter out white lane lines
+        img = cv2.fastNlMeansDenoisingColored(img, None, 10, 10, 7, 21)
         hls = cv2.cvtColor(img, cv2.COLOR_BGR2HLS)
         lower_white = np.array(self.hls_lower)  # change here if it fails to detect
         upper_white = np.array([255, 255, 255])
