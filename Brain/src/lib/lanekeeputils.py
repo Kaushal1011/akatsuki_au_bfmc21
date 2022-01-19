@@ -69,6 +69,7 @@ class LaneKeep:
         lbroi: float = 0,
         rbroi: float = 1,
         hroi: float = 0.55,
+        broi: float = 0,
     ):
         """Define LaneKeeping pipeline and parameters
 
@@ -88,6 +89,7 @@ class LaneKeep:
             lbroi: (float) left bottom ROI region percent
             rbroi: (float) right bottom ROI region percent
             hroi : (float) ROI region percent
+            broi: (float) ROI region percent from bottom,
         """
 
         assert (
@@ -120,6 +122,7 @@ class LaneKeep:
         self.lbroi = lbroi
         self.rbroi = rbroi
         self.hroi = hroi
+        self.broi = broi
         self.stencil = None
         if use_perspective:
             pipeline_list = [self.persepective_wrap, self.preprocess]
@@ -153,8 +156,10 @@ class LaneKeep:
                     int(self.luroi * ((img.shape[1] - 1))),
                     int(self.hroi * (img.shape[0] - 1)),
                 ),
-                (int(self.lbroi * ((img.shape[1] - 1))), int(img.shape[0] - 1)),
-                (int(self.rbroi * ((img.shape[1] - 1))), int(img.shape[0] - 1)),
+                (int(self.lbroi * ((img.shape[1] - 1))),
+                 int((img.shape[0] - 1)*(1-self.broi))),
+                (int(self.rbroi * ((img.shape[1] - 1))),
+                 int((img.shape[0] - 1)*(1-self.broi))),
                 (
                     int(self.ruroi * ((img.shape[1] - 1))),
                     int(self.hroi * (img.shape[0] - 1)),
@@ -173,14 +178,18 @@ class LaneKeep:
     def preprocess(self, img: np.ndarray) -> np.ndarray:
         """Preprocess image for edge detection"""
         # Apply HLS color filtering to filter out white lane lines
-        hls = cv2.cvtColor(img, cv2.COLOR_BGR2HLS)
-        lower_white = np.array(self.hls_lower)  # change here if it fails to detect
+        blur1 = cv2.GaussianBlur(img, self.blur_size, 0)
+        hls = cv2.cvtColor(blur1, cv2.COLOR_BGR2HLS)
+        # change here if it fails to detect
+        lower_white = np.array(self.hls_lower)
         upper_white = np.array([255, 255, 255])
-        mask = cv2.inRange(img, lower_white, upper_white)
-        hls_result = cv2.bitwise_and(img, img, mask=mask)
+        mask = cv2.inRange(blur1, lower_white, upper_white)
+        hls_result = cv2.bitwise_and(blur1, blur1, mask=mask)
 
         # Convert image to grayscale, apply threshold, blur & extract edges
         gray = cv2.cvtColor(hls_result, cv2.COLOR_BGR2GRAY)
+        clahe = cv2.createCLAHE(clipLimit=5)
+        gray = clahe.apply(gray) + 30
         thres = cv2.adaptiveThreshold(
             gray,
             255,
@@ -191,17 +200,23 @@ class LaneKeep:
         )
         # ret, thresh = cv2.threshold(gray, 160, 255, cv2.THRESH_BINARY)
         blur = cv2.GaussianBlur(thres, self.blur_size, 0)
+#         clean = cv2.fastNlMeansDenoising(blur)
         canny = cv2.Canny(blur, self.canny_thres1, self.canny_thres2)
+#         denoised=cv2.fastNlMeansDenoisingColored(canny,None,10,10,7,21)
         return canny
         # return hls_result, gray, thres, blur, canny
 
     def persepective_wrap(self, img: np.ndarray) -> np.ndarray:
         """ROI of image and Perform perspective wrapping on the image"""
         roi = [
-            (self.luroi * ((img.shape[1] - 1)), self.hroi * (img.shape[0] - 1)),
-            (self.ruroi * ((img.shape[1] - 1)), self.hroi * (img.shape[0] - 1)),
-            (self.lbroi * ((img.shape[1] - 1)), img.shape[0] - 1),
-            (self.rbroi * ((img.shape[1] - 1)), img.shape[0] - 1),
+            (self.luroi * ((img.shape[1] - 1)),
+             self.hroi * (img.shape[0] - 1)),
+            (self.ruroi * ((img.shape[1] - 1)),
+             self.hroi * (img.shape[0] - 1)),
+            (self.lbroi * ((img.shape[1] - 1)),
+             (img.shape[0] - 1)*(1-self.broi)),
+            (self.rbroi * ((img.shape[1] - 1)),
+             (img.shape[0] - 1)*(1-self.broi)),
         ]
         # Get image size
         img_size = (img.shape[1], img.shape[0])
@@ -209,7 +224,8 @@ class LaneKeep:
         src = np.float32(roi)
         # Window to be shown
         dst = np.float32(
-            [[0, 0], [img.shape[1], 0], [0, img.shape[0]], [img.shape[1], img.shape[0]]]
+            [[0, 0], [img.shape[1], 0], [0, img.shape[0]],
+                [img.shape[1], img.shape[0]]]
         )
 
         # Matrix to warp the image for birdseye window
@@ -240,7 +256,8 @@ class LaneKeep:
         lines = find_lanes(processed_img)
         # average slop takes original image
         lanelines = average_slope_intercept(img, lines)
-        angle = compute_steering_angle_lanelinecoord(img[:, :, 0], lane_lines=lanelines)
+        angle = compute_steering_angle_lanelinecoord(
+            img[:, :, 0], lane_lines=lanelines)
 
         processed_img = cv2.cvtColor(processed_img, cv2.COLOR_GRAY2RGB)
         # draw lanelines
@@ -248,14 +265,16 @@ class LaneKeep:
         # draw heading lines
         outimage = display_heading_line(processed_img, angle)
         # outimage = cv2.hconcat([processed_out, outimage])
-        return angle, outimage
+        return angle, outimage, processed_img
 
     def sliding_window_search(self, img: np.ndarray) -> float:
         """Given processed image compute steering angle"""
         processed_img = self.preprocess_pipeline(img)
         hist, _, _ = plotHistogram(processed_img)
-        left_fit, right_fit, lx, rx, out_img = slide_window_search(processed_img, hist)
-        angle = compute_steering_angle_lanelineslope(left_fit, right_fit, invert=True)
+        left_fit, right_fit, lx, rx, out_img = slide_window_search(
+            processed_img, hist)
+        angle = compute_steering_angle_lanelineslope(
+            left_fit, right_fit, invert=True)
 
         # out_img = cv2.cvtColor(out_img, cv2.COLOR_GRAY2RGB)
         out_img = display_heading_line(out_img, angle)
@@ -283,6 +302,8 @@ def processImage(inpImage):
 
     # Convert image to grayscale, apply threshold, blur & extract edges
     gray = cv2.cvtColor(hls_result, cv2.COLOR_BGR2GRAY)
+    clahe = cv2.createCLAHE(clipLimit=5)
+    gray = clahe.apply(gray) + 30
     thresh = cv2.adaptiveThreshold(
         gray,
         255,
@@ -298,7 +319,7 @@ def processImage(inpImage):
 
 
 # roi = [[90, 500],       [800, 500],       [200, 1200],       [1600, 1200]]
-def perspectiveWarp(inpImage, luroi=0.25, ruroi=0.75, lbroi=0, rbroi=1, hroi=0.55):
+def perspectiveWarp(inpImage, luroi=0.25, ruroi=0.75, lbroi=0, rbroi=1, hroi=0.55, broi=0):
     """
     Returns Perspective wrapped image. This function returns birds eye view of the road using the roi polygon defined
 
@@ -309,6 +330,7 @@ def perspectiveWarp(inpImage, luroi=0.25, ruroi=0.75, lbroi=0, rbroi=1, hroi=0.5
         lbroi (int, optional): Left Botton point(x coord). Defaults to 0.
         rbroi (int, optional): Right Botton point(x coord). Defaults to 1.
         hroi (float, optional): Y coord for the polygon (top). Defaults to 0.55.
+        broi (float,optional): Y coord for the polygon (bottom)
 
     Returns:
         Tuple([Np.Array]): [Birds Eye, Birds Eye Left, Birds Eye Right, _ ]
@@ -317,8 +339,8 @@ def perspectiveWarp(inpImage, luroi=0.25, ruroi=0.75, lbroi=0, rbroi=1, hroi=0.5
     roi = [
         (luroi * ((inpImage.shape[1] - 1)), hroi * (inpImage.shape[0] - 1)),
         (ruroi * ((inpImage.shape[1] - 1)), hroi * (inpImage.shape[0] - 1)),
-        (lbroi * ((inpImage.shape[1] - 1)), inpImage.shape[0] - 1),
-        (rbroi * ((inpImage.shape[1] - 1)), inpImage.shape[0] - 1),
+        (lbroi * ((inpImage.shape[1] - 1)), inpImage.shape[0] - 1)*(1-broi),
+        (rbroi * ((inpImage.shape[1] - 1)), inpImage.shape[0] - 1)*(1-broi),
     ]
     # roi = [[90, 500],       [800, 500],       [200, 1200],       [1600, 1200]]
     print(roi)
@@ -349,8 +371,8 @@ def perspectiveWarp(inpImage, luroi=0.25, ruroi=0.75, lbroi=0, rbroi=1, hroi=0.5
     height, width = birdseye.shape[:2]
 
     # Divide the birdseye view into 2 halves to separate left & right lanes
-    birdseyeLeft = birdseye[0:height, 0 : width // 2]
-    birdseyeRight = birdseye[0:height, width // 2 : width]
+    birdseyeLeft = birdseye[0:height, 0: width // 2]
+    birdseyeRight = birdseye[0:height, width // 2: width]
 
     # Display birdseye view image
     # cv2.imshow("Birdseye" , birdseye)
@@ -667,7 +689,7 @@ def plotHistogram(inpImage):
         Tuple(List,List,List): histogram, lextxBase, rightxBase
     """
 
-    histogram = np.sum(inpImage[inpImage.shape[0] // 2 :, :], axis=0)
+    histogram = np.sum(inpImage[inpImage.shape[0] // 2:, :], axis=0)
 
     midpoint = np.int(histogram.shape[0] / 2)
     leftxBase = np.argmax(histogram[:midpoint])
