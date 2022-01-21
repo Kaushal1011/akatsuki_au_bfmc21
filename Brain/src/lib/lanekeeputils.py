@@ -181,25 +181,46 @@ class LaneKeep:
         blur1 = cv2.GaussianBlur(img, self.blur_size, 0)
         hls = cv2.cvtColor(blur1, cv2.COLOR_BGR2HLS)
         # change here if it fails to detect
-        lower_white = np.array(self.hls_lower)
-        upper_white = np.array([255, 255, 255])
-        mask = cv2.inRange(blur1, lower_white, upper_white)
-        hls_result = cv2.bitwise_and(blur1, blur1, mask=mask)
+        white_lower = np.array(
+            [np.round(0 / 2), np.round(0.15 * 255), np.round(0.00 * 255)])
+
+        white_upper = np.array(
+            [np.round(360 / 2), np.round(1.00 * 255), np.round(0.30 * 255)])
+        white_mask = cv2.inRange(hls, white_lower, white_upper)
+
+        # Yellow-ish areas in image
+        # H value must be appropriate (see HSL color space), e.g. within [40 ... 60]
+        # L value can be arbitrary (we want everything between bright and dark yellow), e.g. within [0.0 ... 1.0]
+        # S value must be above some threshold (we want at least some saturation), e.g. within [0.35 ... 1.0]
+        yellow_lower = np.array(
+            [np.round(40 / 2), np.round(0.00 * 255), np.round(0.35 * 255)])
+        yellow_upper = np.array(
+            [np.round(60 / 2), np.round(1.00 * 255), np.round(1.00 * 255)])
+        yellow_mask = cv2.inRange(hls, yellow_lower, yellow_upper)
+
+        # Calculate combined mask, and masked image
+        mask = cv2.bitwise_or(yellow_mask, white_mask)
+        hls_result = cv2.bitwise_and(img, img, mask=mask)
+
+        # lower_white = np.array(self.hls_lower)
+        # upper_white = np.array([255, 255, 255])
+        # mask = cv2.inRange(blur1, lower_white, upper_white)
+        # hls_result = cv2.bitwise_and(blur1, blur1, mask=mask)
 
         # Convert image to grayscale, apply threshold, blur & extract edges
         gray = cv2.cvtColor(hls_result, cv2.COLOR_BGR2GRAY)
-        clahe = cv2.createCLAHE(clipLimit=5)
-        gray = clahe.apply(gray) + 30
-        thres = cv2.adaptiveThreshold(
-            gray,
-            255,
-            cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-            cv2.THRESH_BINARY_INV,
-            self.adpt_Th_blk_size,
-            self.adpt_Th_C,
-        )
+        # clahe = cv2.createCLAHE(clipLimit=5)
+        # gray = clahe.apply(gray) + 30
+        # thres = cv2.adaptiveThreshold(
+        #     gray,
+        #     255,
+        #     cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+        #     cv2.THRESH_BINARY_INV,
+        #     self.adpt_Th_blk_size,
+        #     self.adpt_Th_C,
+        # )
         # ret, thresh = cv2.threshold(gray, 160, 255, cv2.THRESH_BINARY)
-        blur = cv2.GaussianBlur(thres, self.blur_size, 0)
+        blur = cv2.GaussianBlur(gray, self.blur_size, 0)
 #         clean = cv2.fastNlMeansDenoising(blur)
         canny = cv2.Canny(blur, self.canny_thres1, self.canny_thres2)
 #         denoised=cv2.fastNlMeansDenoisingColored(canny,None,10,10,7,21)
