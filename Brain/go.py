@@ -53,7 +53,7 @@ sys.path.append(".")
 # =============================== CONFIG =================================================
 enableStream = True
 enableCameraSpoof = False
-enableRc = False
+enableRc = True
 enableLaneKeeping = True
 
 # =============================== INITIALIZING PROCESSES =================================
