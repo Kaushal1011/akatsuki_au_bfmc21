@@ -64,11 +64,11 @@ class LaneKeep:
         adpt_Th_C: int = 4,
         canny_thres1: int = 50,
         canny_thres2: int = 150,
-        luroi: float = 0.25,
-        ruroi: float = 0.75,
+        luroi: float = 0.15,
+        ruroi: float = 0.85,
         lbroi: float = 0,
         rbroi: float = 1,
-        hroi: float = 0.55,
+        hroi: float = 0.45,
         broi: float = 0,
     ):
         """Define LaneKeeping pipeline and parameters
@@ -189,7 +189,7 @@ class LaneKeep:
 
         # change here if it fails to detect
         white_lower = np.array(
-            [np.round(0 / 2), np.round(0.80 * 255), np.round(0.00 * 255)]
+            [np.round(0 / 2), np.round(0.25 * 255), np.round(0.00 * 255)]
         )
 
         white_upper = np.array(
@@ -221,8 +221,8 @@ class LaneKeep:
 
         # Convert image to grayscale, apply threshold, blur & extract edges
         gray = cv2.cvtColor(hls_result, cv2.COLOR_RGB2GRAY)
-        # clahe = cv2.createCLAHE(clipLimit=5)
-        # gray = clahe.apply(gray) + 30
+        # clahe = cv2.createCLAHE(clipLimit=80,tileGridSize=(128,128))
+        # gray = clahe.apply(gray)
         # thres = cv2.adaptiveThreshold(
         #     gray,
         #     255,
@@ -233,7 +233,12 @@ class LaneKeep:
         # )
         # ret, thresh = cv2.threshold(gray, 160, 255, cv2.THRESH_BINARY)
         blur = cv2.GaussianBlur(gray, self.blur_size, 0)
+        _,th1 = cv2.threshold(blur, 80,255, cv2.THRESH_BINARY)
+        _,th2 = cv2.threshold(blur, 220,255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
         #         clean = cv2.fastNlMeansDenoising(blur)
+        th3 = np.array(0.7*th1 + 0.3*th2).astype(np.uint8)
+        blur = cv2.GaussianBlur(th3, (21,21), 0)
+        
         canny = cv2.Canny(blur, self.canny_thres1, self.canny_thres2)
         #         denoised=cv2.fastNlMeansDenoisingColored(canny,None,10,10,7,21)
         return canny
@@ -292,7 +297,7 @@ class LaneKeep:
         # draw heading lines
         outimage = display_heading_line(processed_img, angle)
         # outimage = cv2.hconcat([processed_out, outimage])
-        return angle, outimage, processed_img
+        return angle, outimage
 
     def sliding_window_search(self, img: np.ndarray) -> float:
         """Given processed image compute steering angle"""
@@ -660,7 +665,7 @@ def average_slope_intercept(frame, line_segments):
     left_fit = []
     right_fit = []
 
-    boundary = 2 / 3
+    boundary = 1 / 2
     # left lane line segment should be on left 2/3 of the screen
     left_region_boundary = width * (1 - boundary)
     # right lane line segment should be on left 2/3 of the screen
@@ -702,7 +707,7 @@ def find_lanes(thresh_canny):
         [type]: [description]
     """
     lines = cv2.HoughLinesP(
-        thresh_canny, 1, np.pi / 180, 15, minLineLength=20, maxLineGap=10
+        thresh_canny, 1, np.pi / 180, 15, minLineLength=40, maxLineGap=10
     )
     return lines
 
