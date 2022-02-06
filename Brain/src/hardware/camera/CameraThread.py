@@ -94,7 +94,7 @@ class CameraThread(ThreadWithStop):
         self.camera.shutter_speed = 1200
         self.camera.contrast = 50
         self.camera.iso = 0  # auto
-
+        self.camera.exposure_mode = "auto"
         self.imgSize = (640, 480)  # the actual image size
 
     # ===================================== GET STAMP ====================================

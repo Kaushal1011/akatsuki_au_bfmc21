@@ -233,12 +233,12 @@ class LaneKeep:
         # )
         # ret, thresh = cv2.threshold(gray, 160, 255, cv2.THRESH_BINARY)
         blur = cv2.GaussianBlur(gray, self.blur_size, 0)
-        _,th1 = cv2.threshold(blur, 80,255, cv2.THRESH_BINARY)
-        _,th2 = cv2.threshold(blur, 220,255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+        _, th1 = cv2.threshold(blur, 80, 255, cv2.THRESH_BINARY)
+        _, th2 = cv2.threshold(blur, 220, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
         #         clean = cv2.fastNlMeansDenoising(blur)
-        th3 = np.array(0.7*th1 + 0.3*th2).astype(np.uint8)
-        blur = cv2.GaussianBlur(th3, (21,21), 0)
-        
+        th3 = np.array(0.7 * th1 + 0.3 * th2).astype(np.uint8)
+        blur = cv2.GaussianBlur(th3, (21, 21), 0)
+
         canny = cv2.Canny(blur, self.canny_thres1, self.canny_thres2)
         #         denoised=cv2.fastNlMeansDenoisingColored(canny,None,10,10,7,21)
         return canny
