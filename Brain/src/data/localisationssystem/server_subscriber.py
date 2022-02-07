@@ -108,4 +108,3 @@ class ServerSubscriber:
             self.__server_data.is_new_server = False
             self.__server_data.socket = None
             self.__server_data.serverip = None
-            raise e

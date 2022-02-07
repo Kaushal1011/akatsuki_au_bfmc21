@@ -27,9 +27,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 # Module imports
-import time,sys
+import time, sys
 import math
 from threading import Thread
+
 # Module used for communication
 import socket
 import os
@@ -43,21 +44,21 @@ ID = 100
 # Port used for broadcast
 PORT = 50009
 
-##  Broadcaster class. 
+##  Broadcaster class.
 #
-#  Class used for running port broadcaster algorithm 
+#  Class used for running port broadcaster algorithm
 class Broadcaster(Thread):
-    
+
     ## Constructor.
-	#  @param self          The object pointer.
-    def __init__(self,position_listener):
-        
+    #  @param self          The object pointer.
+    def __init__(self, position_listener):
+
         # Flag indincating thread state
         self.RUN_BROADCASTER = False
-        
+
         # Communication parameters, create and bind socket
         self.PORT = PORT
-        self.BCAST_ADDRESS = '<broadcast>'
+        self.BCAST_ADDRESS = "<broadcast>"
 
         # Create a UDP socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -73,7 +74,7 @@ class Broadcaster(Thread):
         # debug msg
         print("Created broadcaster")
 
-        Thread.__init__(self) 
+        Thread.__init__(self)
 
     ## Method for running broadcaster algorithm.
     #  @param self        The object pointer.
@@ -86,7 +87,7 @@ class Broadcaster(Thread):
                 self.sendData()
             except Exception as e:
                 print("Sending data failed with error: " + str(e))
-            
+
             # Wait for 1 s before next adv
             time.sleep(1)
 
@@ -95,7 +96,7 @@ class Broadcaster(Thread):
     def start(self):
         self.RUN_BROADCASTER = True
 
-        super(Broadcaster,self).start()
+        super(Broadcaster, self).start()
 
     ## Method for stopping broadcaster process.
     #  @param self          The object pointer.
@@ -111,11 +112,12 @@ class Broadcaster(Thread):
         # Get new coordinates from listener
         coor = self.__position_listener.coor
         # Construct message to be sent
-        value = {'id':id, 'coor':str(coor[0]), 'rot':str(coor[1])}
+        value = {"id": id, "coor": str(coor[0]), "rot": str(coor[1])}
         message = json.dumps(value)
         # Debug msg
-        print('sending {!r}'.format(message))
-        self.sock.sendto(message.encode('utf-8'), self.server_address)
+        print("sending {!r}".format(message))
+        self.sock.sendto(message.encode("utf-8"), self.server_address)
+
 
 ## Method for running the broadcaster (for testing purposes).
 ##            It uses the position_listener_sim module
@@ -132,12 +134,13 @@ def runBroadcaster():
     # Get time stamp when starting tester
     start_time = time.time()
     # Wait until 60 seconds passed
-    while (time.time()-start_time < 60):
+    while time.time() - start_time < 60:
         time.sleep(0.5)
     # Stop the broadcaster
     broadcaster.stop()
     # Stop the siumlated position listener
     my_position_listener.stop()
+
 
 if __name__ == "__main__":
     runBroadcaster()
