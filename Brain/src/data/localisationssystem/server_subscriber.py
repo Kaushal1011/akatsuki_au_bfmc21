@@ -28,7 +28,8 @@
 
 import sys
 import time
-from cryptography.utils import signature
+
+# from cryptography.utils import signature
 
 sys.path.insert(0, ".")
 import traceback
@@ -107,3 +108,4 @@ class ServerSubscriber:
             self.__server_data.is_new_server = False
             self.__server_data.socket = None
             self.__server_data.serverip = None
+            raise e

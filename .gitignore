@@ -2,7 +2,8 @@
 .vscode 
 
 # ignore data directory
-data
+nbs/*/data
+nbs/data
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -60,7 +60,7 @@ class CarClientServerThread(threading.Thread):
         self.carclientserver.shutdown()
 
 
-class CarClientServer(SocketServer.ThreadingTCPServer, object):
+class CarClientServer(socketserver.ThreadingTCPServer, object):
     """It has role to serve the car client with coordination of detected robots. It's a subclass of 'SocketServer.ThreadingTCPServer',
     so it creates a new thread for communicating the client. The server use a private key for authentication itself and has a dictionary named
     '_carMap', which contains the last detected coordinate and time.stamp for reach car identification number. The identification number of car
@@ -115,7 +115,7 @@ class CarClientServer(SocketServer.ThreadingTCPServer, object):
         super(CarClientServer, self).shutdown()
 
 
-class CarClientHandler(SocketServer.BaseRequestHandler):
+class CarClientHandler(socketserver.BaseRequestHandler):
     """CarClientHandler responds for a client. Firstly it requests a identification number of robot and the information related this id
     will be sent to client. After receiving the id of robot, it will send a message and a signature, which can help for authenticating the server.
     While the connection is alive and the process isn't stopped, the handler will send the last coordinate in each second, where the robot was detected.
@@ -128,18 +128,19 @@ class CarClientHandler(SocketServer.BaseRequestHandler):
 
     def handle(self):
         # receiving car id from client
-        data = str(self.request.recv(1024))
+        data = str(self.request.recv(1024), encoding="utf-8")
         carId = int(data)
 
         # Authentication
         timestamp = time.time()
-        msg = "Conneted! " + str(timestamp).encode("utf-8")
+        msg = "Conneted! " + str(timestamp)
+        msg = msg.encode("utf-8")
         signature = sign_data(self.server.private_key, msg)
 
         # Authentication of server
         self.request.sendall(msg)
-        self.request.sendall(signature)
         time.sleep(0.1)
+        self.request.sendall(signature)
 
         # receiving ok response from the client
         msg = self.request.recv(4096)
