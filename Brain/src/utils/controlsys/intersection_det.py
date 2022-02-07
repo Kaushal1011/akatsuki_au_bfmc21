@@ -56,7 +56,6 @@ class IntersectionDetProcess(WorkerProcess):
                 stamps, img = inP.recv()
                 # Apply image processing
                 detected, _ = intersection_det(img)
-                print(time.time(), "Intersection_Det", detected)
                 for outP in outPs:
                     outP.send(detected)
 

@@ -35,7 +35,7 @@ from src.utils.remotecontrol.RemoteControlReceiverProcess import (
     RemoteControlReceiverProcess,
 )
 from src.utils.controlsys.intersection_det import IntersectionDetProcess
-
+from src.utils.datafusionproc import DataFusionProcess
 from src.utils.camerastreamer.CameraStreamerProcess import CameraStreamerProcess
 from src.hardware.serialhandler.SerialHandlerProcess import SerialHandlerProcess
 from src.hardware.camera.CameraSpooferProcess import CameraSpooferProcess
@@ -53,7 +53,7 @@ sys.path.append(".")
 # utility imports
 
 # =============================== CONFIG =================================================
-enableStream = True
+enableStream = False
 enableCameraSpoof = True
 enableRc = False
 enableLaneKeeping = True
@@ -64,7 +64,7 @@ enableIntersectionDet = True
 allProcesses = list()
 movementControlR = list()
 camOutPs = list()
-
+dataFusionInputPs = list()
 # =============================== DATA ===================================================
 # LocSys client process
 # LocStR, LocStS = Pipe(duplex = False)           # LocSys  ->  brain
@@ -79,8 +79,17 @@ lkR, lkS = Pipe(duplex=False)
 # Lane keeping -> Movement control
 lcR, lcS = Pipe(duplex=False)
 
+# Lane keeping -> Data Fusion
+lkFzzR, lkFzzS = Pipe(duplex=False)
+
+# Intersection Detection -> Data Fusion
+iDFzzR, iDFzzS = Pipe(duplex=False)
+
 # Movement control -> Serial handler
 cfR, cfS = Pipe(duplex=False)
+
+dataFusionInputPs.append(lkFzzR)
+dataFusionInputPs.append(iDFzzR)
 
 # =============================== RC CONTROL =================================================
 if enableRc:
@@ -100,7 +109,7 @@ if enableLaneKeeping:
 
     camOutPs.append(lkS)
     movementControlR.append(lcR)
-    lkProc = LaneKeeping([lkR], [lcS, lkStrS])
+    lkProc = LaneKeeping([lkR], [lcS, lkFzzS])  #  lkStrS
     allProcesses.append(lkProc)
 
     # Movement control
@@ -114,8 +123,11 @@ if enableLaneKeeping:
 if enableIntersectionDet:
     camiDR, camiDS = Pipe(duplex=False)
     camOutPs.append(camiDS)
-    idProc = IntersectionDetProcess([camiDR], [])
+    idProc = IntersectionDetProcess([camiDR], [iDFzzS])
     allProcesses.append(idProc)
+
+datafzzProc = DataFusionProcess(dataFusionInputPs, [])
+allProcesses.append(datafzzProc)
 
 # ========================= Streamer =====================================================
 if enableStream:
