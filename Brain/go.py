@@ -105,8 +105,8 @@ if enableLaneKeeping:
     allProcesses.append(cfProc)
 
     # Serial handler
-    shProc = SerialHandlerProcess([cfR], [])
-    allProcesses.append(shProc)
+    # shProc = SerialHandlerProcess([cfR], [])
+    # allProcesses.append(shProc)
 
 # ========================= Streamer =====================================================
 if enableStream:
