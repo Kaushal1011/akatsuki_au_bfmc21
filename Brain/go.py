@@ -34,6 +34,8 @@ from src.utils.controlsys.lanekeeping import LaneKeepingProcess as LaneKeeping
 from src.utils.remotecontrol.RemoteControlReceiverProcess import (
     RemoteControlReceiverProcess,
 )
+from src.utils.controlsys.intersection_det import IntersectionDetProcess
+
 from src.utils.camerastreamer.CameraStreamerProcess import CameraStreamerProcess
 from src.hardware.serialhandler.SerialHandlerProcess import SerialHandlerProcess
 from src.hardware.camera.CameraSpooferProcess import CameraSpooferProcess
@@ -52,9 +54,10 @@ sys.path.append(".")
 
 # =============================== CONFIG =================================================
 enableStream = True
-enableCameraSpoof = False
-enableRc = True
+enableCameraSpoof = True
+enableRc = False
 enableLaneKeeping = True
+enableIntersectionDet = True
 
 # =============================== INITIALIZING PROCESSES =================================
 # Pipe collections
@@ -105,8 +108,14 @@ if enableLaneKeeping:
     allProcesses.append(cfProc)
 
     # Serial handler
-    # shProc = SerialHandlerProcess([cfR], [])
-    # allProcesses.append(shProc)
+    shProc = SerialHandlerProcess([cfR], [])
+    allProcesses.append(shProc)
+
+if enableIntersectionDet:
+    camiDR, camiDS = Pipe(duplex=False)
+    camOutPs.append(camiDS)
+    idProc = IntersectionDetProcess([camiDR], [])
+    allProcesses.append(idProc)
 
 # ========================= Streamer =====================================================
 if enableStream:
