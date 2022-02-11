@@ -36,6 +36,7 @@ from src.utils.remotecontrol.RemoteControlReceiverProcess import (
 )
 from src.utils.camerastreamer.CameraStreamerProcess import CameraStreamerProcess
 from src.hardware.serialhandler.SerialHandlerProcess import SerialHandlerProcess
+from src.utils.controlsys.sim_connect import SimulatorConnector
 from src.hardware.camera.CameraSpooferProcess import CameraSpooferProcess
 from src.hardware.camera.cameraprocess import CameraProcess
 from multiprocessing import Pipe, Process, Event
@@ -51,11 +52,11 @@ sys.path.append(".")
 # utility imports
 
 # =============================== CONFIG =================================================
-enableStream = True
-enableCameraSpoof = False
-enableRc = True
+enableStream = False
+enableCameraSpoof = True
+enableRc = False
 enableLaneKeeping = True
-
+enableSIM = True
 # =============================== INITIALIZING PROCESSES =================================
 # Pipe collections
 allProcesses = list()
@@ -94,18 +95,22 @@ if enableRc:
 if enableLaneKeeping:
     if enableStream:
         lkStrR, lkStrS = Pipe(duplex=False)
-
+        lkProc = LaneKeeping([lkR], [lcS, lkStrS])
+    lkProc = LaneKeeping([lkR], [lcS])
     camOutPs.append(lkS)
     movementControlR.append(lcR)
-    lkProc = LaneKeeping([lkR], [lcS, lkStrS])
     allProcesses.append(lkProc)
 
     # Movement control
     cfProc = MovementControl(movementControlR, [cfS])
     allProcesses.append(cfProc)
 
-    # Serial handler
-    shProc = SerialHandlerProcess([cfR], [])
+    # Serial handler or Simulator Connector
+    if enableSIM:
+        shProc = SimulatorConnector([cfR], [])
+    # else:    
+        # shProc = SerialHandlerProcess([cfR], [])
+    
     allProcesses.append(shProc)
 
 # ========================= Streamer =====================================================

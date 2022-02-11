@@ -8,13 +8,13 @@ import math
 
 from multiprocessing import Process
 from threading import Thread
-from simple_pid import PID
+# from simple_pid import PID
 from src.lib.lanekeeputils import LaneKeep as LaneKeepMethod
 from src.templates.workerprocess import WorkerProcess
 
 
 class LaneKeepingProcess(WorkerProcess):
-    pid = PID(Kp=1.0, Ki=1.45, Kd=0.15)
+    # pid = PID(Kp=1.0, Ki=1.45, Kd=0.15)
 
     # ===================================== Worker process =========================================
     def __init__(self, inPs, outPs):
