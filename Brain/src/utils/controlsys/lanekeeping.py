@@ -94,12 +94,6 @@ class LaneKeepingProcess(WorkerProcess):
                 val, outimage = self.lk(img)
                 # print(f"Computed angle :{val}")
                 angle = self.computeSteeringAnglePID(val)
-                # Compute steering angle
-                # val = self.computeSteeringAngle(val)
-
-                # Print steering angle value
-                # print(f"Steer angle is: {val}")
-                # Send steering angle value
                 for outP in outPs:
                     outP.send((angle, outimage))
 

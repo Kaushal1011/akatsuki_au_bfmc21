@@ -36,12 +36,10 @@ from src.utils.remotecontrol.RemoteControlReceiverProcess import (
 )
 from src.utils.camerastreamer.CameraStreamerProcess import CameraStreamerProcess
 from src.hardware.serialhandler.SerialHandlerProcess import SerialHandlerProcess
-from src.utils.controlsys.sim_connect import SimulatorConnector
+from src.utils.controlsys.father import SimulatorConnector
 from src.hardware.camera.CameraSpooferProcess import CameraSpooferProcess
 from src.hardware.camera.cameraprocess import CameraProcess
 from multiprocessing import Pipe, Process, Event
-import signal
-import time
 import sys
 
 sys.path.append(".")
