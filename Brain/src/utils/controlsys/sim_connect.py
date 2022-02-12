@@ -4,15 +4,16 @@ from src.templates.workerprocess import WorkerProcess
 from threading import Thread
 import rospy
 
-file1 = open("Command.txt", "w") 
+# file1 = open("Command.txt", "w") 
 
 class SimulatorConnector(WorkerProcess):
     """They call me "Father", all I do is connect them with the simulator."""\
         
     def __init__(self, inPs, outPs) -> None:
-        print("<sim init")
-        # rospy.init_node("SimConnect", anonymous=False)
-        # self.publisher = rospy.Publisher('/automobile/command', String, queue_size=1)
+        rospy.init_node("SimConnect", anonymous=False)
+        self.publisher = rospy.Publisher('/automobile/command', String, queue_size=1)
+        print("<sim setup DONE")
+
         super(SimulatorConnector, self).__init__(inPs,outPs)
 
     def run(self):
@@ -61,13 +62,14 @@ class SimulatorConnector(WorkerProcess):
         while True:
             try:
                 command = inP.recv()
-                file1.writelines(command)
-                # if command is not None:
-                #     command = json.dumps(command)
-                #     self.publisher.publish(command)
+                # file1.writelines(command)
+                if command is not None:
+                    print("SIM>", command)
+                    command = json.dumps(command)
+                    self.publisher.publish(command)
 
             except Exception as e:
-                print("Lane keeping error:")
+                print("Sim Connect error:")
                 print(e)
 
         

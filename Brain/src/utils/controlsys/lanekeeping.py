@@ -92,7 +92,7 @@ class LaneKeepingProcess(WorkerProcess):
                 stamps, img = inP.recv()
                 # Apply image processing
                 val, outimage = self.lk(img)
-                print(f"Computed angle :{val}")
+                # print(f"Computed angle :{val}")
                 angle = self.computeSteeringAnglePID(val)
                 # Compute steering angle
                 # val = self.computeSteeringAngle(val)

@@ -84,9 +84,11 @@ cfR, cfS = Pipe(duplex=False)
 if enableRc:
     rcShR, rcShS = Pipe(duplex=False)  # rc      ->  serial handler
 
-    # serial handler process
-    shProc = SerialHandlerProcess([rcShR], [])
-    allProcesses.append(shProc)
+    # Serial handler or Simulator Connector
+    if enableSIM:
+        shProc = SimulatorConnector([cfR], [])
+    # else:    
+        # shProc = SerialHandlerProcess([cfR], [])
 
     rcProc = RemoteControlReceiverProcess([], [rcShS])
     allProcesses.append(rcProc)

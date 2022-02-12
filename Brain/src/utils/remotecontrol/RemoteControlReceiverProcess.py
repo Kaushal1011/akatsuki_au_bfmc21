@@ -91,7 +91,6 @@ class RemoteControlReceiverProcess(WorkerProcess):
 
                 bts     =  bts.decode()
                 command =  json.loads(bts)
-
                 for outP in outPs:
                     outP.send(command)
 
