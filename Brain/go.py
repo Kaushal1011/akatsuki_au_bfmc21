@@ -35,6 +35,7 @@ from src.utils.remotecontrol.RemoteControlReceiverProcess import (
     RemoteControlReceiverProcess,
 )
 from src.utils.camerastreamer.CameraStreamerProcess import CameraStreamerProcess
+from src.hardware.camera.SIMCameraProcess import SIMCameraProcess
 from src.hardware.serialhandler.SerialHandlerProcess import SerialHandlerProcess
 from src.utils.controlsys.father import SimulatorConnector
 from src.hardware.camera.CameraSpooferProcess import CameraSpooferProcess
@@ -51,7 +52,7 @@ sys.path.append(".")
 
 # =============================== CONFIG =================================================
 enableStream = False
-enableCameraSpoof = True
+enableCameraSpoof = False
 enableRc = False
 enableLaneKeeping = True
 enableSIM = True
@@ -129,7 +130,11 @@ if enableCameraSpoof:
     camSpoofer = CameraSpooferProcess([], camOutPs, "vid")
     allProcesses.append(camSpoofer)
 else:
-    camProc = CameraProcess([], camOutPs)
+    if enableSIM:
+        camProc = SIMCameraProcess([], camOutPs)
+    else:
+        camProc = CameraProcess([], camOutPs)
+
     allProcesses.append(camProc)
 
 # ===================================== START PROCESSES ==================================

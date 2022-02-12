@@ -5,17 +5,33 @@ from threading import Thread
 import rospy
 import time
 # import zmq
-import pika
 import random
+import socket
+
+HOST = '127.0.0.1'  # Standard loopback interface address (localhost)
+PORT = 65432
+
+
 
 
 class SimulatorConnector(WorkerProcess):
     """They call me "Father", all I do is connect them with the simulator."""\
         
     def __init__(self, inPs, outPs) -> None:
-        context = zmq.Context()
-        self.socket = context.socket(zmq.PUB)
-        self.socket.bind("tcp://*:5555")
+
+        self.port = PORT
+        self.serverIp = HOST
+        # port = "5554"
+
+        self.client_socket = socket.socket(
+            family=socket.AF_INET, type=socket.SOCK_DGRAM
+        )
+
+        # self.context = zmq.Context()
+        # self.socket = self.context.socket(zmq.REP)
+        # self.socket.bind("tcp://*:%s" % port)
+        # print(self.socket)
+
         super(SimulatorConnector, self).__init__(inPs,outPs)
 
     def run(self):
@@ -51,22 +67,17 @@ class SimulatorConnector(WorkerProcess):
 
         while True:
             
-            topic = random.randrange(9999,10005)
-            messagedata = random.randrange(1,215) - 80
-            print("%d %d" % (topic, messagedata))
-            self.socket.send_string("%d %d" % (topic, messagedata))
-            time.sleep(1)
-
             try:
                 # time.sleep(1.0)
                 command = inP.recv()
-                # file1.writelines(command)
-                # if command is not None:
-                    # print("SIM>", command)
-                    # self.socket.send(json.dumps(command).encode('utf-8'))
-
+                if command is not None:
+                    command = json.dumps(command).encode()
+                    self.client_socket.sendto(command, (self.serverIp, self.port))
+                
             except Exception as e:
+                # raise e
                 print("Sim Connect error:")
                 print(e)
+            
 
         
