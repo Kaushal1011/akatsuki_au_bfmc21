@@ -21,17 +21,10 @@ class SimulatorConnector(WorkerProcess):
 
         self.port = PORT
         self.serverIp = HOST
-        # port = "5554"
 
         self.client_socket = socket.socket(
             family=socket.AF_INET, type=socket.SOCK_DGRAM
         )
-
-        # self.context = zmq.Context()
-        # self.socket = self.context.socket(zmq.REP)
-        # self.socket.bind("tcp://*:%s" % port)
-        # print(self.socket)
-
         super(SimulatorConnector, self).__init__(inPs,outPs)
 
     def run(self):

@@ -38,6 +38,7 @@ from src.utils.camerastreamer.CameraStreamerProcess import CameraStreamerProcess
 from src.hardware.camera.SIMCameraProcess import SIMCameraProcess
 from src.hardware.serialhandler.SerialHandlerProcess import SerialHandlerProcess
 from src.utils.controlsys.father import SimulatorConnector
+from src.data.localisationssystem.localisation4sim import LocSysSIM
 from src.hardware.camera.CameraSpooferProcess import CameraSpooferProcess
 from src.hardware.camera.cameraprocess import CameraProcess
 from multiprocessing import Pipe, Process, Event
@@ -136,6 +137,12 @@ else:
         camProc = CameraProcess([], camOutPs)
 
     allProcesses.append(camProc)
+
+
+# ===================================== LOCALIZATION ====================================+
+
+locsysProc = LocSysSIM([],[])
+allProcesses.append(locsysProc)
 
 # ===================================== START PROCESSES ==================================
 print("Starting the processes!", allProcesses)
