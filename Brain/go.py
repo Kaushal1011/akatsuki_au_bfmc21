@@ -38,7 +38,7 @@ from src.utils.remotecontrol.RemoteControlReceiverProcess import (
 
 # from src.utils.IMU.imuProc import IMUProcess
 from src.utils.controlsys.intersection_det import IntersectionDetProcess
-from src.utils.datafusionproc import DataFusionProcess
+from src.utils.decisionproc import DecisionMakingProcess as DataFusionProcess
 from src.utils.camerastreamer.CameraStreamerProcess import CameraStreamerProcess
 from src.hardware.camera.SIMCameraProcess import SIMCameraProcess
 from src.hardware.serialhandler.SerialHandlerProcess import SerialHandlerProcess
@@ -97,7 +97,7 @@ allProcesses.append(trafficProc)
 lkR, lkS = Pipe(duplex=False)
 
 # Lane keeping -> Movement control
-lcR, lcS = Pipe(duplex=False)
+FzzMcR, FzzMcS = Pipe(duplex=False)
 
 # Lane keeping -> Data Fusion
 lkFzzR, lkFzzS = Pipe(duplex=False)
@@ -132,11 +132,10 @@ if enableRc:
 if enableLaneKeeping:
     if enableStream:
         lkStrR, lkStrS = Pipe(duplex=False)
-        lkProc = LaneKeeping([lkR], [lcS, lkFzzS, lkStrS])
-    lkProc = LaneKeeping([lkR], [lcS])
+        lkProc = LaneKeeping([lkR], [lkFzzS, lkStrS])
     camOutPs.append(lkS)
-    movementControlR.append(lcR)
-    lkProc = LaneKeeping([lkR], [lcS, lkFzzS])  #  lkStrS
+    movementControlR.append(FzzMcR)
+    lkProc = LaneKeeping([lkR], [lkFzzS])
     allProcesses.append(lkProc)
 
     # Movement control
