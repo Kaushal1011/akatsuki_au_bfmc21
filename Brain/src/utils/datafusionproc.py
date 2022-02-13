@@ -6,13 +6,13 @@ import datetime
 
 
 class CarState:
-    def __init__(self) -> None:
+    def __init__(self, v=0, dt=0.1, l=0.365) -> None:
         self.steering_angle = 0.0
         self.det_intersection = False
         self.loc = {}
         self.tl = {}
 
-    def update(self, angle: float, det_intersection: bool, loc:dict, tl:dict) -> None:
+    def update(self, angle: float, det_intersection: bool, loc: dict, tl: dict) -> None:
         self.steering_angle = angle
         self.det_intersection = det_intersection
         self.loc = loc

@@ -29,6 +29,7 @@
 # ========================================================================
 # SCRIPT USED FOR WIRING ALL COMPONENTS
 # ========================================================================
+from fastapi import Path
 from src.utils.controlsys.momentcontrol import MovementControl
 from src.utils.controlsys.lanekeeping import LaneKeepingProcess as LaneKeeping
 from src.utils.remotecontrol.RemoteControlReceiverProcess import (
@@ -46,6 +47,7 @@ from src.data.localisationssystem.localisation4sim import LocSysSIM
 from src.data.trafficlights.trafficSIMProc import TrafficSIM
 from src.hardware.camera.CameraSpooferProcess import CameraSpooferProcess
 from src.hardware.camera.cameraprocess import CameraProcess
+from src.utils.pathplanning import PathPlanningProcess
 from multiprocessing import Pipe, Process, Event
 import sys
 
@@ -83,6 +85,7 @@ imuFzzR, imuFzzS = Pipe(duplex=False)
 
 locsysProc = LocSysSIM([], [lsFzzS])
 trafficProc = TrafficSIM([], [tlFzzS])
+pathplanProc = PathPlanningProcess([], [], req_path=("13", "111"))
 # imuProc = IMUProcess([], [imuFzzS])
 
 allProcesses.append(locsysProc)
