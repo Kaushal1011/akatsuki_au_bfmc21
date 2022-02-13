@@ -143,7 +143,7 @@ def runAdvertiser():
     # Start the broadcaster
     Adv.start()
     # Wait until 60 seconds passed
-    while (time.time()-start_time < 60):
+    while True:
         time.sleep(0.5)
     # Stop the broadcaster
     Adv.stop()

@@ -39,6 +39,7 @@ from src.hardware.camera.SIMCameraProcess import SIMCameraProcess
 from src.hardware.serialhandler.SerialHandlerProcess import SerialHandlerProcess
 from src.utils.controlsys.father import SimulatorConnector
 from src.data.localisationssystem.localisation4sim import LocSysSIM
+from src.data.trafficlights.trafficSIMProc import TrafficSIM
 from src.hardware.camera.CameraSpooferProcess import CameraSpooferProcess
 from src.hardware.camera.cameraprocess import CameraProcess
 from multiprocessing import Pipe, Process, Event
@@ -142,7 +143,10 @@ else:
 # ===================================== LOCALIZATION ====================================+
 
 locsysProc = LocSysSIM([],[])
+trafficProc = TrafficSIM([],[])
+
 allProcesses.append(locsysProc)
+allProcesses.append(trafficProc)
 
 # ===================================== START PROCESSES ==================================
 print("Starting the processes!", allProcesses)
