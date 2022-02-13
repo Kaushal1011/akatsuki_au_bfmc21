@@ -33,6 +33,8 @@ from threading       import Thread
 
 from src.templates.workerprocess import WorkerProcess
 
+#TODO TechDebt: Merge/unify all sim connecting processes
+
 class LocSysSIM(WorkerProcess):
     # ===================================== INIT =========================================
     def __init__(self, inPs, outPs):

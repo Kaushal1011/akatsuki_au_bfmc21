@@ -9,13 +9,17 @@ class CarState:
     def __init__(self) -> None:
         self.steering_angle = 0.0
         self.det_intersection = False
+        self.loc = {}
+        self.tl = {}
 
-    def update(self, angle: float, det_intersection: bool) -> None:
+    def update(self, angle: float, det_intersection: bool, loc:dict, tl:dict) -> None:
         self.steering_angle = angle
         self.det_intersection = det_intersection
+        self.loc = loc
+        self.tl = tl
 
     def __repr__(self) -> str:
-        return f"{datetime.datetime.now()}| Angle: {self.steering_angle}, Intersection: {self.det_intersection}"
+        return f"{datetime.datetime.now()}| {self.steering_angle}, {self.det_intersection}, {self.loc}, {self.tl}"
 
     def asdict(self) -> dict:
         return {"angle": self.steering_angle, "intersection": self.det_intersection}
@@ -68,11 +72,12 @@ class DataFusionProcess(WorkerProcess):
         """
         while True:
             try:
-                # Obtain image
                 angle, _ = inPs[0].recv()
-                # Apply image processing
-                detected = inPs[1].recv()
-                self.state.update(angle, detected)
+                detected_intersection = inPs[1].recv()
+                loc = inPs[2].recv()
+                tl = inPs[3].recv()
+
+                self.state.update(angle, detected_intersection, loc, tl)
                 print(self.state)
 
                 for outP in outPs:
