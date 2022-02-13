@@ -13,11 +13,11 @@ END_IDX = "111"
 
 
 class CarState:
-    def __init__(self, v=0, dt=0.1, l=0.365) -> None:
+    def __init__(self, v=14, dt=0.1, l=0.365) -> None:
         self.steering_angle = 0.0
         self.det_intersection = False
-        self.x = 0
-        self.y = 0
+        self.x = 0.5  # TODO
+        self.y = 11.25  # TODO
         self.yaw = 0
         self.tl = {}
         self.v = v

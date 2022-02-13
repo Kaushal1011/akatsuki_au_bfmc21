@@ -4,19 +4,18 @@ from src.templates.workerprocess import WorkerProcess
 from threading import Thread
 import rospy
 import time
+
 # import zmq
 import random
 import socket
 
-HOST = '127.0.0.1'  # Standard loopback interface address (localhost)
+HOST = "127.0.0.1"  # Standard loopback interface address (localhost)
 PORT = 65432
 
 
-
-
 class SimulatorConnector(WorkerProcess):
-    """They call me "Father", all I do is connect them with the simulator."""\
-        
+    """They call me "Father", all I do is connect them with the simulator."""
+
     def __init__(self, inPs, outPs) -> None:
 
         self.port = PORT
@@ -25,7 +24,7 @@ class SimulatorConnector(WorkerProcess):
         self.client_socket = socket.socket(
             family=socket.AF_INET, type=socket.SOCK_DGRAM
         )
-        super(SimulatorConnector, self).__init__(inPs,outPs)
+        super(SimulatorConnector, self).__init__(inPs, outPs)
 
     def run(self):
         """Apply the initializing methods and start the threads."""
@@ -46,7 +45,7 @@ class SimulatorConnector(WorkerProcess):
         )
         thr.daemon = True
         self.threads.append(thr)
-    
+
     def _the_thread(self, inP, outPs):
         """Obtains image, applies the required image processing and computes the steering angle value.
 
@@ -59,18 +58,15 @@ class SimulatorConnector(WorkerProcess):
         """
 
         while True:
-            
+
             try:
                 # time.sleep(1.0)
                 command = inP.recv()
                 if command is not None:
                     command = json.dumps(command).encode()
                     self.client_socket.sendto(command, (self.serverIp, self.port))
-                
+
             except Exception as e:
                 # raise e
                 print("Sim Connect error:")
                 print(e)
-            
-
-        

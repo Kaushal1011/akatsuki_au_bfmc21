@@ -19,7 +19,7 @@ class MovementControl(WorkerProcess):
         """
         # Initialize parameters
         self.angle = 0.0
-        self.speed = 21.0
+        self.speed = 14.0
 
         super(MovementControl, self).__init__(inPs, outPs)
 
@@ -85,7 +85,7 @@ class MovementControl(WorkerProcess):
                     self.speed = 0.0
                     self._singleUpdate(outPs)
                     time.sleep(2)
-                    self.speed = 21.0
+                    self.speed = 14.0
 
                 self._singleUpdate(outPs)
             except Exception as e:
@@ -94,22 +94,22 @@ class MovementControl(WorkerProcess):
     def _singleUpdate(self, outPs):
         """Update the state of the controls"""
         # Initialize the data array to be sent
-        data = {}
+        speed_data = {}
 
-        # Set longitudinal control
-        # if(self.speed != 0):
-        #     data['action'] = 'MCTL'
-        #     data['speed'] = float(self.speed/100.0)
+        speed_data["action"] = "1"
+        speed_data["speed"] = float(self.speed / 100.0)
         # else:
         #     data['action'] = 'BRAK'
 
+        steer_data = {}
         # Set lateral control
-        data["action"] = "2"
-        data["steerAngle"] = float(self.angle)
+        steer_data["action"] = "2"
+        steer_data["steerAngle"] = float(self.angle)
         # print(data)
         # Send data
         try:
             for outP in outPs:
-                outP.send(data)
+                outP.send(speed_data)
+                outP.send(steer_data)
         except Exception as e:
             print(e)
