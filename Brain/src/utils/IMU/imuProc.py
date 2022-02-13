@@ -26,30 +26,33 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-import sys
-
-sys.path.append(".")
-
-import threading
-import signal
-import time
-
+from src.templates.workerprocess import WorkerProcess
 from src.hardware.IMU import imu
 
 
-def exit_handler(signum, frame):
-    IMU.stop()
-    IMU.join()
-    sys.exit(0)
+class IMUProcess(WorkerProcess):
+    # ================================ CAMERA PROCESS =====================================
+    def __init__(self, inPs, outPs, daemon=True):
+        """Process that start the raspicam and pipes it to the output pipe, to another process.
 
+        Parameters
+        ----------
+        inPs : list()
+            input pipes (leave empty list)
+        outPs : list()
+            output pipes (order does not matter, output camera image on all pipes)
+        daemon : bool, optional
+            daemon process flag, by default True
+        """
+        super(IMUProcess, self).__init__(inPs, outPs, daemon=True)
 
-def main():
-    global IMU
-    signal.signal(signal.SIGTERM, exit_handler)
-    IMU = imu()
-    while True:
-        IMU.start()
+    # ===================================== RUN ==========================================
+    def run(self):
+        """Apply the initializing methods and start the threads."""
+        super(IMUProcess, self).run()
 
-
-if __name__ == "__main__":
-    main()
+    # ===================================== INIT TH ======================================
+    def _init_threads(self):
+        """Create the Camera Publisher thread and add to the list of threads."""
+        imuTh = imu(self.outPs)
+        self.threads.append(imuTh)

@@ -34,6 +34,8 @@ from src.utils.controlsys.lanekeeping import LaneKeepingProcess as LaneKeeping
 from src.utils.remotecontrol.RemoteControlReceiverProcess import (
     RemoteControlReceiverProcess,
 )
+
+# from src.utils.IMU.imuProc import IMUProcess
 from src.utils.controlsys.intersection_det import IntersectionDetProcess
 from src.utils.datafusionproc import DataFusionProcess
 from src.utils.camerastreamer.CameraStreamerProcess import CameraStreamerProcess
@@ -77,13 +79,15 @@ dataFusionInputPs = list()
 
 lsFzzR, lsFzzS = Pipe(duplex=False)
 tlFzzR, tlFzzS = Pipe(duplex=False)
+imuFzzR, imuFzzS = Pipe(duplex=False)
 
-locsysProc = LocSysSIM([],[lsFzzS])
-trafficProc = TrafficSIM([],[tlFzzS])
+locsysProc = LocSysSIM([], [lsFzzS])
+trafficProc = TrafficSIM([], [tlFzzS])
+# imuProc = IMUProcess([], [imuFzzS])
 
 allProcesses.append(locsysProc)
 allProcesses.append(trafficProc)
-
+# allProcesses.append(imuProc)
 
 # Pipes:
 # Camera process -> Lane keeping
@@ -105,6 +109,8 @@ dataFusionInputPs.append(lkFzzR)
 dataFusionInputPs.append(iDFzzR)
 dataFusionInputPs.append(lsFzzR)
 dataFusionInputPs.append(tlFzzR)
+# TODO: tech debt
+# dataFusionInputPs.append(imuFzzR)
 
 # =============================== RC CONTROL =================================================
 if enableRc:
@@ -113,8 +119,8 @@ if enableRc:
     # Serial handler or Simulator Connector
     if enableSIM:
         shProc = SimulatorConnector([cfR], [])
-    # else:    
-        # shProc = SerialHandlerProcess([cfR], [])
+    # else:
+    # shProc = SerialHandlerProcess([cfR], [])
 
     rcProc = RemoteControlReceiverProcess([], [rcShS])
     allProcesses.append(rcProc)
@@ -123,7 +129,7 @@ if enableRc:
 if enableLaneKeeping:
     if enableStream:
         lkStrR, lkStrS = Pipe(duplex=False)
-        lkProc = LaneKeeping([lkR], [lcS,lkFzzS, lkStrS])
+        lkProc = LaneKeeping([lkR], [lcS, lkFzzS, lkStrS])
     lkProc = LaneKeeping([lkR], [lcS])
     camOutPs.append(lkS)
     movementControlR.append(lcR)
@@ -137,9 +143,9 @@ if enableLaneKeeping:
     # Serial handler or Simulator Connector
     if enableSIM:
         shProc = SimulatorConnector([cfR], [])
-    # else:    
-        # shProc = SerialHandlerProcess([cfR], [])
-    
+    # else:
+    # shProc = SerialHandlerProcess([cfR], [])
+
     allProcesses.append(shProc)
 
 if enableIntersectionDet:
