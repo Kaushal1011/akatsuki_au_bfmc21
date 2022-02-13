@@ -34,6 +34,8 @@ from src.utils.controlsys.lanekeeping import LaneKeepingProcess as LaneKeeping
 from src.utils.remotecontrol.RemoteControlReceiverProcess import (
     RemoteControlReceiverProcess,
 )
+from src.utils.controlsys.intersection_det import IntersectionDetProcess
+from src.utils.datafusionproc import DataFusionProcess
 from src.utils.camerastreamer.CameraStreamerProcess import CameraStreamerProcess
 from src.hardware.camera.SIMCameraProcess import SIMCameraProcess
 from src.hardware.serialhandler.SerialHandlerProcess import SerialHandlerProcess
@@ -58,12 +60,14 @@ enableCameraSpoof = False
 enableRc = False
 enableLaneKeeping = True
 enableSIM = True
+enableIntersectionDet = True
+
 # =============================== INITIALIZING PROCESSES =================================
 # Pipe collections
 allProcesses = list()
 movementControlR = list()
 camOutPs = list()
-
+dataFusionInputPs = list()
 # =============================== DATA ===================================================
 # LocSys client process
 # LocStR, LocStS = Pipe(duplex = False)           # LocSys  ->  brain
@@ -88,8 +92,19 @@ lkR, lkS = Pipe(duplex=False)
 # Lane keeping -> Movement control
 lcR, lcS = Pipe(duplex=False)
 
+# Lane keeping -> Data Fusion
+lkFzzR, lkFzzS = Pipe(duplex=False)
+
+# Intersection Detection -> Data Fusion
+iDFzzR, iDFzzS = Pipe(duplex=False)
+
 # Movement control -> Serial handler
 cfR, cfS = Pipe(duplex=False)
+
+dataFusionInputPs.append(lkFzzR)
+dataFusionInputPs.append(iDFzzR)
+dataFusionInputPs.append(lsFzzR)
+dataFusionInputPs.append(tlFzzR)
 
 # =============================== RC CONTROL =================================================
 if enableRc:
@@ -108,10 +123,11 @@ if enableRc:
 if enableLaneKeeping:
     if enableStream:
         lkStrR, lkStrS = Pipe(duplex=False)
-        lkProc = LaneKeeping([lkR], [lcS, lkStrS])
+        lkProc = LaneKeeping([lkR], [lcS,lkFzzS, lkStrS])
     lkProc = LaneKeeping([lkR], [lcS])
     camOutPs.append(lkS)
     movementControlR.append(lcR)
+    lkProc = LaneKeeping([lkR], [lcS, lkFzzS])  #  lkStrS
     allProcesses.append(lkProc)
 
     # Movement control
@@ -125,6 +141,15 @@ if enableLaneKeeping:
         # shProc = SerialHandlerProcess([cfR], [])
     
     allProcesses.append(shProc)
+
+if enableIntersectionDet:
+    camiDR, camiDS = Pipe(duplex=False)
+    camOutPs.append(camiDS)
+    idProc = IntersectionDetProcess([camiDR], [iDFzzS])
+    allProcesses.append(idProc)
+
+datafzzProc = DataFusionProcess(dataFusionInputPs, [])
+allProcesses.append(datafzzProc)
 
 # ========================= Streamer =====================================================
 if enableStream:
