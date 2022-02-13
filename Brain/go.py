@@ -71,6 +71,16 @@ camOutPs = list()
 # LocSysProc = LocalisationSystemProcess([], [LocStS])
 # allProcesses.append(LocSysProc)
 
+lsFzzR, lsFzzS = Pipe(duplex=False)
+tlFzzR, tlFzzS = Pipe(duplex=False)
+
+locsysProc = LocSysSIM([],[lsFzzS])
+trafficProc = TrafficSIM([],[tlFzzS])
+
+allProcesses.append(locsysProc)
+allProcesses.append(trafficProc)
+
+
 # Pipes:
 # Camera process -> Lane keeping
 lkR, lkS = Pipe(duplex=False)
@@ -139,14 +149,6 @@ else:
 
     allProcesses.append(camProc)
 
-
-# ===================================== LOCALIZATION ====================================+
-
-locsysProc = LocSysSIM([],[])
-trafficProc = TrafficSIM([],[])
-
-allProcesses.append(locsysProc)
-allProcesses.append(trafficProc)
 
 # ===================================== START PROCESSES ==================================
 print("Starting the processes!", allProcesses)
