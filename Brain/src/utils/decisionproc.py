@@ -8,17 +8,17 @@ from copy import deepcopy
 from typing import *
 from src.utils.pathplanning import PathPlanning
 
-START_IDX = "13"
-END_IDX = "111"
+START_IDX = "86"
+END_IDX = "54"
 
 
 class CarState:
     def __init__(self, v=14, dt=0.1, l=0.365) -> None:
         self.steering_angle = 0.0
         self.det_intersection = False
-        self.x = 0.5  # TODO
-        self.y = 11.25  # TODO
-        self.yaw = 0
+        self.x = 0.83  # TODO
+        self.y = 14.67  # TODO
+        self.yaw = math.pi/2
         self.tl = {}
         self.v = v
         self.dt = dt
@@ -48,7 +48,7 @@ class CarState:
         self.tl = tl
 
     def __repr__(self) -> str:
-        return f"{datetime.datetime.now()}| {self.steering_angle}, {self.det_intersection}, {self.loc}, {self.tl}"
+        return f"{datetime.datetime.now()}| {self.steering_angle}, {self.det_intersection}, {self.x}, {self.y}, {self.yaw}"
 
     def asdict(self) -> dict:
         return {"angle": self.steering_angle, "intersection": self.det_intersection}
@@ -62,7 +62,8 @@ class PurePursuit:
     def targetIndex(self, vehicle, cx, cy):
         dx = [vehicle.x - x for x in cx]
         dy = [vehicle.y - y for y in cy]
-        dist = [math.sqrt(diffx ** 2 + diffy ** 2) for (diffx, diffy) in zip(dx, dy)]
+        dist = [math.sqrt(diffx ** 2 + diffy ** 2)
+                          for (diffx, diffy) in zip(dx, dy)]
         index = dist.index(min(dist))
         length = 0.0
         newld = self.kld * vehicle.v + self.ld
@@ -145,9 +146,10 @@ def path_smooth(path, weight_data=0.5, weight_smooth=0.6, tolerance=0.000001):
 purePursuitController = PurePursuit()
 plan = PathPlanning()
 coord_list = plan.get_path(START_IDX, END_IDX)
+coord_list = list(map(list, coord_list))
 path2 = path_smooth(coord_list)
-cx = [item[0] for item in path2]
-cy = [item[1] for item in path2]
+cx = [item[0] for item in coord_list]
+cy = [item[1] for item in coord_list]
 
 
 def controlsystem(vehicle: CarState):
@@ -156,9 +158,18 @@ def controlsystem(vehicle: CarState):
     di, target_ind = purePursuitController.purePursuitControl(
         vehicle, cx, cy, target_ind
     )
+    print(cx)
+    print(cy)
     vehicle.update_pos(di)
+    di = di*180/math.pi
+    
+    if di > 25:
+        di = 25
+    elif di < -25:
+        di = 25
+    print(di)
 
-    return di
+    return -di
 
 
 class DecisionMakingProcess(WorkerProcess):
@@ -211,9 +222,9 @@ class DecisionMakingProcess(WorkerProcess):
                 angle, _ = inPs[0].recv()
                 detected_intersection = inPs[1].recv()
                 loc = inPs[2].recv()
-                x = loc["PosA"]
-                y = loc["PosB"]
-                yaw = loc["RotA"]
+                x = loc["posA"]
+                y = loc["posB"]
+                yaw = loc["radA"]
                 tl = inPs[3].recv()
                 # will send output from behaviours
                 self.state.update(angle, detected_intersection, x, y, yaw, tl)
@@ -223,5 +234,5 @@ class DecisionMakingProcess(WorkerProcess):
                     outP.send((angle, None))
 
             except Exception as e:
-                print("Intersection Detection error:")
+                print("Decision Process error:")
                 print(e)

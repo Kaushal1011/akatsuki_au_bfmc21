@@ -62,6 +62,7 @@ class SimulatorConnector(WorkerProcess):
             try:
                 # time.sleep(1.0)
                 command = inP.recv()
+                print(command)
                 if command is not None:
                     command = json.dumps(command).encode()
                     self.client_socket.sendto(command, (self.serverIp, self.port))
