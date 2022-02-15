@@ -4,7 +4,8 @@ import heapq
 
 from src.templates.workerprocess import WorkerProcess
 from threading import Thread
-
+import numpy as np
+import math
 
 def dijkstra(G, start, target):
     d = {start: 0}
@@ -51,50 +52,66 @@ class PathPlanning:
         coord_list = []
         for i in path_list:
             data = self.node_dict[i]
-            coord_list.append((data["x"], data["y"]))
+            coord_list.append([data["x"], data["y"]])
         return coord_list
 
+class Purest_Pursuit:
+    def __init__(self, coord_list):
+        self.k = 0.01  # look forward gain
+        self.Lfc = .50  # [m] look-ahead distance
+        self.Kp = 1.0  # speed proportional gain
+        self.WB = 0.3  # [m] wheel base of vehicle
+        self.cx, self.cy = zip(*coord_list)
+        self.old_nearest_point_index = None
 
-# class PathPlanningProcess(WorkerProcess):
-#     def __init__(self, inPs, outPs, req_path: Tuple[str], test: bool = False):
-#         super().__init__(inPs, outPs)
-#         self.path_plan = PathPlanning(test=test)
-#         assert len(req_path) == 2, "req_path must of the format (start_idx, end_idx)"
-#         self.start_idx = req_path[0]
-#         self.end_idx = req_path[1]
+    
+    def search_target_index(self, state):
 
-#     def run(self):
-#         super(PathPlanningProcess, self).run()
+        # To speed up nearest point search, doing it at only first time.
+        if self.old_nearest_point_index is None:
+            # search nearest point index
+            dx = [state.rear_x - icx for icx in self.cx]
+            dy = [state.rear_y - icy for icy in self.cy]
+            d = np.hypot(dx, dy)
+            ind = np.argmin(d)
+            self.old_nearest_point_index = ind
+        else:
+            ind = self.old_nearest_point_index
+            distance_this_index = state.calc_distance(self.cx[ind],
+                                                      self.cy[ind])
+            while True:
+                distance_next_index = state.calc_distance(self.cx[ind + 1],
+                                                          self.cy[ind + 1])
+                if distance_this_index < distance_next_index:
+                    break
+                ind = ind + 1 if (ind + 1) < len(self.cx) else ind
+                distance_this_index = distance_next_index
+            self.old_nearest_point_index = ind
 
-#     def _init_threads(self):
+        Lf = self.k * state.v + self.Lfc  # update look ahead distance
 
-#         """Initialize the thread."""
-#         if self._blocker.is_set():
-#             return
+        # search look ahead target point index
+        while Lf > state.calc_distance(self.cx[ind], self.cy[ind]):
+            if (ind + 1) >= len(self.cx):
+                break  # not exceed goal
+            ind += 1
 
-#         thr = Thread(
-#             name="PlanningThread",
-#             target=self._the_thread,
-#             args=(
-#                 self.inPs[0],
-#                 self.outPs,
-#             ),
-#         )
-#         thr.daemon = True
-#         self.threads.append(thr)
+        return ind, Lf
+    
+    def purest_pursuit_steer_control(self,state):
+        ind, Lf = self.search_target_index(state)
 
-#     def _the_thread(self, inP, outPs):
-#         while True:
-#             try:
-#                 # start_idx, end_idx = inP.recv()
-#                 coord_path = self.path_plan.get_path(self.start_idx, self.end_idx)
-#                 print(coord_path)
-#                 for outP in outPs:
-#                     outP.send(coord_path)
+        if ind < len(self.cx):
+            tx = self.cx[ind]
+            ty = self.cy[ind]
+        else:  # toward goal
+            tx = self.cx[-1]
+            ty = self.cy[-1]
+            ind = len(self.cx) - 1
 
-#                 if not inP:
-#                     break
+        alpha = math.atan2(ty - state.rear_y, tx - state.rear_x) - state.yaw
 
-#             except Exception as e:
-#                 print("Path Planning Error:")
-#                 print(e)
+        delta = math.atan2(2.0 * self.WB * math.sin(alpha) / Lf, 1.0)
+
+        return delta
+

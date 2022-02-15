@@ -4,9 +4,8 @@ from threading import Thread
 from src.templates.workerprocess import WorkerProcess
 import datetime
 import math
-from copy import deepcopy
 from typing import *
-from src.utils.pathplanning import PathPlanning
+from src.utils.pathplanning import PathPlanning, Purest_Pursuit
 
 START_IDX = "86"
 END_IDX = "54"
@@ -54,122 +53,21 @@ class CarState:
         return {"angle": self.steering_angle, "intersection": self.det_intersection}
 
 
-class PurePursuit:
-    def __init__(self, kld=0.05, ld=0.5):
-        self.kld = kld  # look ahead gain
-        self.ld = ld  # look ahead distance
-
-    def targetIndex(self, vehicle, cx, cy):
-        dx = [vehicle.x - x for x in cx]
-        dy = [vehicle.y - y for y in cy]
-        dist = [math.sqrt(diffx ** 2 + diffy ** 2)
-                          for (diffx, diffy) in zip(dx, dy)]
-        index = dist.index(min(dist))
-        length = 0.0
-        newld = self.kld * vehicle.v + self.ld
-        while newld > length and (index + 1) < len(cx):
-            diffx = cx[index + 1] - cx[index]
-            diffy = cy[index + 1] - cy[index]
-            length += math.sqrt(diffx ** 2 + diffy ** 2)
-            index += 1
-
-        return index
-
-    def purePursuitControl(self, vehicle, cx, cy, cind):
-
-        index = self.targetIndex(vehicle, cx, cy)
-
-        if cind >= index:
-            index = cind
-        if index < len(cx):
-            tx = cx[index]
-            ty = cy[index]
-        else:
-            tx = cx[-1]
-            ty = cy[-1]
-            index = len(cx) - 1
-
-        alpha = (
-            math.atan2(ty - vehicle.y, tx - vehicle.x) - vehicle.yaw
-        )  # calculate the alpah
-
-        if vehicle.v < 0:
-            alpha = math.pi - alpha  # check if the vehilce is backwarding
-
-        newld = self.kld * vehicle.v + self.ld
-
-        delta = math.atan2(2.0 * vehicle.l * math.sin(alpha), newld)
-
-        if delta > 25 * math.pi / 180:
-            delta = 25 * math.pi / 180
-        elif delta < -25 * math.pi / 180:
-            delta = -25 * math.pi / 180
-
-        return delta, index
-
-
-def path_smooth(path, weight_data=0.5, weight_smooth=0.6, tolerance=0.000001):
-    """
-    Creates a smooth path for a n-dimensional series of coordinates.
-    Arguments:
-        path: List containing coordinates of a path
-        weight_data: Float, how much weight to update the data (alpha)
-        weight_smooth: Float, how much weight to smooth the coordinates (beta).
-        tolerance: Float, how much change per iteration is necessary to keep iterating.
-    Output:
-        new: List containing smoothed coordinates.
-    """
-
-    new = deepcopy(path)
-    dims = len(path[0])
-    change = tolerance
-
-    while change >= tolerance:
-        change = 0.0
-        for i in range(1, len(new) - 1):
-            for j in range(dims):
-
-                x_i = path[i][j]
-                y_i, y_prev, y_next = new[i][j], new[i - 1][j], new[i + 1][j]
-
-                y_i_saved = y_i
-                y_i += weight_data * (x_i - y_i) + weight_smooth * (
-                    y_next + y_prev - (2 * y_i)
-                )
-                new[i][j] = y_i
-
-                change += abs(y_i - y_i_saved)
-
-    return new
-
-
-purePursuitController = PurePursuit()
 plan = PathPlanning()
 coord_list = plan.get_path(START_IDX, END_IDX)
-coord_list = list(map(list, coord_list))
-path2 = path_smooth(coord_list)
-cx = [item[0] for item in coord_list]
-cy = [item[1] for item in coord_list]
-
+pPC = Purest_Pursuit(coord_list)
 
 def controlsystem(vehicle: CarState):
 
-    target_ind = purePursuitController.targetIndex(vehicle, cx, cy)
-    di, target_ind = purePursuitController.purePursuitControl(
-        vehicle, cx, cy, target_ind
-    )
-    print(cx)
-    print(cy)
-    vehicle.update_pos(di)
+    di = pPC.purest_pursuit_steer_control(vehicle)
     di = di*180/math.pi
     
-    if di > 25:
-        di = 25
-    elif di < -25:
-        di = 25
-    print(di)
+    if di > 21:
+        di = 21
+    elif di < -21:
+        di = -21
 
-    return -di
+    return di
 
 
 class DecisionMakingProcess(WorkerProcess):
