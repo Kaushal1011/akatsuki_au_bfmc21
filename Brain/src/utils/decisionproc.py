@@ -9,16 +9,16 @@ from typing import *
 from src.utils.pathplanning import PathPlanning
 
 START_IDX = "86"
-END_IDX = "54"
+END_IDX = "27"
 
 
 class CarState:
-    def __init__(self, v=14, dt=0.1, l=0.365) -> None:
+    def __init__(self, v=0, dt=0.1, l=0.365) -> None:
         self.steering_angle = 0.0
         self.det_intersection = False
-        self.x = 0.83  # TODO
-        self.y = 14.67  # TODO
-        self.yaw = math.pi/2
+        self.x = 0  
+        self.y = 0
+        self.yaw = 0
         self.tl = {}
         self.v = v
         self.dt = dt
@@ -27,9 +27,7 @@ class CarState:
     def update_pos(self, steering_angle):
         self.x = self.x + self.v * math.cos(self.yaw) * self.dt
         self.y = self.y + self.v * math.sin(self.yaw) * self.dt
-        self.yaw = (
-            self.yaw + self.v / self.l * math.tan(steering_angle) * self.dt
-        )  # steering_angle is the steering angle
+        self.yaw = self.yaw + self.v / self.l * math.tan(steering_angle) * self.dt
 
     def update(
         self,
@@ -55,7 +53,7 @@ class CarState:
 
 
 class PurePursuit:
-    def __init__(self, kld=0.05, ld=0.5):
+    def __init__(self, kld=1, ld=1):
         self.kld = kld  # look ahead gain
         self.ld = ld  # look ahead distance
 
@@ -100,15 +98,10 @@ class PurePursuit:
 
         delta = math.atan2(2.0 * vehicle.l * math.sin(alpha), newld)
 
-        if delta > 25 * math.pi / 180:
-            delta = 25 * math.pi / 180
-        elif delta < -25 * math.pi / 180:
-            delta = -25 * math.pi / 180
-
         return delta, index
 
 
-def path_smooth(path, weight_data=0.5, weight_smooth=0.6, tolerance=0.000001):
+def path_smooth(path, weight_data=0.5, weight_smooth=0.5, tolerance=0.000001):
     """
     Creates a smooth path for a n-dimensional series of coordinates.
     Arguments:
@@ -154,22 +147,24 @@ cy = [item[1] for item in coord_list]
 
 def controlsystem(vehicle: CarState):
 
+    print(vehicle)
     target_ind = purePursuitController.targetIndex(vehicle, cx, cy)
     di, target_ind = purePursuitController.purePursuitControl(
         vehicle, cx, cy, target_ind
     )
     print(cx)
     print(cy)
+    # print(vehicle)
     vehicle.update_pos(di)
     di = di*180/math.pi
     
     if di > 25:
         di = 25
     elif di < -25:
-        di = 25
-    print(di)
+        di = -25
+    # print(di)
 
-    return -di
+    return di
 
 
 class DecisionMakingProcess(WorkerProcess):
@@ -224,14 +219,14 @@ class DecisionMakingProcess(WorkerProcess):
                 loc = inPs[2].recv()
                 x = loc["posA"]
                 y = loc["posB"]
-                yaw = loc["radA"]
+                yaw = loc["radA"] + math.pi/2
                 tl = inPs[3].recv()
                 # will send output from behaviours
                 self.state.update(angle, detected_intersection, x, y, yaw, tl)
                 print(self.state)
                 angle = controlsystem(self.state)
                 for outP in outPs:
-                    outP.send((angle, None))
+                    outP.send((-angle, None))
 
             except Exception as e:
                 print("Decision Process error:")
