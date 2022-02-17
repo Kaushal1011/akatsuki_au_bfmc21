@@ -48,6 +48,7 @@ from src.hardware.camera.CameraSpooferProcess import CameraSpooferProcess
 from src.hardware.camera.cameraprocess import CameraProcess
 from multiprocessing import Pipe, Process, Event
 import sys
+from src.config import config
 
 sys.path.append(".")
 
@@ -56,13 +57,6 @@ sys.path.append(".")
 
 # utility imports
 
-# =============================== CONFIG =================================================
-enableStream = False
-enableCameraSpoof = False
-enableRc = False
-enableLaneKeeping = True
-enableSIM = True
-enableIntersectionDet = True
 
 # =============================== INITIALIZING PROCESSES =================================
 # Pipe collections
@@ -107,20 +101,22 @@ cfR, cfS = Pipe(duplex=False)
 
 dataFusionInputPs.append(lkFzzR)
 dataFusionInputPs.append(iDFzzR)
-dataFusionInputPs.append(lsFzzR)
-dataFusionInputPs.append(tlFzzR)
-# TODO: tech debt
+
+if config.enableSIM:
+    dataFusionInputPs.append(lsFzzR)
+    dataFusionInputPs.append(tlFzzR)
+# TODO: enable datafzz in for test/simulated servers
 # dataFusionInputPs.append(imuFzzR)
 
 # =============================== RC CONTROL =================================================
-if enableRc:
+if config.enableRc:
     rcShR, rcShS = Pipe(duplex=False)  # rc      ->  serial handler
 
     # Serial handler or Simulator Connector
-    if enableSIM:
+    if config.enableSIM:
         shProc = SimulatorConnector([cfR], [])
-    # else:
-    # shProc = SerialHandlerProcess([cfR], [])
+    else:
+        shProc = SerialHandlerProcess([cfR], [])
 
     rcProc = RemoteControlReceiverProcess([], [rcShS])
     allProcesses.append(rcProc)
@@ -131,8 +127,8 @@ datafzzProc = DataFusionProcess(dataFusionInputPs, [FzzMcS])
 allProcesses.append(datafzzProc)
 
 # ===================================== LANE KEEPING  ===================================
-if enableLaneKeeping:
-    if enableStream:
+if config.enableLaneKeeping:
+    if config.enableStream:
         lkStrR, lkStrS = Pipe(duplex=False)
         lkProc = LaneKeeping([lkR], [lkFzzS, lkStrS])
     camOutPs.append(lkS)
@@ -145,22 +141,22 @@ if enableLaneKeeping:
     allProcesses.append(cfProc)
 
     # Serial handler or Simulator Connector
-    if enableSIM:
+    if config.enableSIM:
         shProc = SimulatorConnector([cfR], [])
     # else:
     # shProc = SerialHandlerProcess([cfR], [])
 
     allProcesses.append(shProc)
 
-if enableIntersectionDet:
+if config.enableIntersectionDet:
     camiDR, camiDS = Pipe(duplex=False)
     camOutPs.append(camiDS)
     idProc = IntersectionDetProcess([camiDR], [iDFzzS])
     allProcesses.append(idProc)
 
 # ========================= Streamer =====================================================
-if enableStream:
-    if enableLaneKeeping:
+if config.enableStream:
+    if config.enableLaneKeeping:
         streamProc = CameraStreamerProcess([lkStrR], [])
     else:
         camStR, camStS = Pipe(duplex=False)  # camera  ->  streamer
@@ -170,11 +166,11 @@ if enableStream:
     allProcesses.append(streamProc)
 
 # ========================== Camera process ==============================================
-if enableCameraSpoof:
+if config.enableCameraSpoof:
     camSpoofer = CameraSpooferProcess([], camOutPs, "vid")
     allProcesses.append(camSpoofer)
 else:
-    if enableSIM:
+    if config.enableSIM:
         camProc = SIMCameraProcess([], camOutPs)
     else:
         camProc = CameraProcess([], camOutPs)
