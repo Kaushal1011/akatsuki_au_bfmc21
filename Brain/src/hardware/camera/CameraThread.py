@@ -84,16 +84,17 @@ class CameraThread(ThreadWithStop):
         from picamera import PiCamera
 
         # camera
-        self.camera = PiCamera()
-
+        self.camera = PiCamera(mode=4)
         # camera settings
-        self.camera.resolution = (1640, 1232)
-        self.camera.framerate = 15
-
-        self.camera.brightness = 60
-        self.camera.shutter_speed = 1200
+        self.camera.resolution = (1280, 1232)
+        self.camera.framerate = 30
+        self.camera.drc_strength = 'high'
+        # self.camera.exposure_mode = 'nightpreview'
+        self.camera.brightness = 55
+        self.camera.shutter_speed = 300000
         self.camera.contrast = 50
-        self.camera.iso = 0  # auto
+        self.camera.iso = 800
+        self.camera.video_denoise = True
 
         self.imgSize = (640, 480)  # the actual image size
 
