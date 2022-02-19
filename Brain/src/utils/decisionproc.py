@@ -66,7 +66,7 @@ class CarState:
 
 
 plan = PathPlanning()
-coord_list = plan.get_path(config.start_idx, config.end_idx)
+coord_list = plan.get_path(config["start_idx"], config["end_idx"])
 pPC = Purest_Pursuit(coord_list)
 
 
