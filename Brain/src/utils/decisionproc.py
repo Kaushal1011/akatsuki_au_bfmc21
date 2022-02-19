@@ -22,12 +22,19 @@ class CarState:
         self.v = v
         self.dt = dt
         self.l = l
+        self.rear_x = self.x - ((l / 2) * math.cos(self.yaw))
+        self.rear_y = self.y - ((l / 2) * math.sin(self.yaw))
 
     def update_pos(self, steering_angle):
         self.x = self.x + self.v * math.cos(self.yaw) * self.dt
         self.y = self.y + self.v * math.sin(self.yaw) * self.dt
         self.yaw = self.yaw + self.v / self.l * math.tan(steering_angle) * self.dt
 
+    def calc_distance(self, point_x, point_y):
+        dx = self.rear_x - point_x
+        dy = self.rear_y - point_y
+        return math.hypot(dx, dy)
+        
     def update(
         self,
         angle: float,
@@ -43,6 +50,8 @@ class CarState:
         self.y = y
         self.yaw = yaw
         self.tl = tl
+        self.rear_x = self.x - ((self.l / 2) * math.cos(self.yaw))
+        self.rear_y = self.y - ((self.l / 2) * math.sin(self.yaw))
 
     def __repr__(self) -> str:
         return f"{datetime.datetime.now()}| {self.steering_angle}, {self.det_intersection}, {self.x}, {self.y}, {self.yaw}"
@@ -120,7 +129,7 @@ class DecisionMakingProcess(WorkerProcess):
                 loc = inPs[2].recv()
                 x = loc["posA"]
                 y = loc["posB"]
-                yaw = loc["radA"] + math.pi/2
+                yaw = 2*math.pi-(loc["radA"]+math.pi)
                 tl = inPs[3].recv()
                 # will send output from behaviours
                 self.state.update(angle, detected_intersection, x, y, yaw, tl)
