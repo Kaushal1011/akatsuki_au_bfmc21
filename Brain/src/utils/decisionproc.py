@@ -6,16 +6,14 @@ import datetime
 import math
 from typing import *
 from src.utils.pathplanning import PathPlanning, Purest_Pursuit
-
-START_IDX = "86"
-END_IDX = "27"
+from src.config import config
 
 
 class CarState:
     def __init__(self, v=0, dt=0.1, l=0.365) -> None:
         self.steering_angle = 0.0
         self.det_intersection = False
-        self.x = 0  
+        self.x = 0
         self.y = 0
         self.yaw = 0
         self.tl = {}
@@ -24,6 +22,7 @@ class CarState:
         self.l = l
         self.rear_x = self.x - ((l / 2) * math.cos(self.yaw))
         self.rear_y = self.y - ((l / 2) * math.sin(self.yaw))
+        self.closest_pt = None
 
     def update_pos(self, steering_angle):
         self.x = self.x + self.v * math.cos(self.yaw) * self.dt
@@ -37,21 +36,27 @@ class CarState:
         
     def update(
         self,
-        angle: float,
-        det_intersection: bool,
-        x: float,
-        y: float,
-        yaw: float,
-        tl: dict,
+        angle: Optional[float] = None,
+        det_intersection: Optional[bool] = None,
+        x: Optional[float] = None,
+        y: Optional[float] = None,
+        yaw: Optional[float] = None,
+        tl: Optional[dict] = None,
     ) -> None:
-        self.steering_angle = angle
-        self.det_intersection = det_intersection
-        self.x = x
-        self.y = y
-        self.yaw = yaw
-        self.tl = tl
-        self.rear_x = self.x - ((self.l / 2) * math.cos(self.yaw))
-        self.rear_y = self.y - ((self.l / 2) * math.sin(self.yaw))
+        if angle:
+            self.steering_angle = angle
+        if det_intersection:
+            self.det_intersection = det_intersection
+        if x:
+            self.x = x
+            self.rear_x = self.x - ((self.l / 2) * math.cos(self.yaw))
+        if y:
+            self.y = y
+            self.rear_y = self.y - ((self.l / 2) * math.sin(self.yaw))
+        if yaw:
+            self.yaw = yaw
+        if tl:
+            self.tl = tl
 
     def __repr__(self) -> str:
         return f"{datetime.datetime.now()}| {self.steering_angle}, {self.det_intersection}, {self.x}, {self.y}, {self.yaw}"
@@ -61,14 +66,15 @@ class CarState:
 
 
 plan = PathPlanning()
-coord_list = plan.get_path(START_IDX, END_IDX)
+coord_list = plan.get_path(config.start_idx, config.end_idx)
 pPC = Purest_Pursuit(coord_list)
+
 
 def controlsystem(vehicle: CarState):
 
     di = pPC.purest_pursuit_steer_control(vehicle)
-    di = di*180/math.pi
-    
+    di = di * 180 / math.pi
+
     if di > 21:
         di = 21
     elif di < -21:
@@ -126,16 +132,32 @@ class DecisionMakingProcess(WorkerProcess):
             try:
                 angle, _ = inPs[0].recv()
                 detected_intersection = inPs[1].recv()
-                loc = inPs[2].recv()
-                x = loc["posA"]
-                y = loc["posB"]
-                yaw = 2*math.pi-(loc["radA"]+math.pi)
-                tl = inPs[3].recv()
-                # will send output from behaviours
-                self.state.update(angle, detected_intersection, x, y, yaw, tl)
+                if len(inPs) > 2:
+                    loc = inPs[2].recv()
+                    x = loc["posA"]
+                    y = loc["posB"]
+                    yaw = 2*math.pi-(loc["radA"]+math.pi)
+                    tl = inPs[3].recv()
+                    # will send output from behaviours
+                    self.state.update(angle, detected_intersection, x, y, yaw, tl)
+
+                    if len(inPs) > 3:
+                        tl = inPs[3].recv()
+                        self.state.update(angle, detected_intersection, x, y, yaw, tl)
+                    else:
+                        self.state.update(angle, detected_intersection, x, y, yaw)
+                else:
+                    self.state.update(angle, detected_intersection)
+
                 print(self.state)
                 angle = controlsystem(self.state)
+
+                # if no locsys use self localization
+                if len(inPs) < 3:
+                    self.state.update_pos(angle)
+
                 for outP in outPs:
+                    # TODO: fix input and output of these pipes
                     outP.send((-angle, None))
 
             except Exception as e:
