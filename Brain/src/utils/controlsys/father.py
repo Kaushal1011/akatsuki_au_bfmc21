@@ -1,12 +1,8 @@
 import json
-from std_msgs.msg import String
 from src.templates.workerprocess import WorkerProcess
 from threading import Thread
-import rospy
-import time
 
 # import zmq
-import random
 import socket
 
 HOST = "127.0.0.1"  # Standard loopback interface address (localhost)
