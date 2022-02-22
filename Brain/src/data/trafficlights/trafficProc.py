@@ -26,10 +26,11 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-from threading import Thread
-from src.templates.workerprocess import WorkerProcess
-from src.data.trafficlights.trafficlights import trafficlights
 import time
+from threading import Thread
+
+from src.data.trafficlights.trafficlights import trafficlights
+from src.templates.workerprocess import WorkerProcess
 
 
 class TrafficProcess(WorkerProcess):

@@ -26,14 +26,14 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
+import random
+import time
 from threading import Thread
+
+import environmental_streamer
 import server_data
 import server_listener
 import server_subscriber
-import environmental_streamer
-
-import time
-import random
 
 
 class EnvironmentalHandler(Thread):

@@ -26,13 +26,13 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
+import time
 from threading import Thread
+
+import position_listener
 import server_data
 import server_listener
 import server_subscriber
-import position_listener
-
-import time
 
 
 class LocalisationSystem(Thread):

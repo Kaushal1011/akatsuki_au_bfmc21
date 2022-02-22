@@ -26,11 +26,11 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-import cv2
 import glob
 import time
-
 from threading import Thread
+
+import cv2
 
 from src.templates.workerprocess import WorkerProcess
 

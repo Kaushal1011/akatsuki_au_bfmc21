@@ -1,20 +1,23 @@
 import json
-from std_msgs.msg import String
-from src.templates.workerprocess import WorkerProcess
 from threading import Thread
-import rospy
 
-# file1 = open("Command.txt", "w") 
+import rospy
+from std_msgs.msg import String
+
+from src.templates.workerprocess import WorkerProcess
+
+# file1 = open("Command.txt", "w")
+
 
 class SimulatorConnector(WorkerProcess):
-    """They call me "Father", all I do is connect them with the simulator."""\
-        
+    """They call me "Father", all I do is connect them with the simulator."""
+
     def __init__(self, inPs, outPs) -> None:
         rospy.init_node("SimConnect", anonymous=False)
-        self.publisher = rospy.Publisher('/automobile/command', String, queue_size=1)
+        self.publisher = rospy.Publisher("/automobile/command", String, queue_size=1)
         print("<sim setup DONE")
 
-        super(SimulatorConnector, self).__init__(inPs,outPs)
+        super(SimulatorConnector, self).__init__(inPs, outPs)
 
     def run(self):
         """Apply the initializing methods and start the threads."""
@@ -37,18 +40,18 @@ class SimulatorConnector(WorkerProcess):
         self.threads.append(thr)
 
     def _send_command(self, key):
-        """Transmite the command to the remotecontrol receiver. 
-        
+        """Transmite the command to the remotecontrol receiver.
+
         Parameters
         ----------
         inP : Pipe
-            Input pipe. 
+            Input pipe.
         """
         command = self.rcBrain.getMessage(key)
         if command is not None:
             command = json.dumps(command)
             self.publisher.publish(command)
-    
+
     def _the_thread(self, inP, outPs):
         """Obtains image, applies the required image processing and computes the steering angle value.
 
@@ -71,5 +74,3 @@ class SimulatorConnector(WorkerProcess):
             except Exception as e:
                 print("Sim Connect error:")
                 print(e)
-
-        

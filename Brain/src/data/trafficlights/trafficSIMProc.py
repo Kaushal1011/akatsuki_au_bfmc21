@@ -28,7 +28,6 @@
 
 import json
 import socket
-
 from threading import Thread
 
 from src.templates.workerprocess import WorkerProcess

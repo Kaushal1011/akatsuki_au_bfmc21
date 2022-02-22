@@ -30,8 +30,8 @@ import sys
 
 sys.path.insert(0, ".")
 
-import socket
 import json
+import socket
 import time
 
 

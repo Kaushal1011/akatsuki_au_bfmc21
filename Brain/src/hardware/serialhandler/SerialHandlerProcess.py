@@ -28,10 +28,10 @@
 
 import serial
 
-from src.templates.workerprocess import WorkerProcess
 from src.hardware.serialhandler.filehandler import FileHandler
 from src.hardware.serialhandler.readthread import ReadThread
 from src.hardware.serialhandler.writethread import WriteThread
+from src.templates.workerprocess import WorkerProcess
 
 
 class SerialHandlerProcess(WorkerProcess):

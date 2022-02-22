@@ -1,11 +1,13 @@
-import networkx as nx
-from typing import *
 import heapq
+import math
+from threading import Thread
+from typing import *
+
+import networkx as nx
+import numpy as np
 
 from src.templates.workerprocess import WorkerProcess
-from threading import Thread
-import numpy as np
-import math
+
 
 def dijkstra(G, start, target):
     d = {start: 0}
@@ -19,46 +21,44 @@ def dijkstra(G, start, target):
         if u == target:
             break
         visited.add(u)
-        for v  in G.adj[u]:
+        for v in G.adj[u]:
             if v not in d or d[v] > du + 1:
                 d[v] = du + 1
                 parent[v] = u
                 heapq.heappush(pq, (d[v], v))
 
-    
     fp = [target]
     tg = target
-    ptype=[("lk" if len([i for i in G.neighbors(tg)])<2 else "int")]
-    
+    ptype = [("lk" if len([i for i in G.neighbors(tg)]) < 2 else "int")]
+
     while tg != start:
         fp.insert(0, parent[tg])
         tg = parent[tg]
-        ptype.insert(0,("lk" if len([i for i in G.neighbors(tg)])<2 else "int"))
+        ptype.insert(0, ("lk" if len([i for i in G.neighbors(tg)]) < 2 else "int"))
         # print([i for i in G.neighbors(tg)])
-    
-    ptyperet=ptype.copy()
+
+    ptyperet = ptype.copy()
     for i in range(len(ptype)):
-        if ptype[i]=='int':
+        if ptype[i] == "int":
             try:
-                ptyperet[i-1]="int"
+                ptyperet[i - 1] = "int"
             except:
                 pass
             try:
-                ptyperet[i+1]="int"
-                i+=1
+                ptyperet[i + 1] = "int"
+                i += 1
             except:
                 pass
-    
-    edgeret=[]
-    
-    for i in range(len(fp)-1):
-        dt=G.get_edge_data(fp[i],fp[i+1])
-        edgeret.append(dt['dotted'])
-        
+
+    edgeret = []
+
+    for i in range(len(fp) - 1):
+        dt = G.get_edge_data(fp[i], fp[i + 1])
+        edgeret.append(dt["dotted"])
+
     edgeret.append(None)
-        
-            
-    return fp,ptyperet,edgeret
+
+    return fp, ptyperet, edgeret
 
 
 class PathPlanning:
@@ -71,8 +71,8 @@ class PathPlanning:
         self.node_dict = self.graph.nodes(data=True)
 
     def get_path(self, start_idx: str, end_idx: str) -> List[Tuple[int]]:
-        path_list,_ptype,_edgret = dijkstra(self.graph, start_idx, end_idx)
-        return self._smooth_point_list(self._convert_nx_path2list(path_list),_ptype)
+        path_list, _ptype, _edgret = dijkstra(self.graph, start_idx, end_idx)
+        return self._smooth_point_list(self._convert_nx_path2list(path_list), _ptype)
 
     def _convert_nx_path2list(self, path_list) -> List[Tuple[int]]:
         coord_list = []
@@ -80,43 +80,42 @@ class PathPlanning:
             data = self.node_dict[i]
             coord_list.append([data["x"], data["y"]])
         return coord_list
-    
-    def _smooth_point_list(self,coord_list,ptype) -> List[Tuple[int]]:
-        coordlist_new=[]
-        count=0
-        countfinal=len(coord_list)
+
+    def _smooth_point_list(self, coord_list, ptype) -> List[Tuple[int]]:
+        coordlist_new = []
+        count = 0
+        countfinal = len(coord_list)
         print(countfinal)
 
-        while count<countfinal:
-            if ptype[count]=="int":
-                    # append first point
+        while count < countfinal:
+            if ptype[count] == "int":
+                # append first point
                 coordlist_new.append(coord_list[count])
                 # find midpoint of intersection start and end
-                xmidint=(coord_list[count][0]+coord_list[count+2][0])/2
-                ymidint=(coord_list[count][1]+coord_list[count+2][1])/2
+                xmidint = (coord_list[count][0] + coord_list[count + 2][0]) / 2
+                ymidint = (coord_list[count][1] + coord_list[count + 2][1]) / 2
 
-                xfinmid=(xmidint+coord_list[count+1][0])/2
-                yfinmid=(ymidint+coord_list[count+1][1])/2
+                xfinmid = (xmidint + coord_list[count + 1][0]) / 2
+                yfinmid = (ymidint + coord_list[count + 1][1]) / 2
 
-                coordlist_new.append((xfinmid,yfinmid))
-                coordlist_new.append(coord_list[count+2])
-                count+=3
+                coordlist_new.append((xfinmid, yfinmid))
+                coordlist_new.append(coord_list[count + 2])
+                count += 3
             else:
                 coordlist_new.append(coord_list[count])
-                count+=1
+                count += 1
         return coordlist_new
 
 
 class Purest_Pursuit:
     def __init__(self, coord_list):
         self.k = 0.01  # look forward gain
-        self.Lfc = .50  # [m] look-ahead distance
+        self.Lfc = 0.50  # [m] look-ahead distance
         self.Kp = 1.0  # speed proportional gain
         self.WB = 0.3  # [m] wheel base of vehicle
         self.cx, self.cy = zip(*coord_list)
         self.old_nearest_point_index = None
 
-    
     def search_target_index(self, state):
 
         # To speed up nearest point search, doing it at only first time.
@@ -129,11 +128,11 @@ class Purest_Pursuit:
             self.old_nearest_point_index = ind
         else:
             ind = self.old_nearest_point_index
-            distance_this_index = state.calc_distance(self.cx[ind],
-                                                      self.cy[ind])
+            distance_this_index = state.calc_distance(self.cx[ind], self.cy[ind])
             while True:
-                distance_next_index = state.calc_distance(self.cx[ind + 1],
-                                                          self.cy[ind + 1])
+                distance_next_index = state.calc_distance(
+                    self.cx[ind + 1], self.cy[ind + 1]
+                )
                 if distance_this_index < distance_next_index:
                     break
                 ind = ind + 1 if (ind + 1) < len(self.cx) else ind
@@ -149,8 +148,8 @@ class Purest_Pursuit:
             ind += 1
 
         return ind, Lf
-    
-    def purest_pursuit_steer_control(self,state):
+
+    def purest_pursuit_steer_control(self, state):
         ind, Lf = self.search_target_index(state)
 
         if ind < len(self.cx):
@@ -166,4 +165,3 @@ class Purest_Pursuit:
         delta = math.atan2(2.0 * self.WB * math.sin(alpha) / Lf, 1.0)
 
         return delta
-

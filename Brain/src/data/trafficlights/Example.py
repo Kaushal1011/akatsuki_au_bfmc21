@@ -32,6 +32,7 @@ import time
 # Module required for getting semaphore broadcast messages
 import trafficlights
 
+
 ## Method for running the listener example.
 #  @param none
 def runListener():

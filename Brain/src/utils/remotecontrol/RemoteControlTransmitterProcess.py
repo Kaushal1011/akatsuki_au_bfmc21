@@ -28,13 +28,12 @@
 
 import json
 import socket
-
-from threading import Thread
 from multiprocessing import Pipe
+from threading import Thread
 
-from src.utils.remotecontrol.RcBrainThread import RcBrainThread
-from src.utils.remotecontrol.KeyboardListenerThread import KeyboardListenerThread
 from src.templates.workerprocess import WorkerProcess
+from src.utils.remotecontrol.KeyboardListenerThread import KeyboardListenerThread
+from src.utils.remotecontrol.RcBrainThread import RcBrainThread
 
 
 class RemoteControlTransmitterProcess(Thread):

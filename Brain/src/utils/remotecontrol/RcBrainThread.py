@@ -15,6 +15,8 @@
 #    contributors may be used to endorse or promote products derived from
 #    this software without specific prior written permission.
 
+import copy
+
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -26,12 +28,14 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 import os
-import copy
+
 
 class RcBrainConfigParams:
-    def __init__(self,maxSteerAngle,maxSpeed,steerAngleStep,speedStep, kpStep, kiStep, kdStep):
-        """ The aim of the class is to group the configuration parameters for the rcBrain. 
-        
+    def __init__(
+        self, maxSteerAngle, maxSpeed, steerAngleStep, speedStep, kpStep, kiStep, kdStep
+    ):
+        """The aim of the class is to group the configuration parameters for the rcBrain.
+
         Parameters
         ----------
         maxSteerAngle : float
@@ -51,12 +55,12 @@ class RcBrainConfigParams:
         self.kiStep = kiStep
         self.kdStep = kdStep
 
+
 class RcBrainThread:
-    
+
     # ===================================== INIT =========================================
     def __init__(self):
-        """It's an example to process the keyboard events and convert them to commands for the robot.
-        """
+        """It's an example to process the keyboard events and convert them to commands for the robot."""
 
         self.speed = 0.0
         self.steerAngle = 0.0
@@ -66,96 +70,130 @@ class RcBrainThread:
         self.pids_kd = 0.000222
         self.pids_tf = 0.040000
 
-        #----------------- CONSTANT VALUES --------------------
-        #this values do not change
-        self.parameterIncrement =   0.1
-        self.limit_configParam = RcBrainConfigParams(21.0, 30.0, 3.0, 4.0, 0.001, 0.001, 0.000001)
+        # ----------------- CONSTANT VALUES --------------------
+        # this values do not change
+        self.parameterIncrement = 0.1
+        self.limit_configParam = RcBrainConfigParams(
+            21.0, 30.0, 3.0, 4.0, 0.001, 0.001, 0.000001
+        )
 
-        self.startSpeed         =   9.0
-        self.startSteerAngle    =   1.0
+        self.startSpeed = 9.0
+        self.startSteerAngle = 1.0
 
-        #----------------- DEFAULT VALUES ----------------------
-        #when the RC is reset, this are the default values
-        self.default_configParam = RcBrainConfigParams(20.5,20.0,1.5,2.0, 0.001, 0.001, 0.000001)
-        
-        #----------------- PARAMETERS -------------------------
-        #this parameter can be modified via key events. 
-        self.configParam = copy.deepcopy(self.default_configParam)  
+        # ----------------- DEFAULT VALUES ----------------------
+        # when the RC is reset, this are the default values
+        self.default_configParam = RcBrainConfigParams(
+            20.5, 20.0, 1.5, 2.0, 0.001, 0.001, 0.000001
+        )
 
-        #----------------- DIRECTION SIGNALS STATES -----------
-        self.currentState =[False,False,False,False,False, False, False, False]   #UP, DOWN , LEFT, RIGHT, BRAKE, PIDActive, PIDSvalues, SteerRelease
+        # ----------------- PARAMETERS -------------------------
+        # this parameter can be modified via key events.
+        self.configParam = copy.deepcopy(self.default_configParam)
+
+        # ----------------- DIRECTION SIGNALS STATES -----------
+        self.currentState = [
+            False,
+            False,
+            False,
+            False,
+            False,
+            False,
+            False,
+            False,
+        ]  # UP, DOWN , LEFT, RIGHT, BRAKE, PIDActive, PIDSvalues, SteerRelease
 
     # ===================================== DISPLAY INFO =================================
     def displayInfo(self):
-        """Display all parameters on the screen. 
-        """
+        """Display all parameters on the screen."""
         # clear stdout for a smoother display
-        os.system('cls' if os.name=='nt' else 'clear')
+        os.system("cls" if os.name == "nt" else "clear")
 
         print("=========== REMOTE CONTROL ============")
         print(
-            "speed:          "  + str(self.speed) +                     '[W/S]' +
-            "\nangle:         " + str(self.steerAngle) +                '[A/D]' +
-            "\npid:           " + str(self.pida) +                      '[P]'   +
-            "\npid KP:        " + str(self.pids_kp) +                   '[Z/X]' +
-            "\npid KI:        " + str(self.pids_ki) +                   '[V/B]' +
-            "\npid KD:        " + str(self.pids_kd) +                   '[N/M]' +
-            "\nmaxSpeed :     " + str(self.configParam.maxSpeed) +      '[T/G]' +
-            "\nmaxSteerAngle: " + str(self.configParam.maxSteerAngle) + '[Y/H]' +
-            "\nacceleration:  " + str(self.configParam.speedStep) +     '[U/J]' +
-            "\nsteerStep:     " + str(self.configParam.steerAngleStep) +'[I/K]' +
-            '\nReset Params:                                             [ R ]' +
-            '\nCtrl+C to exit'
+            "speed:          "
+            + str(self.speed)
+            + "[W/S]"
+            + "\nangle:         "
+            + str(self.steerAngle)
+            + "[A/D]"
+            + "\npid:           "
+            + str(self.pida)
+            + "[P]"
+            + "\npid KP:        "
+            + str(self.pids_kp)
+            + "[Z/X]"
+            + "\npid KI:        "
+            + str(self.pids_ki)
+            + "[V/B]"
+            + "\npid KD:        "
+            + str(self.pids_kd)
+            + "[N/M]"
+            + "\nmaxSpeed :     "
+            + str(self.configParam.maxSpeed)
+            + "[T/G]"
+            + "\nmaxSteerAngle: "
+            + str(self.configParam.maxSteerAngle)
+            + "[Y/H]"
+            + "\nacceleration:  "
+            + str(self.configParam.speedStep)
+            + "[U/J]"
+            + "\nsteerStep:     "
+            + str(self.configParam.steerAngleStep)
+            + "[I/K]"
+            + "\nReset Params:                                             [ R ]"
+            + "\nCtrl+C to exit"
         )
+
     # ===================================== STATE DICT ===================================
     def _stateDict(self):
-        """It generates a dictionary with the robot current states. 
-        
+        """It generates a dictionary with the robot current states.
+
         Returns
         -------
         dict
-            It contains the robot current control state, speed and angle. 
+            It contains the robot current control state, speed and angle.
         """
         data = {}
         # BRAKE command
         if self.currentState[4]:
-            data['action']        =  '3'
-            data['steerAngle']    =  float(self.steerAngle)
+            data["action"] = "3"
+            data["steerAngle"] = float(self.steerAngle)
         # SPEED command
         elif self.currentState[0] or self.currentState[1]:
-            data['action']        =  '1'
-            data['speed']         =  float(self.speed/100.0)
+            data["action"] = "1"
+            data["speed"] = float(self.speed / 100.0)
         # STEERING command
         elif self.currentState[2] or self.currentState[3]:
-            data['action']        =  '2'
-            data['steerAngle']    =  float(self.steerAngle)
+            data["action"] = "2"
+            data["steerAngle"] = float(self.steerAngle)
         # PID activation command
         elif self.currentState[5]:
-            data['action']        =  '4'
-            data['activate']      =  self.pida
-            self.currentState[5]  = False
+            data["action"] = "4"
+            data["activate"] = self.pida
+            self.currentState[5] = False
         # PID tunning command
         elif self.currentState[6]:
-            data['action']        =  '6'
-            data['kp']      =  self.pids_kp
-            data['ki']      =  self.pids_ki
-            data['kd']      =  self.pids_kd
-            data['tf']      =  self.pids_tf
-            self.currentState[6]  = False
+            data["action"] = "6"
+            data["kp"] = self.pids_kp
+            data["ki"] = self.pids_ki
+            data["kd"] = self.pids_kd
+            data["tf"] = self.pids_tf
+            self.currentState[6] = False
         # Steering command (release)
         elif self.currentState[7]:
-            data['action']        =  '2'
-            data['steerAngle']    =  0.0
+            data["action"] = "2"
+            data["steerAngle"] = 0.0
             self.currentState[7] = False
         else:
             return None
-            
+
         print(data)
         return data
+
     # ========================= CALLBACK =================================================
-    def getMessage(self,data):
-        """ Generate the message based on the current pressed or released key and the current state. 
-        
+    def getMessage(self, data):
+        """Generate the message based on the current pressed or released key and the current state.
+
         Parameters
         ----------
         data : string
@@ -173,181 +211,185 @@ class RcBrainThread:
         self._updatePID(data)
         self._updateParameters(data)
         self.displayInfo()
-        
-        return self._stateDict()        
+
+        return self._stateDict()
 
     # ===================================== UPDATE SPEED =================================
 
     # If we keep the two buttons pressed the each states are active and the reached value remains constant.
     # When each two keys are released, it sets to zero the value??? to rapid reseting.
     def _updateSpeed(self):
-        """Update the speed based on the current state and the keyboard event.
-        """
+        """Update the speed based on the current state and the keyboard event."""
         if self.currentState[4]:
             self.currentState[0] = False
             self.currentState[1] = False
             self.speed = 0
             return
 
-        #forward
+        # forward
         if self.currentState[0]:
             if self.speed == 0:
                 self.speed = self.startSpeed
             elif self.speed == -self.startSpeed:
                 self.speed = 0
             elif self.speed < self.configParam.maxSpeed:
-                if  self.configParam.maxSpeed - self.speed < self.configParam.speedStep:
+                if self.configParam.maxSpeed - self.speed < self.configParam.speedStep:
                     self.speed = self.configParam.maxSpeed
                 else:
                     self.speed += self.configParam.speedStep
-        #backwards
+        # backwards
         elif self.currentState[1]:
             if self.speed == 0:
-                self.speed = - self.startSpeed
+                self.speed = -self.startSpeed
             elif self.speed == self.startSpeed:
                 self.speed = 0
-            elif self.speed >  -self.configParam.maxSpeed:
-                if  abs(self.configParam.maxSpeed + self.speed) < self.configParam.speedStep:
-                    self.speed = - self.configParam.maxSpeed
+            elif self.speed > -self.configParam.maxSpeed:
+                if (
+                    abs(self.configParam.maxSpeed + self.speed)
+                    < self.configParam.speedStep
+                ):
+                    self.speed = -self.configParam.maxSpeed
                 else:
                     self.speed -= self.configParam.speedStep
 
     # ===================================== UPDATE STEER ANGLE ===========================
     def _updateSteerAngle(self):
-        """Update the steering angle based on the current state and the keyboard event.
-        """
-        #left steer
+        """Update the steering angle based on the current state and the keyboard event."""
+        # left steer
         if self.currentState[2] == True:
             if self.steerAngle == 0:
                 self.steerAngle = -self.startSteerAngle
             elif self.steerAngle > -self.configParam.maxSteerAngle:
-                if self.configParam.maxSteerAngle + self.steerAngle < self.configParam.steerAngleStep:
-                    self.steerAngle = - self.configParam.maxSteerAngle
+                if (
+                    self.configParam.maxSteerAngle + self.steerAngle
+                    < self.configParam.steerAngleStep
+                ):
+                    self.steerAngle = -self.configParam.maxSteerAngle
                 else:
-                    self.steerAngle -= self.configParam.steerAngleStep 
-        #right steer    
+                    self.steerAngle -= self.configParam.steerAngleStep
+        # right steer
         if self.currentState[3] == True:
             if self.steerAngle == 0:
                 self.steerAngle = self.startSteerAngle
             elif self.steerAngle < self.configParam.maxSteerAngle:
-                if self.configParam.maxSteerAngle - self.steerAngle < self.configParam.steerAngleStep:
+                if (
+                    self.configParam.maxSteerAngle - self.steerAngle
+                    < self.configParam.steerAngleStep
+                ):
                     self.steerAngle = self.configParam.maxSteerAngle
                 else:
                     self.steerAngle += self.configParam.steerAngleStep
         elif not self.currentState[2] and not self.currentState[3]:
-                self.steerAngle = 0
+            self.steerAngle = 0
 
     # ===================================== UPDATE PARAMS ================================
     def _updateParameters(self, currentKey):
         """Update the parameter of the control mechanism (limits and steps).
-        
+
         Parameters
         ----------
         currentKey : string
             Keyboard event encoded in string.
         """
-        #--------------- RESET ---------------------------------
-        if currentKey == 'p.r':
+        # --------------- RESET ---------------------------------
+        if currentKey == "p.r":
             self.speed = 0.0
             self.steerAngle = 0.0
-            self.configParam = copy.deepcopy(self.default_configParam)  
-        #--------------- MAX SPEED ------------------------------
-        elif currentKey == 'p.t':
+            self.configParam = copy.deepcopy(self.default_configParam)
+        # --------------- MAX SPEED ------------------------------
+        elif currentKey == "p.t":
             if self.configParam.maxSpeed < self.limit_configParam.maxSpeed:
                 self.configParam.maxSpeed += self.parameterIncrement
-        elif currentKey == 'p.g':
+        elif currentKey == "p.g":
             if self.startSpeed < self.configParam.maxSpeed:
-                self.configParam.maxSpeed  -= self.parameterIncrement
-        #--------------- MAX STEER ANGLE ------------------------
-        elif currentKey == 'p.y':
+                self.configParam.maxSpeed -= self.parameterIncrement
+        # --------------- MAX STEER ANGLE ------------------------
+        elif currentKey == "p.y":
             if self.configParam.maxSteerAngle < self.limit_configParam.maxSteerAngle:
                 self.configParam.maxSteerAngle += self.parameterIncrement
-        elif currentKey == 'p.h':
+        elif currentKey == "p.h":
             if self.startSteerAngle < self.configParam.maxSteerAngle:
                 self.configParam.maxSteerAngle -= self.parameterIncrement
-        #--------------- SPEED STEP ------------------------------
-        elif currentKey == 'p.u':
+        # --------------- SPEED STEP ------------------------------
+        elif currentKey == "p.u":
             if self.configParam.speedStep < self.limit_configParam.speedStep:
                 self.configParam.speedStep += self.parameterIncrement
-        elif currentKey == 'p.j':
+        elif currentKey == "p.j":
             if 0.1 < self.configParam.speedStep:
                 self.configParam.speedStep -= self.parameterIncrement
-        #--------------- STEER STEP ------------------------------
-        elif currentKey == 'p.i':
+        # --------------- STEER STEP ------------------------------
+        elif currentKey == "p.i":
             if self.configParam.steerAngleStep < self.limit_configParam.steerAngleStep:
                 self.configParam.steerAngleStep += self.parameterIncrement
-        elif currentKey == 'p.k':
+        elif currentKey == "p.k":
             if 0.1 < self.configParam.steerAngleStep:
                 self.configParam.steerAngleStep -= self.parameterIncrement
 
-
     def _updatePID(self, currentKey):
         """Update the parameter of the PID values.
-        
+
         Parameters
         ----------
         currentKey : string
             Keyboard event encoded in string.
-        """      
-        #--------------- ACTIVATE/DEACTIVATE PID ------------------------------
-        if currentKey == 'p.p':
+        """
+        # --------------- ACTIVATE/DEACTIVATE PID ------------------------------
+        if currentKey == "p.p":
             self.pida = not self.pida
             self.currentState[5] = True
 
-        #--------------- KP PID ------------------------------
-        elif currentKey == 'p.z':
+        # --------------- KP PID ------------------------------
+        elif currentKey == "p.z":
             self.pids_kp += self.configParam.kpStep
             self.currentState[6] = True
-        elif currentKey == 'p.x':
+        elif currentKey == "p.x":
             self.pids_kp -= self.configParam.kpStep
             self.currentState[6] = True
 
-        #--------------- KI PID ------------------------------
-        elif currentKey == 'p.v':
+        # --------------- KI PID ------------------------------
+        elif currentKey == "p.v":
             self.pids_ki += self.configParam.kiStep
             self.currentState[6] = True
-        elif currentKey == 'p.b':
+        elif currentKey == "p.b":
             self.pids_ki -= self.configParam.kiStep
             self.currentState[6] = True
 
-        #--------------- KD PID ------------------------------
-        elif currentKey == 'p.n':
+        # --------------- KD PID ------------------------------
+        elif currentKey == "p.n":
             self.pids_kd += self.configParam.kdStep
             self.currentState[6] = True
-        elif currentKey == 'p.m':
+        elif currentKey == "p.m":
             self.pids_kd -= self.configParam.kdStep
             self.currentState[6] = True
 
     # ===================================== UPDATE MOTION STATE ==========================
     def _updateMotionState(self, currentKey):
-        """ Update the motion state based on the current state and the pressed or released key. 
-        
+        """Update the motion state based on the current state and the pressed or released key.
+
         Parameters
         ----------
-        currentKey : string 
+        currentKey : string
             Encoded keyboard event.
         """
-        if currentKey == 'p.w':
+        if currentKey == "p.w":
             self.currentState[0] = True
-        elif currentKey == 'r.w':
+        elif currentKey == "r.w":
             self.currentState[0] = False
-        elif currentKey == 'p.s':
+        elif currentKey == "p.s":
             self.currentState[1] = True
-        elif currentKey == 'r.s':
+        elif currentKey == "r.s":
             self.currentState[1] = False
-        elif currentKey == 'p.a':
+        elif currentKey == "p.a":
             self.currentState[2] = True
-        elif currentKey == 'r.a':
+        elif currentKey == "r.a":
             self.currentState[2] = False
             self.currentState[7] = True
-        elif currentKey == 'p.d':
+        elif currentKey == "p.d":
             self.currentState[3] = True
-        elif currentKey == 'r.d':
+        elif currentKey == "r.d":
             self.currentState[3] = False
             self.currentState[7] = True
-        elif currentKey == 'p.space':
+        elif currentKey == "p.space":
             self.currentState[4] = True
-        elif currentKey == 'r.space':
+        elif currentKey == "r.space":
             self.currentState[4] = False
-
-        

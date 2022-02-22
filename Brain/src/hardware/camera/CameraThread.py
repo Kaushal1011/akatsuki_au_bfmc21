@@ -27,10 +27,12 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 import io
-import numpy as np
 import time
 
+import numpy as np
+
 from src.templates.threadwithstop import ThreadWithStop
+
 
 # ================================ CAMERA PROCESS =========================================
 class CameraThread(ThreadWithStop):

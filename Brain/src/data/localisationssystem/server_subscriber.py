@@ -32,9 +32,8 @@ import time
 # from cryptography.utils import signature
 
 sys.path.insert(0, ".")
-import traceback
-
 import socket
+import traceback
 
 from utils import load_public_key, verify_data
 

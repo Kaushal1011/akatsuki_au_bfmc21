@@ -1,12 +1,13 @@
-import numpy as np
-
-from threading import Thread
-from src.templates.workerprocess import WorkerProcess
 import datetime
 import math
+from threading import Thread
 from typing import *
-from src.utils.pathplanning import PathPlanning, Purest_Pursuit
+
+import numpy as np
+
 from src.config import config
+from src.templates.workerprocess import WorkerProcess
+from src.utils.pathplanning import PathPlanning, Purest_Pursuit
 
 
 class CarState:
@@ -33,7 +34,7 @@ class CarState:
         dx = self.rear_x - point_x
         dy = self.rear_y - point_y
         return math.hypot(dx, dy)
-        
+
     def update(
         self,
         angle: Optional[float] = None,
@@ -136,7 +137,7 @@ class DecisionMakingProcess(WorkerProcess):
                     loc = inPs[2].recv()
                     x = loc["posA"]
                     y = loc["posB"]
-                    yaw = 2*math.pi-(loc["radA"]+math.pi)
+                    yaw = 2 * math.pi - (loc["radA"] + math.pi)
                     tl = inPs[3].recv()
                     # will send output from behaviours
                     self.state.update(angle, detected_intersection, x, y, yaw, tl)

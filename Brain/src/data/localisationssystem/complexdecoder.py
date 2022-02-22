@@ -28,16 +28,20 @@
 
 import json
 
-class ComplexDecoder(json.JSONDecoder):
-	""" Json decoder for complex numbers. The decodeable message consists of two float number and a type marking, like below:
-			{'type':'complex','real':1.0,'imag':1/0}
-		It will return a complex number object.
-	"""
-	def __init__(self,*args,**kwargs):
-		super(ComplexDecoder,self).__init__(object_hook=self.object_hook,*args,**kwargs)
 
-	def object_hook(self,dct):
-		# Checking the parameters of dictionary. 
-		if 'type' in dct and dct['type'] == 'complex' :	
-			return complex(dct['real'],dct['imag'])
-		return dct
+class ComplexDecoder(json.JSONDecoder):
+    """Json decoder for complex numbers. The decodeable message consists of two float number and a type marking, like below:
+            {'type':'complex','real':1.0,'imag':1/0}
+    It will return a complex number object.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(ComplexDecoder, self).__init__(
+            object_hook=self.object_hook, *args, **kwargs
+        )
+
+    def object_hook(self, dct):
+        # Checking the parameters of dictionary.
+        if "type" in dct and dct["type"] == "complex":
+            return complex(dct["real"], dct["imag"])
+        return dct

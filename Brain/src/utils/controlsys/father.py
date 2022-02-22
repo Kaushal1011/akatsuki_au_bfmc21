@@ -1,9 +1,10 @@
 import json
-from src.templates.workerprocess import WorkerProcess
-from threading import Thread
 
 # import zmq
 import socket
+from threading import Thread
+
+from src.templates.workerprocess import WorkerProcess
 
 HOST = "127.0.0.1"  # Standard loopback interface address (localhost)
 PORT = 65432

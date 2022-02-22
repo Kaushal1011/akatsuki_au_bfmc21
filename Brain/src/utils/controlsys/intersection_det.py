@@ -1,9 +1,10 @@
+import time
+from threading import Thread
+
 import numpy as np
 
-from threading import Thread
 from src.lib.intersectiondethandle import intersection_det
 from src.templates.workerprocess import WorkerProcess
-import time
 
 
 class IntersectionDetProcess(WorkerProcess):

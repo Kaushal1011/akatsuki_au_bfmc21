@@ -29,11 +29,12 @@
 import sys
 
 sys.path.append(".")
-import RTIMU
-import os.path
-import time
 import math
+import os.path
 import threading
+import time
+
+import RTIMU
 
 
 class imu(threading.Thread):
