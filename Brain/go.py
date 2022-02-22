@@ -88,9 +88,7 @@ if config["enableSIM"]:
     # imuFzzR, imuFzzS = Pipe(duplex=False)
     # imuProc = IMUProcess([], [imuFzzS])
     # allProcesses.append(imuProc)
-
-
-# dataFusionInputPs.append(imuFzzR)
+    # dataFusionInputPs.append(imuFzzR)
 
 # =============================== RC CONTROL =================================================
 if config["enableRc"]:
