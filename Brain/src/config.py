@@ -2,7 +2,7 @@ import json
 from pprint import pprint
 
 try:
-    with open("../../config.json") as f:
+    with open("../config.json") as f:
         config = json.load(f)
 except FileNotFoundError as e:
     print(e)
@@ -15,8 +15,8 @@ except FileNotFoundError as e:
         "enableLaneKeeping": True,
         "enableSIM": True,
         "enableIntersectionDet": True,
-        "start_idx":'86',
-        "end_idx":'27'
+        "start_idx": "86",
+        "end_idx": "27",
     }
 
 required_keys = [
