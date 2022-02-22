@@ -30,11 +30,8 @@ import sys
 
 sys.path.append(".")
 
-import multiprocessing
 import socket
 import struct
-import time
-from multiprocessing import Event, Process
 from threading import Thread
 
 import cv2

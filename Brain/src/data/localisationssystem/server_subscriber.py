@@ -33,7 +33,6 @@ import time
 
 sys.path.insert(0, ".")
 import socket
-import traceback
 
 from utils import load_public_key, verify_data
 

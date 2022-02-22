@@ -3,7 +3,6 @@ import math
 from threading import Thread
 from typing import *
 
-import numpy as np
 
 from src.config import config
 from src.templates.workerprocess import WorkerProcess

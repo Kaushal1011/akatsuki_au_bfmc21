@@ -32,7 +32,6 @@ import json
 import socket
 
 # Module imports
-import time
 from threading import Thread
 
 

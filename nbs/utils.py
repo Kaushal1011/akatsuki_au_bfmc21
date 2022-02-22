@@ -3,12 +3,9 @@ import re
 import cv2
 from cv2 import VideoCapture
 import numpy as np
-from tqdm.notebook import tqdm, trange
-import matplotlib.pyplot as plt
-from typing import List, Any, Union, Tuple
+from typing import *
 import os
 import math
-import random
 
 # convert bfmc_2020 videos to frames
 vid_paths = [

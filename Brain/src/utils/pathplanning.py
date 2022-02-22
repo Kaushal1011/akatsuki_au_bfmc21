@@ -1,12 +1,10 @@
 import heapq
 import math
-from threading import Thread
 from typing import *
 
 import networkx as nx
 import numpy as np
 
-from src.templates.workerprocess import WorkerProcess
 
 
 def dijkstra(G, start, target):

@@ -32,7 +32,6 @@ import time
 from threading import Thread
 
 import cv2
-import numpy as np
 
 from src.templates.workerprocess import WorkerProcess
 

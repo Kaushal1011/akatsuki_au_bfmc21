@@ -31,7 +31,6 @@ import socket
 from multiprocessing import Pipe
 from threading import Thread
 
-from src.templates.workerprocess import WorkerProcess
 from src.utils.remotecontrol.KeyboardListenerThread import KeyboardListenerThread
 from src.utils.remotecontrol.RcBrainThread import RcBrainThread
 

@@ -31,8 +31,6 @@ import sys
 sys.path.append(".")
 
 import signal
-import threading
-import time
 
 from src.hardware.IMU import imu
 

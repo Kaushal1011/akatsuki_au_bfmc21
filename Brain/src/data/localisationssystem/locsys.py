@@ -39,10 +39,11 @@ class LocalisationSystem(Thread):
     def __init__(self, ID):
         """LocalisationSystem targets to connect on the server and to receive the messages, which incorporates
         the coordinate of the robot on the race track. It has two main state, the setup state and the listening state.
-        In the setup state, it creates the connection with server. It's receiving  the messages from the server in the listening
-        state.
+        In the setup state, it creates the connection with server. It's receiving  the messages from the server in the 
+        listening state.
 
-        It's a thread, so can be running parallel with other threads. You can access to the received parameters via 'coor' function.
+        It's a thread, so can be running parallel with other threads. You can access to the received parameters via 
+        'coor' function.
 
         """
         super(LocalisationSystem, self).__init__()
