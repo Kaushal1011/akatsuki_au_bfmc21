@@ -102,18 +102,18 @@ cfR, cfS = Pipe(duplex=False)
 dataFusionInputPs.append(lkFzzR)
 dataFusionInputPs.append(iDFzzR)
 
-if config.enableSIM:
+if config["enableSIM"]:
     dataFusionInputPs.append(lsFzzR)
     dataFusionInputPs.append(tlFzzR)
 # TODO: enable datafzz in for test/simulated servers
 # dataFusionInputPs.append(imuFzzR)
 
 # =============================== RC CONTROL =================================================
-if config.enableRc:
+if config["enableRc"]:
     rcShR, rcShS = Pipe(duplex=False)  # rc      ->  serial handler
 
     # Serial handler or Simulator Connector
-    if config.enableSIM:
+    if config["enableSIM"]:
         shProc = SimulatorConnector([cfR], [])
     else:
         shProc = SerialHandlerProcess([cfR], [])
@@ -127,8 +127,8 @@ datafzzProc = DataFusionProcess(dataFusionInputPs, [FzzMcS])
 allProcesses.append(datafzzProc)
 
 # ===================================== LANE KEEPING  ===================================
-if config.enableLaneKeeping:
-    if config.enableStream:
+if config["enableLaneKeeping"]:
+    if config["enableStream"]:
         lkStrR, lkStrS = Pipe(duplex=False)
         lkProc = LaneKeeping([lkR], [lkFzzS, lkStrS])
     camOutPs.append(lkS)
@@ -141,22 +141,22 @@ if config.enableLaneKeeping:
     allProcesses.append(cfProc)
 
     # Serial handler or Simulator Connector
-    if config.enableSIM:
+    if config["enableSIM"]:
         shProc = SimulatorConnector([cfR], [])
     # else:
     # shProc = SerialHandlerProcess([cfR], [])
 
     allProcesses.append(shProc)
 
-if config.enableIntersectionDet:
+if config["enableIntersectionDet"]:
     camiDR, camiDS = Pipe(duplex=False)
     camOutPs.append(camiDS)
     idProc = IntersectionDetProcess([camiDR], [iDFzzS])
     allProcesses.append(idProc)
 
 # ========================= Streamer =====================================================
-if config.enableStream:
-    if config.enableLaneKeeping:
+if config["enableStream"]:
+    if config["enableLaneKeeping"]:
         streamProc = CameraStreamerProcess([lkStrR], [])
     else:
         camStR, camStS = Pipe(duplex=False)  # camera  ->  streamer
@@ -166,11 +166,11 @@ if config.enableStream:
     allProcesses.append(streamProc)
 
 # ========================== Camera process ==============================================
-if config.enableCameraSpoof:
+if config["enableCameraSpoof"]:
     camSpoofer = CameraSpooferProcess([], camOutPs, "vid")
     allProcesses.append(camSpoofer)
 else:
-    if config.enableSIM:
+    if config["enableSIM"]:
         camProc = SIMCameraProcess([], camOutPs)
     else:
         camProc = CameraProcess([], camOutPs)

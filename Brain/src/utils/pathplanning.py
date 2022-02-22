@@ -19,34 +19,60 @@ def dijkstra(G, start, target):
         if u == target:
             break
         visited.add(u)
-        for v in G.adj[u]:
+        for v  in G.adj[u]:
             if v not in d or d[v] > du + 1:
                 d[v] = du + 1
                 parent[v] = u
                 heapq.heappush(pq, (d[v], v))
 
+    
     fp = [target]
     tg = target
-
+    ptype=[("lk" if len([i for i in G.neighbors(tg)])<2 else "int")]
+    
     while tg != start:
         fp.insert(0, parent[tg])
         tg = parent[tg]
-
-    return fp
+        ptype.insert(0,("lk" if len([i for i in G.neighbors(tg)])<2 else "int"))
+        # print([i for i in G.neighbors(tg)])
+    
+    ptyperet=ptype.copy()
+    for i in range(len(ptype)):
+        if ptype[i]=='int':
+            try:
+                ptyperet[i-1]="int"
+            except:
+                pass
+            try:
+                ptyperet[i+1]="int"
+                i+=1
+            except:
+                pass
+    
+    edgeret=[]
+    
+    for i in range(len(fp)-1):
+        dt=G.get_edge_data(fp[i],fp[i+1])
+        edgeret.append(dt['dotted'])
+        
+    edgeret.append(None)
+        
+            
+    return fp,ptyperet,edgeret
 
 
 class PathPlanning:
     def __init__(self, test: bool = False) -> None:
         if test:
-            self.graph = nx.read_graphml("/home/b0nzo/Documents/akatsuki_au_bfmc21/Brain/src/utils/path_data/test_track.graphml")
+            self.graph = nx.read_graphml("/home/kaypee/Documents/akatsuki_au_bfmc21/Brain/src/utils/path_data/test_track.graphml")
         else:
-            self.graph = nx.read_graphml("/home/b0nzo/Documents/akatsuki_au_bfmc21/Brain/src/utils/path_data/comp_track.graphml")
+            self.graph = nx.read_graphml("/home/kaypee/Documents/akatsuki_au_bfmc21/Brain/src/utils/path_data/comp_track.graphml")
 
         self.node_dict = self.graph.nodes(data=True)
 
     def get_path(self, start_idx: str, end_idx: str) -> List[Tuple[int]]:
-        path_list = dijkstra(self.graph, start_idx, end_idx)
-        return self._convert_nx_path2list(path_list)
+        path_list,_ptype,_edgret = dijkstra(self.graph, start_idx, end_idx)
+        return self._smooth_point_list(self._convert_nx_path2list(path_list),_ptype)
 
     def _convert_nx_path2list(self, path_list) -> List[Tuple[int]]:
         coord_list = []
@@ -54,6 +80,32 @@ class PathPlanning:
             data = self.node_dict[i]
             coord_list.append([data["x"], data["y"]])
         return coord_list
+    
+    def _smooth_point_list(self,coord_list,ptype) -> List[Tuple[int]]:
+        coordlist_new=[]
+        count=0
+        countfinal=len(coord_list)
+        print(countfinal)
+
+        while count<countfinal:
+            if ptype[count]=="int":
+                    # append first point
+                coordlist_new.append(coord_list[count])
+                # find midpoint of intersection start and end
+                xmidint=(coord_list[count][0]+coord_list[count+2][0])/2
+                ymidint=(coord_list[count][1]+coord_list[count+2][1])/2
+
+                xfinmid=(xmidint+coord_list[count+1][0])/2
+                yfinmid=(ymidint+coord_list[count+1][1])/2
+
+                coordlist_new.append((xfinmid,yfinmid))
+                coordlist_new.append(coord_list[count+2])
+                count+=3
+            else:
+                coordlist_new.append(coord_list[count])
+                count+=1
+        return coordlist_new
+
 
 class Purest_Pursuit:
     def __init__(self, coord_list):

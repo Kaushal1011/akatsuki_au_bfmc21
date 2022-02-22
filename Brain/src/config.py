@@ -15,6 +15,8 @@ except FileNotFoundError as e:
         "enableLaneKeeping": True,
         "enableSIM": True,
         "enableIntersectionDet": True,
+        "start_idx":'86',
+        "end_idx":'27'
     }
 
 required_keys = [
