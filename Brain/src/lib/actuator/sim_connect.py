@@ -1,12 +1,11 @@
 import json
 
-# import zmq
 import socket
 from threading import Thread
 
 from src.templates.workerprocess import WorkerProcess
 
-HOST = "127.0.0.1"  # Standard loopback interface address (localhost)
+HOST = "0.0.0.0"  # Standard loopback interface address (localhost)
 PORT = 65432
 
 
@@ -53,9 +52,7 @@ class SimulatorConnector(WorkerProcess):
         outP : Pipe
             Output pipe to send the steering angle value to other process.
         """
-
         while True:
-
             try:
                 # time.sleep(1.0)
                 command = inP.recv()

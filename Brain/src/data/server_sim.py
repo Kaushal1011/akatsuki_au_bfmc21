@@ -32,36 +32,27 @@ from threading import Thread
 
 from src.templates.workerprocess import WorkerProcess
 
-# TODO TechDebt: Merge/unify all sim connecting processes
+HOST = "0.0.0.0"  # Standard loopback interface address (localhost)
 
 
-class LocSysSIM(WorkerProcess):
+class ServerSIM(WorkerProcess):
     # ===================================== INIT =========================================
-    def __init__(self, inPs, outPs):
-        """Run on raspberry. It forwards the control messages received from socket to the serial handler
-
-        Parameters
-        ------------
-        inPs : list(Pipe)
-            List of input pipes (not used at the moment)
-        outPs : list(Pipe)
-            List of output pipes (order does not matter)
-        """
-        print("loc init")
-        super(LocSysSIM, self).__init__(inPs, outPs)
+    def __init__(self, inPs, outPs, port:int):
+        """Connect LocSys of simulator to Brain"""
+        self.port = port
+        super(ServerSIM, self).__init__(inPs, outPs)
 
     # ===================================== RUN ==========================================
     def run(self):
         """Apply the initializing methods and start the threads"""
         self._init_socket()
-        print("Started socket")
-        super(LocSysSIM, self).run()
+        super(ServerSIM, self).run()
 
     # ===================================== INIT SOCKET ==================================
     def _init_socket(self):
         """Initialize the communication socket server."""
-        self.port = 8888
-        self.serverIp = "0.0.0.0"
+        self.port = self.port
+        self.serverIp = HOST
 
         self.server_socket = socket.socket(
             family=socket.AF_INET, type=socket.SOCK_DGRAM
@@ -73,7 +64,7 @@ class LocSysSIM(WorkerProcess):
         """Initialize the read thread to transmite the received messages to other processes."""
         print("init_thread")
         readTh = Thread(
-            name="ReceiverCommandThread", target=self._read_stream, args=(self.outPs,)
+            name="SIMConnectThread", target=self._read_stream, args=(self.outPs,)
         )
         self.threads.append(readTh)
 
@@ -86,20 +77,15 @@ class LocSysSIM(WorkerProcess):
         outPs : list(Pipe)
             List of the output pipes.
         """
-        print("waiting for loc")
-
+        print("Server Connect started! Now listening:\n")
         try:
             while True:
-
                 bts, addr = self.server_socket.recvfrom(1024)
                 bts = bts.decode()
                 command = json.loads(bts)
                 for outP in outPs:
                     outP.send(command)
-
         except Exception as e:
-            print(e)
-            print("THIS ERROR")
             raise e
 
         finally:

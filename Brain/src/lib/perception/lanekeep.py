@@ -1,10 +1,12 @@
 from threading import Thread
 
-from src.lib.intersectiondethandle import intersection_det
+
+# from simple_pid import PID
+from src.lib.perception.lanekeephandle import LaneKeep as LaneKeepMethod
 from src.templates.workerprocess import WorkerProcess
 
-
-class IntersectionDetProcess(WorkerProcess):
+MAX_STEER = 17
+class LaneKeepingProcess(WorkerProcess):
     # ===================================== Worker process =========================================
     def __init__(self, inPs, outPs):
         """Process used for the image processing needed for lane keeping and for computing the steering value.
@@ -16,11 +18,12 @@ class IntersectionDetProcess(WorkerProcess):
         outPs : list(Pipe)
             List of output pipes (0 - send steering data to the movvement control process)
         """
-        super(IntersectionDetProcess, self).__init__(inPs, outPs)
+        super(LaneKeepingProcess, self).__init__(inPs, outPs)
+        self.lk = LaneKeepMethod(use_perspective=True, computation_method="hough")
 
     def run(self):
         """Apply the initializing methods and start the threads."""
-        super(IntersectionDetProcess, self).run()
+        super(LaneKeepingProcess, self).run()
 
     def _init_threads(self):
         """Initialize the thread."""
@@ -38,6 +41,12 @@ class IntersectionDetProcess(WorkerProcess):
         thr.daemon = True
         self.threads.append(thr)
 
+    # ===================================== Custom methods =========================================
+    def computeSteeringAnglePID(self, val):
+        # keep the angle between max steer angle
+        val = max(-MAX_STEER, min(val - 90, MAX_STEER))
+        return val
+
     def _the_thread(self, inP, outPs):
         """Obtains image, applies the required image processing and computes the steering angle value.
 
@@ -53,10 +62,12 @@ class IntersectionDetProcess(WorkerProcess):
                 # Obtain image
                 stamps, img = inP.recv()
                 # Apply image processing
-                detected, _ = intersection_det(img)
+                val, outimage = self.lk(img)
+                angle = self.computeSteeringAnglePID(val)
+
                 for outP in outPs:
-                    outP.send(detected)
+                    outP.send((angle, outimage))
 
             except Exception as e:
-                print("Intersection Detection error:")
+                print("Lane keeping error:")
                 print(e)

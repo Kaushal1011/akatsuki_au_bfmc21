@@ -30,8 +30,8 @@ import sys
 from multiprocessing import Event, Pipe
 
 from src.config import config
-from src.data.localisationssystem.localisation4sim import LocSysSIM
-from src.data.trafficlights.trafficSIMProc import TrafficSIM
+from src.data.server_sim import ServerSIM as LocSysSIM
+from src.data.server_sim import ServerSIM as TrafficSIM
 from src.hardware.camera.cameraprocess import CameraProcess
 from src.hardware.camera.CameraSpooferProcess import CameraSpooferProcess
 from src.hardware.camera.SIMCameraProcess import SIMCameraProcess
@@ -39,12 +39,12 @@ from src.hardware.serialhandler.SerialHandlerProcess import \
     SerialHandlerProcess
 from src.utils.camerastreamer.CameraStreamerProcess import \
     CameraStreamerProcess
-from src.utils.controlsys.father import SimulatorConnector
+from src.lib.actuator.sim_connect import SimulatorConnector
 # from src.utils.IMU.imuProc import IMUProcess
-from src.utils.controlsys.intersection_det import IntersectionDetProcess
-from src.utils.controlsys.lanekeeping import LaneKeepingProcess as LaneKeeping
-from src.utils.controlsys.momentcontrol import MovementControl
-from src.utils.decisionproc import DecisionMakingProcess as DataFusionProcess
+from src.lib.perception.intersection_det import IntersectionDetProcess
+from src.lib.perception.lanekeep import LaneKeepingProcess as LaneKeeping
+from src.lib.actuator.momentcontrol import MovementControl
+from src.lib.cortex.decisionproc import DecisionMakingProcess
 from src.utils.remotecontrol.RemoteControlReceiverProcess import \
     RemoteControlReceiverProcess
 
@@ -53,11 +53,8 @@ from src.utils.remotecontrol.RemoteControlReceiverProcess import \
 # ========================================================================
 sys.path.append(".")
 
-
-# hardware imports
-
-# utility imports
-
+TRAFFIC_SIM_PORT = 7777
+LOCSYS_SIM_PORT = 8888
 
 # =============================== INITIALIZING PROCESSES =================================
 # Pipe collections
@@ -65,6 +62,7 @@ allProcesses = list()
 movementControlR = list()
 camOutPs = list()
 dataFusionInputPs = list()
+
 # =============================== DATA ===================================================
 # LocSys client process
 # LocStR, LocStS = Pipe(duplex = False)           # LocSys  ->  brain
@@ -76,8 +74,9 @@ lsFzzR, lsFzzS = Pipe(duplex=False)
 tlFzzR, tlFzzS = Pipe(duplex=False)
 imuFzzR, imuFzzS = Pipe(duplex=False)
 
-locsysProc = LocSysSIM([], [lsFzzS])
-trafficProc = TrafficSIM([], [tlFzzS])
+# TODO: condition with test server integration
+locsysProc = LocSysSIM([], [lsFzzS], LOCSYS_SIM_PORT)
+trafficProc = TrafficSIM([], [tlFzzS], TRAFFIC_SIM_PORT)
 # imuProc = IMUProcess([], [imuFzzS])
 
 allProcesses.append(locsysProc)
@@ -106,7 +105,6 @@ dataFusionInputPs.append(iDFzzR)
 if config["enableSIM"]:
     dataFusionInputPs.append(lsFzzR)
     dataFusionInputPs.append(tlFzzR)
-# TODO: enable datafzz in for test/simulated servers
 # dataFusionInputPs.append(imuFzzR)
 
 # =============================== RC CONTROL =================================================
@@ -124,7 +122,7 @@ if config["enableRc"]:
 
 
 movementControlR
-datafzzProc = DataFusionProcess(dataFusionInputPs, [FzzMcS])
+datafzzProc = DecisionMakingProcess(dataFusionInputPs, [FzzMcS])
 allProcesses.append(datafzzProc)
 
 # ===================================== LANE KEEPING  ===================================

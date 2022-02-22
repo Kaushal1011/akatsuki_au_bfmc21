@@ -61,9 +61,9 @@ def dijkstra(G, start, target):
 class PathPlanning:
     def __init__(self, test: bool = False) -> None:
         if test:
-            self.graph = nx.read_graphml("./src/utils/path_data/test_track.graphml")
+            self.graph = nx.read_graphml("./src/lib/cortex/path_data/test_track.graphml")
         else:
-            self.graph = nx.read_graphml("./src/utils/path_data/comp_track.graphml")
+            self.graph = nx.read_graphml("./src/lib/cortex/path_data/comp_track.graphml")
 
         self.node_dict = self.graph.nodes(data=True)
 

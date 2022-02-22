@@ -40,6 +40,9 @@ import numpy as np
 
 from src.templates.workerprocess import WorkerProcess
 
+HOST = "0.0.0.0"  # Standard loopback interface address (localhost)
+PORT = 5555
+
 
 class SIMCameraProcess(WorkerProcess):
     # ===================================== INIT =========================================
@@ -67,8 +70,8 @@ class SIMCameraProcess(WorkerProcess):
     # ===================================== INIT SOCKET ==================================
     def _init_socket(self):
         """Initialize the socket server."""
-        self.port = 5555
-        self.serverIp = "0.0.0.0"
+        self.port = PORT
+        self.serverIp = HOST
 
         self.server_socket = socket.socket()
         self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -84,14 +87,13 @@ class SIMCameraProcess(WorkerProcess):
             name="StreamReceivingThread",
             target=self._read_stream,
             args=(
-                self.inPs,
                 self.outPs,
             ),
         )
         self.threads.append(readTh)
 
     # ===================================== READ STREAM ==================================
-    def _read_stream(self, inP, outPs):
+    def _read_stream(self, outPs):
         """Read the image from input stream, decode it and display it with the CV2 library."""
         try:
             while True:

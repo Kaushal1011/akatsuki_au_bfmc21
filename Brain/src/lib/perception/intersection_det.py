@@ -1,14 +1,10 @@
 from threading import Thread
 
-
-# from simple_pid import PID
-from src.lib.lanekeeputils import LaneKeep as LaneKeepMethod
+from src.lib.perception.intersectiondethandle import intersection_det
 from src.templates.workerprocess import WorkerProcess
 
 
-class LaneKeepingProcess(WorkerProcess):
-    # pid = PID(Kp=1.0, Ki=1.45, Kd=0.15)
-
+class IntersectionDetProcess(WorkerProcess):
     # ===================================== Worker process =========================================
     def __init__(self, inPs, outPs):
         """Process used for the image processing needed for lane keeping and for computing the steering value.
@@ -20,12 +16,11 @@ class LaneKeepingProcess(WorkerProcess):
         outPs : list(Pipe)
             List of output pipes (0 - send steering data to the movvement control process)
         """
-        super(LaneKeepingProcess, self).__init__(inPs, outPs)
-        self.lk = LaneKeepMethod(use_perspective=True, computation_method="hough")
+        super(IntersectionDetProcess, self).__init__(inPs, outPs)
 
     def run(self):
         """Apply the initializing methods and start the threads."""
-        super(LaneKeepingProcess, self).run()
+        super(IntersectionDetProcess, self).run()
 
     def _init_threads(self):
         """Initialize the thread."""
@@ -43,32 +38,6 @@ class LaneKeepingProcess(WorkerProcess):
         thr.daemon = True
         self.threads.append(thr)
 
-    # ===================================== Custom methods =========================================
-    # def laneKeeping(self, img:np.ndarray):
-    #     """Applies required image processing.
-
-    #     Parameters
-    #     ----------
-    #     img : Pipe
-    #         The image on which to apply the algorithm.
-    #     """
-    #     return self.lk(img)
-
-    def computeSteeringAnglePID(self, val):
-        # keep the angle between max steer angle
-        val = max(-17, min(val - 90, 17))
-        # # Apply pid
-        # newVal = self.pid(val)
-
-        # # Calibrate result
-        # newVal = val / 2.9
-
-        # newVal = -newVal
-
-        # newVal += 0
-
-        return val
-
     def _the_thread(self, inP, outPs):
         """Obtains image, applies the required image processing and computes the steering angle value.
 
@@ -84,12 +53,10 @@ class LaneKeepingProcess(WorkerProcess):
                 # Obtain image
                 stamps, img = inP.recv()
                 # Apply image processing
-                val, outimage = self.lk(img)
-                # print(f"Computed angle :{val}")
-                angle = self.computeSteeringAnglePID(val)
+                detected, _ = intersection_det(img)
                 for outP in outPs:
-                    outP.send((angle, outimage))
+                    outP.send(detected)
 
             except Exception as e:
-                print("Lane keeping error:")
+                print("Intersection Detection error:")
                 print(e)

@@ -6,7 +6,7 @@ from typing import Optional
 
 from src.config import config
 from src.templates.workerprocess import WorkerProcess
-from src.utils.pathplanning import PathPlanning, Purest_Pursuit
+from src.lib.cortex.pathplanning import PathPlanning, Purest_Pursuit
 
 
 class CarState:
