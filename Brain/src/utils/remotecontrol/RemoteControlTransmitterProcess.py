@@ -33,6 +33,9 @@ from threading import Thread
 
 from src.utils.remotecontrol.KeyboardListenerThread import KeyboardListenerThread
 from src.utils.remotecontrol.RcBrainThread import RcBrainThread
+from src.config import config
+
+REMOTE_PORT = 12244
 
 
 class RemoteControlTransmitterProcess(Thread):
@@ -50,8 +53,8 @@ class RemoteControlTransmitterProcess(Thread):
         self.rcBrain = RcBrainThread()
         self.listener = KeyboardListenerThread([self.lisBrS])
 
-        self.port = 12244
-        self.serverIp = "192.168.43.225"
+        self.port = REMOTE_PORT
+        self.serverIp = config["pi_ip"]
 
         self.threads = list()
 

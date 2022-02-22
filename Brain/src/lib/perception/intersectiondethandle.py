@@ -59,10 +59,12 @@ def intersection_det(img, area_threshold=15_000) -> np.ndarray:
     )
     cnts = cnts[0] if len(cnts) == 2 else cnts[1]
     detected = False
+    final_contours = []
+
     for c in cnts:
         area = cv2.contourArea(c)
         if area > area_threshold:
             detected = True
-            cv2.drawContours(result, [c], -1, (255, 0, 0), 5)
+            final_contours.append(c)
 
-    return detected, result  # , detect_horizontal
+    return detected, final_contours

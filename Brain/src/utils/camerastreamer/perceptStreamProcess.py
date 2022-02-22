@@ -39,7 +39,7 @@ from src.config import config
 CAM_STREAM_PORT = 2244
 
 
-class CameraStreamerProcess(WorkerProcess):
+class PerceptStreamerProcess(WorkerProcess):
     # ===================================== INIT =========================================
     def __init__(self, inPs, outPs):
         """Process used for sending images over the network to a targeted IP via UDP protocol
@@ -54,13 +54,13 @@ class CameraStreamerProcess(WorkerProcess):
         outPs : list(Pipe)
             List of output pipes (not used at the moment)
         """
-        super(CameraStreamerProcess, self).__init__(inPs, outPs)
+        super(PerceptStreamerProcess, self).__init__(inPs, outPs)
 
     # ===================================== RUN ==========================================
     def run(self):
         """Apply the initializing methods and start the threads."""
         self._init_socket()
-        super(CameraStreamerProcess, self).run()
+        super(PerceptStreamerProcess, self).run()
 
     # ===================================== INIT THREADS =================================
     def _init_threads(self):
@@ -99,7 +99,7 @@ class CameraStreamerProcess(WorkerProcess):
 
     # ===================================== SEND THREAD ==================================
 
-    def _send_thread(self, inP):
+    def _send_thread(self, inPs):
         """Sending the frames received thought the input pipe to remote client by using the created socket connection.
 
         Parameters
@@ -111,9 +111,16 @@ class CameraStreamerProcess(WorkerProcess):
 
         while True:
             try:
-                stamps, image = inP.recv()
-                # print(stamps, image)
-                result, image = cv2.imencode(".jpg", image, encode_param)
+                # input from lane keeping
+                _, image = inPs[0].recv()
+
+                # input from intersection detection
+                if len(inPs) > 1:
+                    _, contours = inPs[1].recv()
+                    for c in contours:
+                        cv2.drawContours(image, [c], -1, (255, 0, 0), 5)
+
+                _, image = cv2.imencode(".jpg", image, encode_param)
                 data = image.tobytes()
                 size = len(data)
 
@@ -121,7 +128,7 @@ class CameraStreamerProcess(WorkerProcess):
                 self.connection.write(data)
 
             except Exception as e:
-                print("CameraStreamer failed to stream images:", e, "\n")
+                print("PerceptStreamer failed to stream images:", e, "\n")
                 # Reinitialize the socket for reconnecting to client.
                 self.connection = None
                 self._init_socket()

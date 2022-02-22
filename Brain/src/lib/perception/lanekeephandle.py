@@ -263,7 +263,7 @@ class LaneKeep:
         # Matrix to warp the image for birdseye window
         matrix = cv2.getPerspectiveTransform(src, dst)
         # Inverse matrix to unwarp the image for final window
-        minv = cv2.getPerspectiveTransform(dst, src) # noqa
+        minv = cv2.getPerspectiveTransform(dst, src)  # noqa
         birdseye = cv2.warpPerspective(img, matrix, img_size)
 
         return birdseye
@@ -323,7 +323,7 @@ def processImage(inpImage):
     """
 
     # Apply HLS color filtering to filter out white lane lines
-    hls = cv2.cvtColor(inpImage, cv2.COLOR_BGR2HLS) # noqa
+    hls = cv2.cvtColor(inpImage, cv2.COLOR_BGR2HLS)  # noqa
     lower_white = np.array([180, 180, 180])
     upper_white = np.array([255, 255, 255])
     mask = cv2.inRange(inpImage, lower_white, upper_white)
@@ -402,8 +402,8 @@ def perspectiveWarp(
     height, width = birdseye.shape[:2]
 
     # Divide the birdseye view into 2 halves to separate left & right lanes
-    birdseyeLeft = birdseye[0:height, 0:width // 2]
-    birdseyeRight = birdseye[0:height, width // 2:width]
+    birdseyeLeft = birdseye[0:height, 0 : width // 2]
+    birdseyeRight = birdseye[0:height, width // 2 : width]
 
     # Display birdseye view image
     # cv2.imshow("Birdseye" , birdseye)
@@ -722,7 +722,7 @@ def plotHistogram(inpImage):
         Tuple(List,List,List): histogram, lextxBase, rightxBase
     """
 
-    histogram = np.sum(inpImage[inpImage.shape[0] // 2:, :], axis=0)
+    histogram = np.sum(inpImage[inpImage.shape[0] // 2 :, :], axis=0)
 
     midpoint = np.int(histogram.shape[0] / 2)
     leftxBase = np.argmax(histogram[:midpoint])

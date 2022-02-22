@@ -4,6 +4,7 @@ from pprint import pprint
 try:
     with open("./config.json") as f:
         config = json.load(f)
+
 except FileNotFoundError as e:
     print(e)
     print("Switching to default config, see `Brain/src/config.py`")
@@ -28,6 +29,8 @@ required_keys = [
     "enableIntersectionDet",
     "start_idx",
     "end_idx",
+    "pc_ip",
+    "pi_ip",
 ]
 
 

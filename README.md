@@ -28,10 +28,10 @@
     pip3 install -r requirements_rpi.txt
     ```
 
-    if installing on computer and not pi
+    if installing on computer and not on pi
     comment `picamera` and `RTIMULib` in [requirements_rpi.txt](./Brain/requirements_rpi.txt)
 
-    ```
+    ```py
     # RTIMULib
     # picamera
     ```

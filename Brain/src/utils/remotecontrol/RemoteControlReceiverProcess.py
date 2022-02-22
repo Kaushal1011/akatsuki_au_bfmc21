@@ -32,6 +32,8 @@ from threading import Thread
 
 from src.templates.workerprocess import WorkerProcess
 
+REMOTE_PORT = 12244
+
 
 class RemoteControlReceiverProcess(WorkerProcess):
     # ===================================== INIT =========================================
@@ -57,7 +59,7 @@ class RemoteControlReceiverProcess(WorkerProcess):
     # ===================================== INIT SOCKET ==================================
     def _init_socket(self):
         """Initialize the communication socket server."""
-        self.port = 12244
+        self.port = REMOTE_PORT
         self.serverIp = "0.0.0.0"
 
         self.server_socket = socket.socket(
