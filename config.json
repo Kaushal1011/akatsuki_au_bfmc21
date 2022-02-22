@@ -1,0 +1,10 @@
+{
+  "enableStream": false,
+  "enableCameraSpoof": false,
+  "enableRc": false,
+  "enableLaneKeeping": true,
+  "enableSIM": true,
+  "enableIntersectionDet": true,
+  "start_idx": 13,
+  "end_idx": 111
+}
