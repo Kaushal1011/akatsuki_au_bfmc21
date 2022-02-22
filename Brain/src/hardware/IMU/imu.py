@@ -33,9 +33,11 @@ import math
 import os.path
 import threading
 import time
-
-import RTIMU
-
+try:
+    import RTIMU
+except ImportError as e:
+    print("Require pi for imu support")
+    raise e
 
 class imu(threading.Thread):
     def __init__(self, outPs):
@@ -65,7 +67,7 @@ class imu(threading.Thread):
         self.outPs = outPs
 
     def run(self):
-        while self.running == True:
+        while self.running is True:
             if self.imu.IMURead():
                 self.data = self.imu.getIMUData()
                 self.fusionPose = self.data["fusionPose"]

@@ -103,7 +103,7 @@ class CameraReceiverProcess(WorkerProcess):
                 # ----------------------- show images -------------------
                 cv2.imshow("Image", image)
                 cv2.waitKey(1)
-        except:
+        except Exception:
             pass
         finally:
             self.connection.close()

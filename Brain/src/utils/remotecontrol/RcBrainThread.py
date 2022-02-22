@@ -256,7 +256,7 @@ class RcBrainThread:
     def _updateSteerAngle(self):
         """Update the steering angle based on the current state and the keyboard event."""
         # left steer
-        if self.currentState[2] == True:
+        if self.currentState[2] is True:
             if self.steerAngle == 0:
                 self.steerAngle = -self.startSteerAngle
             elif self.steerAngle > -self.configParam.maxSteerAngle:
@@ -268,7 +268,7 @@ class RcBrainThread:
                 else:
                     self.steerAngle -= self.configParam.steerAngleStep
         # right steer
-        if self.currentState[3] == True:
+        if self.currentState[3] is True:
             if self.steerAngle == 0:
                 self.steerAngle = self.startSteerAngle
             elif self.steerAngle < self.configParam.maxSteerAngle:

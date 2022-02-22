@@ -6,7 +6,7 @@ class PID:
     def __init__(
         self,
         P=2.0,
-        I=0.0,
+        I=0.0, # noqa
         D=1.0,
         Derivator=0,
         Integrator=0,
@@ -66,7 +66,7 @@ class PID:
     def setKp(self, P):
         self.Kp = P
 
-    def setKi(self, I):
+    def setKi(self, I): # noqa
         self.Ki = I
 
     def setKd(self, D):

@@ -35,7 +35,7 @@ import socket
 from threading import Thread
 
 
-##  listener class.
+#  listener class.
 #
 #  Class used for running port listener algorithm
 class vehicletovehicle(Thread):
@@ -84,7 +84,7 @@ class vehicletovehicle(Thread):
             except Exception as e:
                 print("Receiving data failed with error: " + str(e))
 
-    ## Method for stopping listener process.
+    # Method for stopping listener process.
     #  @param self          The object pointer.
     def stop(self):
         self.__running = False

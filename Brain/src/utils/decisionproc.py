@@ -1,7 +1,7 @@
 import datetime
 import math
 from threading import Thread
-from typing import *
+from typing import Optional
 
 
 from src.config import config
@@ -10,7 +10,7 @@ from src.utils.pathplanning import PathPlanning, Purest_Pursuit
 
 
 class CarState:
-    def __init__(self, v=0, dt=0.1, l=0.365) -> None:
+    def __init__(self, v=0, dt=0.1, car_len=0.365) -> None:
         self.steering_angle = 0.0
         self.det_intersection = False
         self.x = 0
@@ -19,15 +19,15 @@ class CarState:
         self.tl = {}
         self.v = v
         self.dt = dt
-        self.l = l
-        self.rear_x = self.x - ((l / 2) * math.cos(self.yaw))
-        self.rear_y = self.y - ((l / 2) * math.sin(self.yaw))
+        self.car_len = car_len
+        self.rear_x = self.x - ((car_len / 2) * math.cos(self.yaw))
+        self.rear_y = self.y - ((car_len / 2) * math.sin(self.yaw))
         self.closest_pt = None
 
     def update_pos(self, steering_angle):
         self.x = self.x + self.v * math.cos(self.yaw) * self.dt
         self.y = self.y + self.v * math.sin(self.yaw) * self.dt
-        self.yaw = self.yaw + self.v / self.l * math.tan(steering_angle) * self.dt
+        self.yaw = self.yaw + self.v / self.car_len * math.tan(steering_angle) * self.dt
 
     def calc_distance(self, point_x, point_y):
         dx = self.rear_x - point_x
@@ -49,10 +49,10 @@ class CarState:
             self.det_intersection = det_intersection
         if x:
             self.x = x
-            self.rear_x = self.x - ((self.l / 2) * math.cos(self.yaw))
+            self.rear_x = self.x - ((self.car_len / 2) * math.cos(self.yaw))
         if y:
             self.y = y
-            self.rear_y = self.y - ((self.l / 2) * math.sin(self.yaw))
+            self.rear_y = self.y - ((self.car_len / 2) * math.sin(self.yaw))
         if yaw:
             self.yaw = yaw
         if tl:

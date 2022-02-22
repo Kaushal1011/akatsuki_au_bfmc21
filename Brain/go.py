@@ -26,30 +26,31 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import sys
+from multiprocessing import Event, Pipe
+
+from src.config import config
+from src.data.localisationssystem.localisation4sim import LocSysSIM
+from src.data.trafficlights.trafficSIMProc import TrafficSIM
+from src.hardware.camera.cameraprocess import CameraProcess
+from src.hardware.camera.CameraSpooferProcess import CameraSpooferProcess
+from src.hardware.camera.SIMCameraProcess import SIMCameraProcess
+from src.hardware.serialhandler.SerialHandlerProcess import \
+    SerialHandlerProcess
+from src.utils.camerastreamer.CameraStreamerProcess import \
+    CameraStreamerProcess
+from src.utils.controlsys.father import SimulatorConnector
+# from src.utils.IMU.imuProc import IMUProcess
+from src.utils.controlsys.intersection_det import IntersectionDetProcess
+from src.utils.controlsys.lanekeeping import LaneKeepingProcess as LaneKeeping
+from src.utils.controlsys.momentcontrol import MovementControl
+from src.utils.decisionproc import DecisionMakingProcess as DataFusionProcess
+from src.utils.remotecontrol.RemoteControlReceiverProcess import \
+    RemoteControlReceiverProcess
+
 # ========================================================================
 # SCRIPT USED FOR WIRING ALL COMPONENTS
 # ========================================================================
-from src.utils.controlsys.momentcontrol import MovementControl
-from src.utils.controlsys.lanekeeping import LaneKeepingProcess as LaneKeeping
-from src.utils.remotecontrol.RemoteControlReceiverProcess import (
-    RemoteControlReceiverProcess,
-)
-
-# from src.utils.IMU.imuProc import IMUProcess
-from src.utils.controlsys.intersection_det import IntersectionDetProcess
-from src.utils.decisionproc import DecisionMakingProcess as DataFusionProcess
-from src.utils.camerastreamer.CameraStreamerProcess import CameraStreamerProcess
-from src.hardware.camera.SIMCameraProcess import SIMCameraProcess
-from src.hardware.serialhandler.SerialHandlerProcess import SerialHandlerProcess
-from src.utils.controlsys.father import SimulatorConnector
-from src.data.localisationssystem.localisation4sim import LocSysSIM
-from src.data.trafficlights.trafficSIMProc import TrafficSIM
-from src.hardware.camera.CameraSpooferProcess import CameraSpooferProcess
-from src.hardware.camera.cameraprocess import CameraProcess
-from multiprocessing import Pipe, Process, Event
-import sys
-from src.config import config
-
 sys.path.append(".")
 
 
@@ -143,8 +144,11 @@ if config["enableLaneKeeping"]:
     # Serial handler or Simulator Connector
     if config["enableSIM"]:
         shProc = SimulatorConnector([cfR], [])
-    # else:
-    # shProc = SerialHandlerProcess([cfR], [])
+    else:
+        try:
+            shProc = SerialHandlerProcess([cfR], [])
+        except Exception as e:
+            raise e
 
     allProcesses.append(shProc)
 

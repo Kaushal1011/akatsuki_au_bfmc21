@@ -33,7 +33,7 @@ import time
 import trafficlights
 
 
-## Method for running the listener example.
+# Method for running the listener example.
 #  @param none
 def runListener():
 

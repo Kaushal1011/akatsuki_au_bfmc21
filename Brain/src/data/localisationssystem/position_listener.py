@@ -60,7 +60,7 @@ class PositionListener:
         system, the client will receive the same coordinate and timestamp.
         """
         while self.__running:
-            if self.__server_data.socket != None:
+            if self.__server_data.socket is not None:
                 try:
                     msg = self.__server_data.socket.recv(4096)
 

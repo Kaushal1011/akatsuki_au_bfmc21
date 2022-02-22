@@ -51,13 +51,13 @@ class EnvironmentalStreamer:
         After the subscription on the server, it's publishing the messages on the
         previously initialed socket.
         """
-        if self.__server_data.socket != None:
+        if self.__server_data.socket is not None:
             try:
                 data = {"OBS": obstacle_id, "x": x, "y": y}
                 msg = json.dumps((data))
                 try:
                     self.__server_data.socket.sendall(msg.encode("utf-8"))
-                except:
+                except Exception:
                     self.__server_data.socket.sendall(msg)
                 time.sleep(0.25)
                 self.sent = True

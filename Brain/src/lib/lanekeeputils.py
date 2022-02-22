@@ -1,6 +1,6 @@
 import math
 from functools import reduce
-from typing import *
+from typing import List, Tuple
 
 import cv2
 import matplotlib.pyplot as plt
@@ -17,7 +17,7 @@ def draw_line(img, lines):
             cv2.line(dmy, (x1, y1), (x2, y2), (255, 0, 0), 3)
 
         return dmy
-    except:
+    except Exception:
         return img
 
 
@@ -93,7 +93,7 @@ class LaneKeep:
 
         assert (
             computation_method == "hough" or computation_method == "sliding_window"
-        ), f"Expected computation_method to be either 'hough' or 'sliding_window'"
+        ), "Expected computation_method to be either 'hough' or 'sliding_window'"
 
         assert (
             len(hls_lower) == 3
@@ -263,7 +263,7 @@ class LaneKeep:
         # Matrix to warp the image for birdseye window
         matrix = cv2.getPerspectiveTransform(src, dst)
         # Inverse matrix to unwarp the image for final window
-        minv = cv2.getPerspectiveTransform(dst, src)
+        minv = cv2.getPerspectiveTransform(dst, src) # noqa
         birdseye = cv2.warpPerspective(img, matrix, img_size)
 
         return birdseye
@@ -323,7 +323,7 @@ def processImage(inpImage):
     """
 
     # Apply HLS color filtering to filter out white lane lines
-    hls = cv2.cvtColor(inpImage, cv2.COLOR_BGR2HLS)
+    hls = cv2.cvtColor(inpImage, cv2.COLOR_BGR2HLS) # noqa
     lower_white = np.array([180, 180, 180])
     upper_white = np.array([255, 255, 255])
     mask = cv2.inRange(inpImage, lower_white, upper_white)
@@ -402,8 +402,8 @@ def perspectiveWarp(
     height, width = birdseye.shape[:2]
 
     # Divide the birdseye view into 2 halves to separate left & right lanes
-    birdseyeLeft = birdseye[0:height, 0 : width // 2]
-    birdseyeRight = birdseye[0:height, width // 2 : width]
+    birdseyeLeft = birdseye[0:height, 0:width // 2]
+    birdseyeRight = birdseye[0:height, width // 2:width]
 
     # Display birdseye view image
     # cv2.imshow("Birdseye" , birdseye)
@@ -445,7 +445,7 @@ def slide_window_search(inpimage, histogram, margin=150):
     left_lane_inds = []
     right_lane_inds = []
 
-    #### START - Loop to iterate through windows and search for lane lines #####
+    # START - Loop to iterate through windows and search for lane lines #####
     for window in range(nwindows):
         win_y_low = inpimage.shape[0] - (window + 1) * window_height
         win_y_high = inpimage.shape[0] - window * window_height
@@ -487,7 +487,7 @@ def slide_window_search(inpimage, histogram, margin=150):
             rightx_current = np.int(np.mean(nonzerox[good_right_inds]))
 
         # print(rightx_current)
-    #### END - Loop to iterate through windows and search for lane lines #######
+    # END - Loop to iterate through windows and search for lane lines
 
     left_lane_inds = np.concatenate(left_lane_inds)
     right_lane_inds = np.concatenate(right_lane_inds)
@@ -507,7 +507,7 @@ def slide_window_search(inpimage, histogram, margin=150):
         left_fit = np.polyfit(lefty, leftx, 1)
         left_fitx = left_fit[0] * ploty + left_fit[1]
         # plt.plot(left_fitx,  ploty, color='yellow')
-    except:
+    except Exception:
         left_fit = []
         left_fitx = []
         # plt.plot(left_fitx,  ploty, color='yellow')
@@ -515,7 +515,7 @@ def slide_window_search(inpimage, histogram, margin=150):
         right_fit = np.polyfit(righty, rightx, 1)
         right_fitx = right_fit[0] * ploty + right_fit[1]
         # plt.plot(right_fitx, ploty, color='yellow')
-    except:
+    except Exception:
         right_fit = []
         right_fitx = []
         # plt.plot(right_fitx, ploty, color='yellow')
@@ -722,7 +722,7 @@ def plotHistogram(inpImage):
         Tuple(List,List,List): histogram, lextxBase, rightxBase
     """
 
-    histogram = np.sum(inpImage[inpImage.shape[0] // 2 :, :], axis=0)
+    histogram = np.sum(inpImage[inpImage.shape[0] // 2:, :], axis=0)
 
     midpoint = np.int(histogram.shape[0] / 2)
     leftxBase = np.argmax(histogram[:midpoint])

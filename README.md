@@ -45,3 +45,12 @@
     ```sh
     python3 go.py
     ```
+
+## Running code cleanup
+
+```sh
+    cd Brain/src
+    
+    isort .
+    flake8 --extend-ignore=E501,DAR101,DAR201,DAR301,DAR401,E402
+```

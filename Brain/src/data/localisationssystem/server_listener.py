@@ -81,11 +81,11 @@ class ServerListener:
                     self.__server_data.carSubscriptionPort = subscriptionPort
 
                     self.__server_data.is_new_server = True
-                except socket.timeout as e:
+                except socket.timeout:
                     print("cannot find server")
                     # Cannot find the server. Need to repeat the process.
                     pass
-                except ValueError as e:
+                except ValueError:
                     print("Wrong message")
                     # Wrong message was received. Need to repeat the process.
                     pass

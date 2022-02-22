@@ -87,7 +87,7 @@ class CameraStreamerProcess(WorkerProcess):
                         socket.SOL_SOCKET, socket.SO_REUSEADDR, 1
                     )
                     self.connection = self.client_socket.makefile("wb")
-                except ConnectionRefusedError as error:
+                except ConnectionRefusedError:
                     time.sleep(0.5)
                     pass
         except KeyboardInterrupt:

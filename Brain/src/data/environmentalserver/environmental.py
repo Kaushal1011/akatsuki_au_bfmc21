@@ -64,7 +64,7 @@ class EnvironmentalHandler(Thread):
     def setup(self):
         """Actualize the server's data and create a new socket with it."""
         # Running while it has a valid connection with the server
-        while self.__server_data.socket == None and self.__running:
+        while self.__server_data.socket is None and self.__running:
             # discover the parameters of server
             self.__server_listener.find()
             if self.__server_data.is_new_server and self.__running:
@@ -79,11 +79,11 @@ class EnvironmentalHandler(Thread):
     def send(self, obstacle_id, x, y):
         try:
             self.__environmental_streamer.sent = False
-            while self.__environmental_streamer.sent == False and self.__running:
+            while self.__environmental_streamer.sent is False and self.__running:
                 self.setup()
                 self.stream(obstacle_id, x, y)
             return "sent: "
-        except:
+        except Exception:
             return "not returned: "
 
     def ID(self):
@@ -105,7 +105,7 @@ if __name__ == "__main__":
                 int(random.uniform(0, 25)), random.uniform(0, 15), random.uniform(0, 15)
             )
             print(res)
-        except:
+        except Exception:
             pass
         time.sleep(random.uniform(1, 5))
     print("stopped")

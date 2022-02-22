@@ -37,10 +37,11 @@ def roi_func(img: np.ndarray) -> np.ndarray:
 
 def intersection_det(img, area_threshold=15_000) -> np.ndarray:
     # preprocess
-    lower_white = np.array([90, 90, 90])
-    upper_white = np.array([255, 255, 255])
-    mask = cv2.inRange(img, lower_white, upper_white)
-    # Convert image to grayscale, apply threshold, blur & extract edges
+    # lower_white = np.array([90, 90, 90])
+    # upper_white = np.array([255, 255, 255])
+    # mask = cv2.inRange(img, lower_white, upper_white)
+
+    # # Convert image to grayscale, apply threshold, blur & extract edges
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     _, thresh = cv2.threshold(gray, 160, 255, cv2.THRESH_BINARY)
     blur = cv2.GaussianBlur(thresh, (7, 7), 0)

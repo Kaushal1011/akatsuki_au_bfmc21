@@ -1,10 +1,9 @@
 import heapq
 import math
-from typing import *
+from typing import Tuple, List
 
 import networkx as nx
 import numpy as np
-
 
 
 def dijkstra(G, start, target):
@@ -40,12 +39,12 @@ def dijkstra(G, start, target):
         if ptype[i] == "int":
             try:
                 ptyperet[i - 1] = "int"
-            except:
+            except Exception:
                 pass
             try:
                 ptyperet[i + 1] = "int"
                 i += 1
-            except:
+            except Exception:
                 pass
 
     edgeret = []

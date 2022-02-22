@@ -109,7 +109,7 @@ class SIMCameraProcess(WorkerProcess):
                 stamp = time.time()
                 for outP in outPs:
                     outP.send([[stamp], image])
-        except:
+        except Exception:
             pass
         finally:
             self.connection.close()
