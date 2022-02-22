@@ -26,14 +26,13 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-from carclientserver import CarClientServerThread
-from serverconfig import ServerConfig
-from serverbeacon import ServerBeaconThread
-
-from generatedata import GenerateData
-
 import logging
 import time
+
+from carclientserver import CarClientServerThread
+from generatedata import GenerateData
+from serverbeacon import ServerBeaconThread
+from serverconfig import ServerConfig
 
 
 class LocalizationSystemServer:

@@ -26,17 +26,18 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-import os
 import json
-import threading
-import socketserver as SocketServer
+import os
 import socket
+import socketserver as SocketServer
+import threading
 import time
 
 # from cryptography.utils import signature
 
 try:
-    from server.utils import load_private_key, load_public_key, sign_data, verify_data
+    from server.utils import (load_private_key, load_public_key, sign_data,
+                              verify_data)
 except ImportError:
     from utils import load_private_key, load_public_key, sign_data, verify_data
 
@@ -114,7 +115,7 @@ class CarClientHandler(SocketServer.BaseRequestHandler):
         client_key_public_path = dirname + "/keys/" + str(self.carId) + "_publickey.pem"
         try:
             client_key_public = load_public_key(client_key_public_path)
-        except:
+        except Exception:
             msg = "Client " + str(self.carId) + " trying to connect. no key available."
             raise Exception(msg)
 

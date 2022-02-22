@@ -33,11 +33,13 @@ import math
 import os.path
 import threading
 import time
+
 try:
     import RTIMU
 except ImportError as e:
     print("Require pi for imu support")
     raise e
+
 
 class imu(threading.Thread):
     def __init__(self, outPs):

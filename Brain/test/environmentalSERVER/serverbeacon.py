@@ -26,9 +26,10 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-from threading import Thread
 import socket
 import time
+from threading import Thread
+
 
 ##
 class ServerBeaconThread(Thread):
@@ -45,9 +46,9 @@ class ServerBeaconThread(Thread):
         self.runningThread = True
         self.logger = logger
 
-    """It aims to send a message on broadcast in each period. The message contains the port, where 
-	the clients can connect to the server. 
-	"""
+    """It aims to send a message on broadcast in each period. The message contains the port, where
+    the clients can connect to the server.
+    """
 
     def run(self):
         # try:
@@ -75,7 +76,7 @@ class ServerBeaconThread(Thread):
     # except Exception as e:
     # 	self.runningThread=False
     # 	self.logger.warning(self.name+' stoped with exception '+str(e))
-    ## Stop thread.
+    # Stop thread.
     #  @param self   The object pointer.
     def stop(self):
         self.runningThread = False

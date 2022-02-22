@@ -86,9 +86,7 @@ class SIMCameraProcess(WorkerProcess):
         readTh = Thread(
             name="StreamReceivingThread",
             target=self._read_stream,
-            args=(
-                self.outPs,
-            ),
+            args=(self.outPs,),
         )
         self.threads.append(readTh)
 

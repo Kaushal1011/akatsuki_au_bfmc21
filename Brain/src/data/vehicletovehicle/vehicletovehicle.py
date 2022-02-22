@@ -27,10 +27,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 import json
-
 # Module used for communication
 import socket
-
 # Module imports
 from threading import Thread
 

@@ -402,8 +402,8 @@ def perspectiveWarp(
     height, width = birdseye.shape[:2]
 
     # Divide the birdseye view into 2 halves to separate left & right lanes
-    birdseyeLeft = birdseye[0:height, 0 : width // 2]
-    birdseyeRight = birdseye[0:height, width // 2 : width]
+    birdseyeLeft = birdseye[0:height, 0 : width // 2]  # noqa
+    birdseyeRight = birdseye[0:height, width // 2 : width]  # noqa
 
     # Display birdseye view image
     # cv2.imshow("Birdseye" , birdseye)
@@ -722,7 +722,7 @@ def plotHistogram(inpImage):
         Tuple(List,List,List): histogram, lextxBase, rightxBase
     """
 
-    histogram = np.sum(inpImage[inpImage.shape[0] // 2 :, :], axis=0)
+    histogram = np.sum(inpImage[inpImage.shape[0] // 2 :, :], axis=0)  # noqa
 
     midpoint = np.int(histogram.shape[0] / 2)
     leftxBase = np.argmax(histogram[:midpoint])

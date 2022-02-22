@@ -27,17 +27,18 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 import json
-import threading
-import socketserver
 import socket
+import socketserver
+import threading
 import time
 
 try:
-    from server.utils import load_private_key, sign_data
     from server.complexencoder import ComplexEncoder
+    from server.utils import load_private_key, sign_data
 except ImportError:
-    from utils import load_private_key, sign_data
     from complexencoder import ComplexEncoder
+
+    from utils import load_private_key, sign_data
 
 
 class CarClientServerThread(threading.Thread):

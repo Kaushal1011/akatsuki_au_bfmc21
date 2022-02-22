@@ -37,7 +37,7 @@ HOST = "0.0.0.0"  # Standard loopback interface address (localhost)
 
 class ServerSIM(WorkerProcess):
     # ===================================== INIT =========================================
-    def __init__(self, inPs, outPs, port:int):
+    def __init__(self, inPs, outPs, port: int):
         """Connect LocSys of simulator to Brain"""
         self.port = port
         super(ServerSIM, self).__init__(inPs, outPs)

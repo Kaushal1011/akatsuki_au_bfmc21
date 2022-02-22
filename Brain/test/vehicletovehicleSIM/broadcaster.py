@@ -26,30 +26,28 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-# Module imports
-import time, sys
-import math
-from threading import Thread
-
+import json
 # Module used for communication
 import socket
-import os
-import sys
+# Module imports
+import time
+from threading import Thread
 
 import position_listener_sim
-import json
 
 # ID of the mobile obstacle
 ID = 100
 # Port used for broadcast
 PORT = 50009
 
-##  Broadcaster class.
+#  Broadcaster class.
 #
 #  Class used for running port broadcaster algorithm
+
+
 class Broadcaster(Thread):
 
-    ## Constructor.
+    # Constructor.
     #  @param self          The object pointer.
     def __init__(self, position_listener):
 
@@ -76,7 +74,7 @@ class Broadcaster(Thread):
 
         Thread.__init__(self)
 
-    ## Method for running broadcaster algorithm.
+    # Method for running broadcaster algorithm.
     #  @param self        The object pointer.
     def run(self):
         # Broadcast acuired position
@@ -91,14 +89,14 @@ class Broadcaster(Thread):
             # Wait for 1 s before next adv
             time.sleep(1)
 
-    ## Method for starting broadcaster process.
+    # Method for starting broadcaster process.
     #  @param self          The object pointer.
     def start(self):
         self.RUN_BROADCASTER = True
 
         super(Broadcaster, self).start()
 
-    ## Method for stopping broadcaster process.
+    # Method for stopping broadcaster process.
     #  @param self          The object pointer.
     def stop(self):
         self.RUN_BROADCASTER = False
@@ -119,8 +117,8 @@ class Broadcaster(Thread):
         self.sock.sendto(message.encode("utf-8"), self.server_address)
 
 
-## Method for running the broadcaster (for testing purposes).
-##            It uses the position_listener_sim module
+# Method for running the broadcaster (for testing purposes).
+#            It uses the position_listener_sim module
 #  @param none
 def runBroadcaster():
     # Create the simulated listener

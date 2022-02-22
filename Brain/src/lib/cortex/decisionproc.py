@@ -3,10 +3,9 @@ import math
 from threading import Thread
 from typing import Optional
 
-
 from src.config import config
-from src.templates.workerprocess import WorkerProcess
 from src.lib.cortex.pathplanning import PathPlanning, Purest_Pursuit
+from src.templates.workerprocess import WorkerProcess
 
 
 class CarState:

@@ -26,10 +26,9 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-import os
-import json
 import datetime
-from time import strftime
+import json
+import os
 
 
 class DataSaver:
@@ -41,7 +40,7 @@ class DataSaver:
         self.data = {}
 
     def existing_car(self, carID):
-        if not carID in self.data:
+        if carID not in self.data:
             self.data[carID] = []
 
     def ADDobstacle(self, carID, obstacleID, x, y):

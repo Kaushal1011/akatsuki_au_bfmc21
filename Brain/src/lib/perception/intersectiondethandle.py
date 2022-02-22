@@ -48,7 +48,6 @@ def intersection_det(img, area_threshold=15_000) -> np.ndarray:
     roi = roi_func(blur)
 
     # detect horizontal lines
-    result = img.copy()
     horizontal_size = blur.shape[1] // 4
     horizontal_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (horizontal_size, 10))
     detect_horizontal = cv2.morphologyEx(

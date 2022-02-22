@@ -26,13 +26,13 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-from serverconfig import ServerConfig
-from carclientserver import CarClientServerThread
-from serverbeacon import ServerBeaconThread
-from data_saver import DataSaver
-
 import logging
 import time
+
+from carclientserver import CarClientServerThread
+from data_saver import DataSaver
+from serverbeacon import ServerBeaconThread
+from serverconfig import ServerConfig
 
 
 class ObstacleHandlerSystemServer:

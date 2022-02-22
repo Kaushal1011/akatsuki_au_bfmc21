@@ -33,8 +33,8 @@ from threading import Thread
 
 import cv2
 
-from src.templates.workerprocess import WorkerProcess
 from src.config import config
+from src.templates.workerprocess import WorkerProcess
 
 CAM_STREAM_PORT = 2244
 

@@ -15,6 +15,8 @@
 #    contributors may be used to endorse or promote products derived from
 #    this software without specific prior written permission.
 
+from multiprocessing import Event
+
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,10 +27,8 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
-from src.utils.remotecontrol.RemoteControlTransmitterProcess import (
-    RemoteControlTransmitterProcess,
-)
-from multiprocessing import Event
+from src.utils.remotecontrol.RemoteControlTransmitterProcess import \
+    RemoteControlTransmitterProcess
 
 # ===================================== MAIN =============================================
 if __name__ == "__main__":

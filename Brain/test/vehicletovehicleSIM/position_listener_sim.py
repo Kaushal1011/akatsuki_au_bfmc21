@@ -29,8 +29,8 @@
 import sys
 
 sys.path.insert(0, ".")
-from threading import Thread
 import time
+from threading import Thread
 
 
 class PositionListener(Thread):
@@ -47,7 +47,7 @@ class PositionListener(Thread):
 
         Thread.__init__(self)
 
-        ## Method for starting position listener simulation process.
+        # Method for starting position listener simulation process.
         #  @param self          The object pointer.
 
     def start(self):
@@ -55,13 +55,13 @@ class PositionListener(Thread):
 
         super(PositionListener, self).start()
 
-        ## Method for stopping position listener simulation process.
+        # Method for stopping position listener simulation process.
         #  @param self          The object pointer.
 
     def stop(self):
         self.__running = False
 
-        ## Method for running position listener simulation process.
+        # Method for running position listener simulation process.
         #  @param self          The object pointer.
 
     def run(self):

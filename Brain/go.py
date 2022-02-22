@@ -35,18 +35,18 @@ from src.data.server_sim import ServerSIM as TrafficSIM
 from src.hardware.camera.cameraprocess import CameraProcess
 from src.hardware.camera.CameraSpooferProcess import CameraSpooferProcess
 from src.hardware.camera.SIMCameraProcess import SIMCameraProcess
-from src.hardware.serialhandler.SerialHandlerProcess import SerialHandlerProcess
-from src.utils.camerastreamer.perceptStreamProcess import PerceptStreamerProcess
+from src.hardware.serialhandler.SerialHandlerProcess import \
+    SerialHandlerProcess
+from src.lib.actuator.momentcontrol import MovementControl
 from src.lib.actuator.sim_connect import SimulatorConnector
-
+from src.lib.cortex.decisionproc import DecisionMakingProcess
 # from src.utils.IMU.imuProc import IMUProcess
 from src.lib.perception.intersection_det import IntersectionDetProcess
 from src.lib.perception.lanekeep import LaneKeepingProcess as LaneKeeping
-from src.lib.actuator.momentcontrol import MovementControl
-from src.lib.cortex.decisionproc import DecisionMakingProcess
-from src.utils.remotecontrol.RemoteControlReceiverProcess import (
-    RemoteControlReceiverProcess,
-)
+from src.utils.camerastreamer.perceptStreamProcess import \
+    PerceptStreamerProcess
+from src.utils.remotecontrol.RemoteControlReceiverProcess import \
+    RemoteControlReceiverProcess
 
 # ========================================================================
 # SCRIPT USED FOR WIRING ALL COMPONENTS
