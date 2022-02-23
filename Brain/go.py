@@ -30,8 +30,10 @@ import sys
 from multiprocessing import Event, Pipe
 
 from src.config import config
+from src.data.localisationssystem.locsysProc import LocalisationSystemProcess
 from src.data.server_sim import ServerSIM as LocSysSIM
 from src.data.server_sim import ServerSIM as TrafficSIM
+from src.data.trafficlights.trafficProc import TrafficProcess
 from src.hardware.camera.cameraprocess import CameraProcess
 from src.hardware.camera.CameraSpooferProcess import CameraSpooferProcess
 from src.hardware.camera.SIMCameraProcess import SIMCameraProcess
@@ -39,15 +41,6 @@ from src.hardware.serialhandler.SerialHandlerProcess import SerialHandlerProcess
 from src.lib.actuator.momentcontrol import MovementControl
 from src.lib.actuator.sim_connect import SimulatorConnector
 from src.lib.cortex.decisionproc import DecisionMakingProcess
-
-try:
-    from src.utils.IMU.imuProc import IMUProcess
-except Exception as e:
-    print(e)
-    disableIMU = True
-
-from src.data.localisationssystem.locsysProc import LocalisationSystemProcess
-from src.data.trafficlights.trafficProc import TrafficProcess
 from src.lib.perception.intersection_det import IntersectionDetProcess
 from src.lib.perception.lanekeep import LaneKeepingProcess as LaneKeeping
 from src.utils.camerastreamer.perceptStreamProcess import PerceptStreamerProcess
@@ -55,6 +48,12 @@ from src.utils.remotecontrol.RemoteControlReceiverProcess import (
     RemoteControlReceiverProcess,
 )
 
+disableIMU = False
+try:
+    from src.utils.IMU.imuProc import IMUProcess
+except Exception as e:
+    print(e)
+    disableIMU = True
 # ========================================================================
 # SCRIPT USED FOR WIRING ALL COMPONENTS
 # ========================================================================
