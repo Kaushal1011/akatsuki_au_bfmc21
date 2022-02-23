@@ -169,4 +169,4 @@ class DecisionMakingProcess(WorkerProcess):
 
             except Exception as e:
                 print("Decision Process error:")
-                print(e)
+                raise e

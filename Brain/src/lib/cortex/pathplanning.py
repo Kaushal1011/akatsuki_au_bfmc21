@@ -131,9 +131,15 @@ class Purest_Pursuit:
             ind = self.old_nearest_point_index
             distance_this_index = state.calc_distance(self.cx[ind], self.cy[ind])
             while True:
-                distance_next_index = state.calc_distance(
-                    self.cx[ind + 1], self.cy[ind + 1]
-                )
+                try:
+                    distance_next_index = state.calc_distance(
+                        self.cx[ind + 1], self.cy[ind + 1]
+                    )
+                except IndexError:
+                    distance_next_index = state.calc_distance(
+                        self.cx[-1], self.cy[-1]
+                    )
+
                 if distance_this_index < distance_next_index:
                     break
                 ind = ind + 1 if (ind + 1) < len(self.cx) else ind

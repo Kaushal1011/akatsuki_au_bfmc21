@@ -8,6 +8,7 @@
   "start_idx": "86",
   "end_idx": "27",
   "using_server": true,
+  "test_track": false,
   "pc_ip": "192.168.43.61",
   "pi_ip": "192.168.43.225"
 }
