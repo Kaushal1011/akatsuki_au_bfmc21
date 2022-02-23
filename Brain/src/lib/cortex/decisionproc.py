@@ -142,9 +142,12 @@ class DecisionMakingProcess(WorkerProcess):
                     x = loc["posA"]
                     y = loc["posB"]
                     yaw = 2 * math.pi - (loc["radA"] + math.pi)
+                    print("XYYaw", x, y, yaw)
+
                 # if trafficlight process is connected
                 if len(inPs) > 3:
                     trafficlights = inPs[3].recv()
+                    print(trafficlights)
                 # if imu process is connected
                 if len(inPs) > 4:
                     imu_data = inPs[4].recv()
