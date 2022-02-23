@@ -7,6 +7,7 @@
   "enableIntersectionDet": true,
   "start_idx": "86",
   "end_idx": "27",
+  "using_server": false,
   "pc_ip": "192.168.43.61",
   "pi_ip": "192.168.43.225"
 }

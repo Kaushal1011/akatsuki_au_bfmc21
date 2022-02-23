@@ -131,23 +131,28 @@ class DecisionMakingProcess(WorkerProcess):
             try:
                 angle, _ = inPs[0].recv()
                 detected_intersection = inPs[1].recv()
+                x = None
+                y = None
+                yaw = None
+                trafficlights = None
+                imu_data = None
+                # if locsys process is connected
                 if len(inPs) > 2:
                     loc = inPs[2].recv()
                     x = loc["posA"]
                     y = loc["posB"]
                     yaw = 2 * math.pi - (loc["radA"] + math.pi)
-                    tl = inPs[3].recv()
-                    # will send output from behaviours
-                    self.state.update(angle, detected_intersection, x, y, yaw, tl)
+                # if trafficlight process is connected
+                if len(inPs) > 3:
+                    trafficlights = inPs[3].recv()
+                # if imu process is connected
+                if len(inPs) > 4:
+                    imu_data = inPs[4].recv()
+                    print(imu_data)
 
-                    if len(inPs) > 3:
-                        tl = inPs[3].recv()
-                        self.state.update(angle, detected_intersection, x, y, yaw, tl)
-                    else:
-                        self.state.update(angle, detected_intersection, x, y, yaw)
-                else:
-                    self.state.update(angle, detected_intersection)
-
+                self.state.update(
+                    angle, detected_intersection, x, y, yaw, trafficlights
+                )
                 print(self.state)
                 angle = controlsystem(self.state)
 

@@ -40,13 +40,16 @@ from src.lib.actuator.momentcontrol import MovementControl
 from src.lib.actuator.sim_connect import SimulatorConnector
 from src.lib.cortex.decisionproc import DecisionMakingProcess
 
-# from src.utils.IMU.imuProc import IMUProcess
+from src.utils.IMU.imuProc import IMUProcess
 from src.lib.perception.intersection_det import IntersectionDetProcess
 from src.lib.perception.lanekeep import LaneKeepingProcess as LaneKeeping
 from src.utils.camerastreamer.perceptStreamProcess import PerceptStreamerProcess
 from src.utils.remotecontrol.RemoteControlReceiverProcess import (
     RemoteControlReceiverProcess,
 )
+
+from src.data.localisationssystem.locsysProc import LocalisationSystemProcess
+from src.data.trafficlights.trafficProc import TrafficProcess
 
 # ========================================================================
 # SCRIPT USED FOR WIRING ALL COMPONENTS
@@ -117,29 +120,42 @@ if config["enableIntersectionDet"]:
 # =============================== DATA ===================================================
 # LocSys client process
 # LocStR, LocStS = Pipe(duplex = False)           # LocSys  ->  brain
-# from data.localisationsystem.locsys import LocalisationSystemProcess
 # LocSysProc = LocalisationSystemProcess([], [LocStS])
 # allProcesses.append(LocSysProc)
 
 
 # TODO: condition with test server integration
 if config["enableSIM"]:
-    # LocSys -> Data Fusion
+    # LocSys -> Decision Making (data fusion)
     lsFzzR, lsFzzS = Pipe(duplex=False)
     locsysProc = LocSysSIM([], [lsFzzS], LOCSYS_SIM_PORT)
     allProcesses.append(locsysProc)
     dataFusionInputPs.append(lsFzzR)
 
-    # Traffic Semaphore -> Data Fusion
+    # Traffic Semaphore -> Decision Making (data fusion)
     tlFzzR, tlFzzS = Pipe(duplex=False)
     trafficProc = TrafficSIM([], [tlFzzS], TRAFFIC_SIM_PORT)
     allProcesses.append(trafficProc)
     dataFusionInputPs.append(tlFzzR)
 
-    # imuFzzR, imuFzzS = Pipe(duplex=False)
-    # imuProc = IMUProcess([], [imuFzzS])
-    # allProcesses.append(imuProc)
-    # dataFusionInputPs.append(imuFzzR)
+elif config["using_server"]:
+    # LocSys -> Decision Making (data fusion)
+    lsFzzR, lsFzzS = Pipe(duplex=False)
+    locsysProc = LocalisationSystemProcess([], [lsFzzS])
+    allProcesses.append(locsysProc)
+    dataFusionInputPs.append(lsFzzR)
+
+    # Traffic Semaphore -> Decision Making (data fusion)
+    tlFzzR, tlFzzS = Pipe(duplex=False)
+    trafficProc = TrafficProcess([], [tlFzzS])
+    allProcesses.append(trafficProc)
+    dataFusionInputPs.append(tlFzzR)
+
+    # IMU -> Decision Making (data fusion)
+    imuFzzR, imuFzzS = Pipe(duplex=False)
+    imuProc = IMUProcess([], [imuFzzS])
+    allProcesses.append(imuProc)
+    dataFusionInputPs.append(imuFzzR)
 
 # ======================= Decision Making =========================================
 
