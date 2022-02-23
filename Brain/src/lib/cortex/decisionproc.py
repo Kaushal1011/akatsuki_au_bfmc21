@@ -164,7 +164,6 @@ class DecisionMakingProcess(WorkerProcess):
                     self.state.update_pos(angle)
 
                 for outP in outPs:
-                    # TODO: fix input and output of these pipes
                     outP.send((-angle, None))
 
             except Exception as e:
