@@ -62,15 +62,15 @@ class TrafficProcess(WorkerProcess):
         )
         self.threads.append(trafficTh)
 
-    def runListener(outPs):
+    def runListener(self, outPs):
         # Get time stamp when starting tester
         # Create listener object
-        Semaphores = trafficlights.trafficlights()
+        Semaphores = trafficlights()
         # Start the listener
         Semaphores.start()
         # Wait until 60 seconds passed
         while True:
-            for outP in outPs:
+            for outP in [outPs]:
                 outP.send(
                     {
                         "s0": Semaphores.s1_state,

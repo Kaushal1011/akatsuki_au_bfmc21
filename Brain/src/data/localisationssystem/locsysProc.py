@@ -61,11 +61,11 @@ class LocalisationSystemProcess(WorkerProcess):
     def _init_threads(self):
         """Create the Camera Publisher thread and add to the list of threads."""
         trafficTh = Thread(
-            name="TrafficLightThread", target=self.runListener, args=(self.outPs)
+            name="LocalisationSystemThread", target=self.runListener, args=(self.outPs)
         )
         self.threads.append(trafficTh)
 
-    def runListener(outPs):
+    def runListener(self, outPs):
         # Get time stamp when starting tester
         # Create listener object
         locsys = LocalisationSystem(CARID)
@@ -74,15 +74,18 @@ class LocalisationSystemProcess(WorkerProcess):
         # Wait until 60 seconds passed
         while True:
             try:
-                coora = LocalisationSystem.coor()
-                data = {
-                    "timestamp": coora["timestamp"],
-                    "PosA": coora["coor"][0].real,
-                    "PosB": coora["coor"][0].imag,
-                    "radA": math.atan2(coora["coor"][1].real, coora["coor"][1].imag),
-                }
-                for outP in outPs:
-                    outP.send(data)
+                coora = locsys.coor()
+                if coora:
+                    data = {
+                        "timestamp": coora["timestamp"],
+                        "PosA": coora["coor"][0].real,
+                        "PosB": coora["coor"][0].imag,
+                        "radA": math.atan2(
+                            coora["coor"][1].real, coora["coor"][1].imag
+                        ),
+                    }
+                    for outP in outPs:
+                        outP.send(data)
                 time.sleep(1)
             except KeyboardInterrupt:
                 break

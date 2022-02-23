@@ -29,10 +29,10 @@
 import time
 from threading import Thread
 
-import position_listener
-import server_data
-import server_listener
-import server_subscriber
+from . import position_listener
+from . import server_data
+from . import server_listener
+from . import server_subscriber
 import math
 
 

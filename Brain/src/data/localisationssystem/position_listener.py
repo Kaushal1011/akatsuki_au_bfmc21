@@ -33,7 +33,7 @@ sys.path.insert(0, ".")
 import json
 import socket
 
-from complexdecoder import ComplexDecoder
+from .complexdecoder import ComplexDecoder
 
 
 class PositionListener:

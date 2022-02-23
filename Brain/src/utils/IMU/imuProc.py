@@ -26,7 +26,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-from src.hardware.IMU import imu
+from src.hardware.IMU.imu import imu
 from src.templates.workerprocess import WorkerProcess
 
 

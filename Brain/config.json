@@ -1,13 +1,13 @@
 {
-  "enableStream": true,
-  "enableCameraSpoof": false,
-  "enableRc": true,
+  "enableStream": false,
+  "enableCameraSpoof": true,
+  "enableRc": false,
   "enableLaneKeeping": true,
-  "enableSIM": true,
+  "enableSIM": false,
   "enableIntersectionDet": true,
   "start_idx": "86",
   "end_idx": "27",
-  "using_server": false,
+  "using_server": true,
   "pc_ip": "192.168.43.61",
   "pi_ip": "192.168.43.225"
 }

@@ -29,6 +29,8 @@
 import sys
 from multiprocessing import Event, Pipe
 
+from sympy import EX
+
 from src.config import config
 from src.data.server_sim import ServerSIM as LocSysSIM
 from src.data.server_sim import ServerSIM as TrafficSIM
@@ -40,7 +42,12 @@ from src.lib.actuator.momentcontrol import MovementControl
 from src.lib.actuator.sim_connect import SimulatorConnector
 from src.lib.cortex.decisionproc import DecisionMakingProcess
 
-from src.utils.IMU.imuProc import IMUProcess
+try:
+    from src.utils.IMU.imuProc import IMUProcess
+except Exception as e:
+    print(e)
+    disableIMU = True
+
 from src.lib.perception.intersection_det import IntersectionDetProcess
 from src.lib.perception.lanekeep import LaneKeepingProcess as LaneKeeping
 from src.utils.camerastreamer.perceptStreamProcess import PerceptStreamerProcess
@@ -152,10 +159,12 @@ elif config["using_server"]:
     dataFusionInputPs.append(tlFzzR)
 
     # IMU -> Decision Making (data fusion)
-    imuFzzR, imuFzzS = Pipe(duplex=False)
-    imuProc = IMUProcess([], [imuFzzS])
-    allProcesses.append(imuProc)
-    dataFusionInputPs.append(imuFzzR)
+    if not disableIMU:
+        imuFzzR, imuFzzS = Pipe(duplex=False)
+        imuProc = IMUProcess([], [imuFzzS])
+        allProcesses.append(imuProc)
+        dataFusionInputPs.append(imuFzzR)
+
 
 # ======================= Decision Making =========================================
 
@@ -176,10 +185,14 @@ allProcesses.append(cfProc)
 # Serial handler or Simulator Connector
 if config["enableSIM"]:
     shProc = SimulatorConnector([cfR], [])
+    allProcesses.append(shProc)
 else:
-    shProc = SerialHandlerProcess([cfR], [])
+    try:
+        shProc = SerialHandlerProcess([cfR], [])
+        allProcesses.append(shProc)
+    except Exception:
+        print("ERROR: Falied to start Serial Handler")
 
-allProcesses.append(shProc)
 
 # ========================= Streamer =====================================================
 if config["enableStream"]:
