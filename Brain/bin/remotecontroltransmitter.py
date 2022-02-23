@@ -27,8 +27,9 @@ from multiprocessing import Event
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
-from src.utils.remotecontrol.RemoteControlTransmitterProcess import \
-    RemoteControlTransmitterProcess
+from src.utils.remotecontrol.RemoteControlTransmitterProcess import (
+    RemoteControlTransmitterProcess,
+)
 
 # ===================================== MAIN =============================================
 if __name__ == "__main__":

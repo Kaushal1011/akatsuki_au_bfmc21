@@ -32,8 +32,7 @@ from multiprocessing import Pipe
 from threading import Thread
 
 from src.config import config
-from src.utils.remotecontrol.KeyboardListenerThread import \
-    KeyboardListenerThread
+from src.utils.remotecontrol.KeyboardListenerThread import KeyboardListenerThread
 from src.utils.remotecontrol.RcBrainThread import RcBrainThread
 
 REMOTE_PORT = 12244

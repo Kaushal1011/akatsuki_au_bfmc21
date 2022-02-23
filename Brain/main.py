@@ -38,13 +38,13 @@ from multiprocessing import Event, Pipe
 # hardware imports
 from src.hardware.camera.cameraprocess import CameraProcess
 from src.hardware.camera.CameraSpooferProcess import CameraSpooferProcess
-from src.hardware.serialhandler.SerialHandlerProcess import \
-    SerialHandlerProcess
+from src.hardware.serialhandler.SerialHandlerProcess import SerialHandlerProcess
+
 # utility imports
-from src.utils.camerastreamer.CameraStreamerProcess import \
-    CameraStreamerProcess
-from src.utils.remotecontrol.RemoteControlReceiverProcess import \
-    RemoteControlReceiverProcess
+from src.utils.camerastreamer.CameraStreamerProcess import CameraStreamerProcess
+from src.utils.remotecontrol.RemoteControlReceiverProcess import (
+    RemoteControlReceiverProcess,
+)
 
 # =============================== CONFIG =================================================
 enableStream = True

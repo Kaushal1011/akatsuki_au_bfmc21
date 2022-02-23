@@ -29,8 +29,6 @@
 import sys
 from multiprocessing import Event, Pipe
 
-from sympy import EX
-
 from src.config import config
 from src.data.server_sim import ServerSIM as LocSysSIM
 from src.data.server_sim import ServerSIM as TrafficSIM
@@ -48,15 +46,14 @@ except Exception as e:
     print(e)
     disableIMU = True
 
+from src.data.localisationssystem.locsysProc import LocalisationSystemProcess
+from src.data.trafficlights.trafficProc import TrafficProcess
 from src.lib.perception.intersection_det import IntersectionDetProcess
 from src.lib.perception.lanekeep import LaneKeepingProcess as LaneKeeping
 from src.utils.camerastreamer.perceptStreamProcess import PerceptStreamerProcess
 from src.utils.remotecontrol.RemoteControlReceiverProcess import (
     RemoteControlReceiverProcess,
 )
-
-from src.data.localisationssystem.locsysProc import LocalisationSystemProcess
-from src.data.trafficlights.trafficProc import TrafficProcess
 
 # ========================================================================
 # SCRIPT USED FOR WIRING ALL COMPONENTS

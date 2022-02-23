@@ -36,8 +36,7 @@ import time
 # from cryptography.utils import signature
 
 try:
-    from server.utils import (load_private_key, load_public_key, sign_data,
-                              verify_data)
+    from server.utils import load_private_key, load_public_key, sign_data, verify_data
 except ImportError:
     from utils import load_private_key, load_public_key, sign_data, verify_data
 

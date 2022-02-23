@@ -28,8 +28,7 @@
 
 from multiprocessing import Event
 
-from src.utils.camerastreamer.CameraReceiverProcess import \
-    CameraReceiverProcess
+from src.utils.camerastreamer.CameraReceiverProcess import CameraReceiverProcess
 
 # ===================================== MAIN =============================================
 if __name__ == "__main__":
