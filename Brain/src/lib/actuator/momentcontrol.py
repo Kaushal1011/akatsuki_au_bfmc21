@@ -18,7 +18,7 @@ class MovementControl(WorkerProcess):
         """
         # Initialize parameters
         self.angle = 0.0
-        self.speed = 20.0
+        self.speed = 5.0
 
         super(MovementControl, self).__init__(inPs, outPs)
 

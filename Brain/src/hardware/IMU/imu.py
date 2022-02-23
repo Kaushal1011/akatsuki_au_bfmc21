@@ -86,7 +86,8 @@ class imu(threading.Thread):
                 )
                 for outP in self.outPs:
                     outP.send({"roll": self.roll, "pitch": self.pitch, "yaw": self.yaw})
-                time.sleep(self.poll_interval * 1.0 / 1000.0)
+                # time.sleep(self.poll_interval * 1.0 / 1000.0)
+                time.sleep(0.5)
 
     def stop(self):
         self.running = False

@@ -84,7 +84,7 @@ class LocalisationSystemProcess(WorkerProcess):
                             coora["coor"][1].real, coora["coor"][1].imag
                         ),
                     }
-                    for outP in outPs:
+                    for outP in [outPs]:
                         outP.send(data)
                 time.sleep(1)
             except KeyboardInterrupt:
