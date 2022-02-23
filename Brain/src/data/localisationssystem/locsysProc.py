@@ -78,8 +78,8 @@ class LocalisationSystemProcess(WorkerProcess):
                 if coora:
                     data = {
                         "timestamp": coora["timestamp"],
-                        "PosA": coora["coor"][0].real,
-                        "PosB": coora["coor"][0].imag,
+                        "posA": coora["coor"][0].real,
+                        "posB": coora["coor"][0].imag,
                         "radA": math.atan2(
                             coora["coor"][1].real, coora["coor"][1].imag
                         ),
