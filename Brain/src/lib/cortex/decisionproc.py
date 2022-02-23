@@ -130,7 +130,10 @@ class DecisionMakingProcess(WorkerProcess):
         while True:
             try:
                 angle, _ = inPs[0].recv()
+                print("recieved in from lk")
                 detected_intersection = inPs[1].recv()
+                print("recieved in from iD")
+
                 x = None
                 y = None
                 yaw = None
@@ -139,6 +142,7 @@ class DecisionMakingProcess(WorkerProcess):
                 # if locsys process is connected
                 if len(inPs) > 2:
                     loc = inPs[2].recv()
+
                     x = loc["posA"]
                     y = loc["posB"]
                     yaw = 2 * math.pi - (loc["radA"] + math.pi)
