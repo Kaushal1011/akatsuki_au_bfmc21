@@ -35,18 +35,18 @@ from src.data.server_sim import ServerSIM as TrafficSIM
 from src.hardware.camera.cameraprocess import CameraProcess
 from src.hardware.camera.CameraSpooferProcess import CameraSpooferProcess
 from src.hardware.camera.SIMCameraProcess import SIMCameraProcess
-from src.hardware.serialhandler.SerialHandlerProcess import \
-    SerialHandlerProcess
+from src.hardware.serialhandler.SerialHandlerProcess import SerialHandlerProcess
 from src.lib.actuator.momentcontrol import MovementControl
 from src.lib.actuator.sim_connect import SimulatorConnector
 from src.lib.cortex.decisionproc import DecisionMakingProcess
+
 # from src.utils.IMU.imuProc import IMUProcess
 from src.lib.perception.intersection_det import IntersectionDetProcess
 from src.lib.perception.lanekeep import LaneKeepingProcess as LaneKeeping
-from src.utils.camerastreamer.perceptStreamProcess import \
-    PerceptStreamerProcess
-from src.utils.remotecontrol.RemoteControlReceiverProcess import \
-    RemoteControlReceiverProcess
+from src.utils.camerastreamer.perceptStreamProcess import PerceptStreamerProcess
+from src.utils.remotecontrol.RemoteControlReceiverProcess import (
+    RemoteControlReceiverProcess,
+)
 
 # ========================================================================
 # SCRIPT USED FOR WIRING ALL COMPONENTS
@@ -61,7 +61,58 @@ LOCSYS_SIM_PORT = 8888
 allProcesses = []
 movementControlR = []
 camOutPs = []
+# Note: ensure the sequence in which pipes are added to dataFusionInputPs
+# [LaneKeep, IntersectionDet, LocSys, TrafficLight]
 dataFusionInputPs = []
+
+# =============================== RC CONTROL =================================================
+if config["enableRc"]:
+    # rc      ->  serial handler
+    rcShR, rcShS = Pipe(duplex=False)
+
+    rcProc = RemoteControlReceiverProcess([], [rcShS])
+    allProcesses.append(rcProc)
+
+
+# ===================================== PERCEPTION ===================================
+
+if config["enableLaneKeeping"]:
+    # Camera process -> Lane keeping
+    lkR, lkS = Pipe(duplex=False)
+
+    # Lane keeping -> Data Fusion
+    lkFzzR, lkFzzS = Pipe(duplex=False)
+
+    # Lane keeping -> Movement control
+    FzzMcR, FzzMcS = Pipe(duplex=False)
+
+    camOutPs.append(lkS)
+    dataFusionInputPs.append(lkFzzR)
+
+    if config["enableStream"]:
+        lkStrR, lkStrS = Pipe(duplex=False)
+        lkProc = LaneKeeping([lkR], [lkFzzS, lkStrS])
+    else:
+        lkProc = LaneKeeping([lkR], [lkFzzS])
+
+    allProcesses.append(lkProc)
+
+if config["enableIntersectionDet"]:
+    # Camera process -> Intersection Detection
+    camiDR, camiDS = Pipe(duplex=False)
+
+    # Intersection Detection -> Data Fusion
+    iDFzzR, iDFzzS = Pipe(duplex=False)
+
+    camOutPs.append(camiDS)
+    dataFusionInputPs.append(iDFzzR)
+    if config["enableStream"]:
+        idStrR, idStrS = Pipe(duplex=False)
+        idProc = IntersectionDetProcess([camiDR], [iDFzzS, idStrS])
+    else:
+        idProc = IntersectionDetProcess([camiDR], [iDFzzS])
+    allProcesses.append(idProc)
+
 
 # =============================== DATA ===================================================
 # LocSys client process
@@ -90,54 +141,6 @@ if config["enableSIM"]:
     # allProcesses.append(imuProc)
     # dataFusionInputPs.append(imuFzzR)
 
-# =============================== RC CONTROL =================================================
-if config["enableRc"]:
-    # rc      ->  serial handler
-    rcShR, rcShS = Pipe(duplex=False)
-
-    rcProc = RemoteControlReceiverProcess([], [rcShS])
-    allProcesses.append(rcProc)
-
-
-# ===================================== PERCEPTION ===================================
-
-if config["enableIntersectionDet"]:
-    # Camera process -> Intersection Detection
-    camiDR, camiDS = Pipe(duplex=False)
-
-    # Intersection Detection -> Data Fusion
-    iDFzzR, iDFzzS = Pipe(duplex=False)
-
-    camOutPs.append(camiDS)
-    dataFusionInputPs.append(iDFzzR)
-    if config["enableStream"]:
-        idStrR, idStrS = Pipe(duplex=False)
-        idProc = IntersectionDetProcess([camiDR], [iDFzzS, idStrS])
-    else:
-        idProc = IntersectionDetProcess([camiDR], [iDFzzS])
-    allProcesses.append(idProc)
-
-
-if config["enableLaneKeeping"]:
-    # Camera process -> Lane keeping
-    lkR, lkS = Pipe(duplex=False)
-
-    # Lane keeping -> Data Fusion
-    lkFzzR, lkFzzS = Pipe(duplex=False)
-
-    # Lane keeping -> Movement control
-    FzzMcR, FzzMcS = Pipe(duplex=False)
-
-    camOutPs.append(lkS)
-    dataFusionInputPs.append(lkFzzR)
-
-    if config["enableStream"]:
-        lkStrR, lkStrS = Pipe(duplex=False)
-        lkProc = LaneKeeping([lkR], [lkFzzS, lkStrS])
-    else:
-        lkProc = LaneKeeping([lkR], [lkFzzS])
-
-    allProcesses.append(lkProc)
 # ======================= Decision Making =========================================
 
 datafzzProc = DecisionMakingProcess(dataFusionInputPs, [FzzMcS])

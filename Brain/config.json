@@ -1,5 +1,5 @@
 {
-  "enableStream": false,
+  "enableStream": true,
   "enableCameraSpoof": false,
   "enableRc": true,
   "enableLaneKeeping": true,

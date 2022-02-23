@@ -68,7 +68,7 @@ class PerceptStreamerProcess(WorkerProcess):
         if self._blocker.is_set():
             return
         streamTh = Thread(
-            name="StreamSendingThread", target=self._send_thread, args=(self.inPs[0],)
+            name="StreamSendingThread", target=self._send_thread, args=(self.inPs,)
         )
         streamTh.daemon = True
         self.threads.append(streamTh)
