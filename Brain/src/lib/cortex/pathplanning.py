@@ -114,7 +114,7 @@ class PathPlanning:
 class Purest_Pursuit:
     def __init__(self, coord_list):
         self.k = 0.01  # look forward gain
-        self.Lfc = 0.50  # [m] look-ahead distance
+        self.Lfc = 0.35  # [m] look-ahead distance
         self.Kp = 1.0  # speed proportional gain
         self.WB = 0.3  # [m] wheel base of vehicle
         self.cx, self.cy = zip(*coord_list)
@@ -139,6 +139,7 @@ class Purest_Pursuit:
                         self.cx[ind + 1], self.cy[ind + 1]
                     )
                 except IndexError:
+                    print("index error")
                     distance_next_index = state.calc_distance(self.cx[-1], self.cy[-1])
 
                 if distance_this_index < distance_next_index:

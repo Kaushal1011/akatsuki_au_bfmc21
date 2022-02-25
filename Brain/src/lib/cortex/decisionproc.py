@@ -128,10 +128,8 @@ class DecisionMakingProcess(WorkerProcess):
         """
         while True:
             try:
-                angle, _ = inPs[0].recv()
-                print("recieved in from lk")
+                lk_angle, _ = inPs[0].recv()
                 detected_intersection = inPs[1].recv()
-                print("recieved in from iD")
 
                 x = None
                 y = None
@@ -144,9 +142,8 @@ class DecisionMakingProcess(WorkerProcess):
 
                     x = loc["posA"]
                     y = loc["posB"]
-                    yaw = 2 * math.pi - (loc["radA"] + math.pi)
-                    print("XYYaw", x, y, yaw)
-
+                    yaw = 2 * math.pi - (loc["rotA"] + math.pi)
+                
                 # if trafficlight process is connected
                 if len(inPs) > 3:
                     trafficlights = inPs[3].recv()
@@ -157,18 +154,23 @@ class DecisionMakingProcess(WorkerProcess):
                     print(imu_data)
 
                 self.state.update(
-                    angle, detected_intersection, x, y, yaw, trafficlights
+                    lk_angle, detected_intersection, x, y, yaw, trafficlights
                 )
                 print(self.state)
                 ind, Lf = pPC.search_target_index(self.state)
-                if p_type[ind] == "ind":
+                print(ind,coord_list[ind])
+                if p_type[ind-1] == "int":
                     angle = controlsystem(self.state, ind, Lf)
-                elif p_type[ind] == "lk":
-                    pass
-                print(f"Current Behaviour : {p_type[ind]}")
+                elif p_type[ind-1] == "lk":
+                    angle = lk_angle
+                    #angle = controlsystem(self.state, ind, Lf)
+                else:
+                    print("Here in nothingness")
+                    
+                print(f"Current Behaviour : {p_type[ind-1]}")
                 # if no locsys use self localization
-                if len(inPs) < 3:
-                    self.state.update_pos(angle)
+                # if len(inPs) < 3:
+                #     self.state.update_pos(angle)
 
                 for outP in outPs:
                     outP.send((-angle, None))
