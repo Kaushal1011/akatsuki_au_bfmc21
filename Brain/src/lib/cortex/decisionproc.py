@@ -165,7 +165,7 @@ class DecisionMakingProcess(WorkerProcess):
                     angle = controlsystem(self.state, ind, Lf)
                 elif p_type[ind] == "lk":
                     pass
-
+                print(f"Current Behaviour : {p_type[ind]}")
                 # if no locsys use self localization
                 if len(inPs) < 3:
                     self.state.update_pos(angle)
