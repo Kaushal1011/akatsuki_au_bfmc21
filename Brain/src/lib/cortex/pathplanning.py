@@ -71,9 +71,12 @@ class PathPlanning:
 
         self.node_dict = self.graph.nodes(data=True)
 
-    def get_path(self, start_idx: str, end_idx: str) -> List[Tuple[int]]:
+    def get_path(self, start_idx: str, end_idx: str) -> Tuple[List[Tuple[int]], str]:
         path_list, _ptype, _edgret = dijkstra(self.graph, start_idx, end_idx)
-        return self._smooth_point_list(self._convert_nx_path2list(path_list), _ptype)
+        return (
+            self._smooth_point_list(self._convert_nx_path2list(path_list), _ptype),
+            _ptype,
+        )
 
     def _convert_nx_path2list(self, path_list) -> List[Tuple[int]]:
         coord_list = []
@@ -136,9 +139,7 @@ class Purest_Pursuit:
                         self.cx[ind + 1], self.cy[ind + 1]
                     )
                 except IndexError:
-                    distance_next_index = state.calc_distance(
-                        self.cx[-1], self.cy[-1]
-                    )
+                    distance_next_index = state.calc_distance(self.cx[-1], self.cy[-1])
 
                 if distance_this_index < distance_next_index:
                     break
@@ -156,9 +157,7 @@ class Purest_Pursuit:
 
         return ind, Lf
 
-    def purest_pursuit_steer_control(self, state):
-        ind, Lf = self.search_target_index(state)
-
+    def purest_pursuit_steer_control(self, state, ind, Lf):
         if ind < len(self.cx):
             tx = self.cx[ind]
             ty = self.cy[ind]

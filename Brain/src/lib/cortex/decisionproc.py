@@ -65,13 +65,12 @@ class CarState:
 
 
 plan = PathPlanning()
-coord_list = plan.get_path(config["start_idx"], config["end_idx"])
+coord_list, p_type = plan.get_path(config["start_idx"], config["end_idx"])
 pPC = Purest_Pursuit(coord_list)
 
 
-def controlsystem(vehicle: CarState):
-
-    di = pPC.purest_pursuit_steer_control(vehicle)
+def controlsystem(vehicle: CarState, ind, Lf):
+    di = pPC.purest_pursuit_steer_control(vehicle, ind, Lf)
     di = di * 180 / math.pi
 
     if di > 21:
@@ -161,7 +160,11 @@ class DecisionMakingProcess(WorkerProcess):
                     angle, detected_intersection, x, y, yaw, trafficlights
                 )
                 print(self.state)
-                angle = controlsystem(self.state)
+                ind, Lf = pPC.search_target_index(self.state)
+                if p_type[ind] == "ind":
+                    angle = controlsystem(self.state, ind, Lf)
+                elif p_type[ind] == "lk":
+                    pass
 
                 # if no locsys use self localization
                 if len(inPs) < 3:
