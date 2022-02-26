@@ -18,7 +18,7 @@ class MovementControl(WorkerProcess):
         """
         # Initialize parameters
         self.angle = 0.0
-        self.speed = 20.0
+        self.speed = 15.0
         self.init = False
         super(MovementControl, self).__init__(inPs, outPs)
 
@@ -126,6 +126,7 @@ class MovementControl(WorkerProcess):
                     pid_activate_date, pid_conf_data = self._set_PID()
                     outP.send(pid_activate_date)
                     outP.send(pid_conf_data)
+                    self.init = True
 
                 outP.send(speed_data)
                 outP.send(steer_data)
