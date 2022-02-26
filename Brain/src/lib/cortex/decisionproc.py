@@ -152,6 +152,10 @@ class DecisionMakingProcess(WorkerProcess):
                     x = loc["posA"]
                     y = loc["posB"]
                     yaw = 2 * math.pi - (loc["rotA"] + math.pi)
+                    # if no locsys use self localization
+                else:
+                    print("Using self localization")
+                    self.state.update_pos(angle)
 
                 # if trafficlight process is connected
                 if len(inPs) > 3:
@@ -181,9 +185,6 @@ class DecisionMakingProcess(WorkerProcess):
                     print("Here in nothingness")
 
                 print(f"Current Behaviour : {p_type[ind-1]}")
-                # if no locsys use self localization
-                # if len(inPs) < 3:
-                #     self.state.update_pos(angle)
 
                 for outP in outPs:
                     outP.send((-angle, None))
