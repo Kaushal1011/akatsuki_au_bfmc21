@@ -18,13 +18,14 @@ class MovementControl(WorkerProcess):
         """
         # Initialize parameters
         self.angle = 0.0
-        self.speed = 15.0
+        self.speed = 18.0
         self.init = False
         super(MovementControl, self).__init__(inPs, outPs)
 
     def _init_threads(self):
         """Initialize the a thread for initial start and a thread for listening for the steering angle."""
-
+        self._set_PID(outPs=self.outPs)
+        
         startTh = Thread(
             name="InitialStart", target=self._singleUpdate, args=(self.outPs,)
         )
@@ -102,7 +103,11 @@ class MovementControl(WorkerProcess):
         pid_activate_data = {}
         pid_activate_data["action"] = "4"
         pid_activate_data["activate"] = True
-        return pid_activate_data, pid_conf_data
+        
+        for outP in outPs:
+            outP.send(pid_activate_data)
+            outP.send(pid_conf_data)
+
 
     def _singleUpdate(self, outPs):
         """Update the state of the controls"""
@@ -122,12 +127,6 @@ class MovementControl(WorkerProcess):
         # Send data
         try:
             for outP in outPs:
-                if not self.init:
-                    pid_activate_date, pid_conf_data = self._set_PID()
-                    outP.send(pid_activate_date)
-                    outP.send(pid_conf_data)
-                    self.init = True
-
                 outP.send(speed_data)
                 outP.send(steer_data)
         except Exception as e:

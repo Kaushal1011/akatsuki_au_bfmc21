@@ -6,14 +6,15 @@ from typing import Optional
 from src.config import config
 from src.lib.cortex.pathplanning import PathPlanning, Purest_Pursuit
 from src.templates.workerprocess import WorkerProcess
-
+from time import time
 
 class CarState:
-    def __init__(self, v=0, dt=0.1, car_len=0.365) -> None:
+    def __init__(self, v=0.12, dt=0.1, car_len=0.365) -> None:
         self.steering_angle = 0.0
         self.det_intersection = False
-        self.x = 0
-        self.y = 0
+        #TODO: get initial position from config IDK
+        self.x = 0.83
+        self.y = 14.67
         self.yaw = 0
         self.tl = {}
         self.v = v
@@ -22,11 +23,14 @@ class CarState:
         self.rear_x = self.x - ((car_len / 2) * math.cos(self.yaw))
         self.rear_y = self.y - ((car_len / 2) * math.sin(self.yaw))
         self.closest_pt = None
+        self.last_update_time = time()
 
     def update_pos(self, steering_angle):
-        self.x = self.x + self.v * math.cos(self.yaw) * self.dt
-        self.y = self.y + self.v * math.sin(self.yaw) * self.dt
-        self.yaw = self.yaw + self.v / self.car_len * math.tan(steering_angle) * self.dt
+        dt = time() - self.last_update_time
+        self.last_update_time = time()
+        self.x = self.x + self.v * math.cos(self.yaw) * dt
+        self.y = self.y + self.v * math.sin(self.yaw) * dt
+        self.yaw = self.yaw + self.v / self.car_len * math.tan(steering_angle) * dt
 
     def calc_distance(self, point_x, point_y):
         dx = self.rear_x - point_x
@@ -152,11 +156,7 @@ class DecisionMakingProcess(WorkerProcess):
                     x = loc["posA"]
                     y = loc["posB"]
                     yaw = 2 * math.pi - (loc["rotA"] + math.pi)
-                    # if no locsys use self localization
-                else:
-                    print("Using self localization")
-                    self.state.update_pos(angle)
-
+                    
                 # if trafficlight process is connected
                 if len(inPs) > 3:
                     trafficlights = inPs[3].recv()
@@ -185,9 +185,14 @@ class DecisionMakingProcess(WorkerProcess):
                     print("Here in nothingness")
 
                 print(f"Current Behaviour : {p_type[ind-1]}")
+                
+                # if no locsys use self localization
+                if len(inPs) < 3:
+                    print("Using self localization")
+                    self.state.update_pos(angle)
 
                 for outP in outPs:
-                    outP.send((-angle, None))
+                    outP.send((angle, None))
 
             except Exception as e:
                 print("Decision Process error:")
