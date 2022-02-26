@@ -65,8 +65,17 @@ class CarState:
 
 
 plan = PathPlanning()
-coord_list, p_type = plan.get_path(config["start_idx"], config["end_idx"])
-pPC = Purest_Pursuit(coord_list)
+
+
+def plan_path():
+    global p_type
+    global coord_list
+    global pPC
+    coord_list, p_type = plan.get_path(config["start_idx"], config["end_idx"])
+    pPC = Purest_Pursuit(coord_list)
+
+
+plan_path()
 
 
 def controlsystem(vehicle: CarState, ind, Lf):
@@ -143,7 +152,7 @@ class DecisionMakingProcess(WorkerProcess):
                     x = loc["posA"]
                     y = loc["posB"]
                     yaw = 2 * math.pi - (loc["rotA"] + math.pi)
-                
+
                 # if trafficlight process is connected
                 if len(inPs) > 3:
                     trafficlights = inPs[3].recv()
@@ -158,15 +167,19 @@ class DecisionMakingProcess(WorkerProcess):
                 )
                 print(self.state)
                 ind, Lf = pPC.search_target_index(self.state)
-                print(ind,coord_list[ind])
-                if p_type[ind-1] == "int":
+                print(ind, coord_list[ind])
+                # intersection navigation
+                if p_type[ind - 1] == "int":
                     angle = controlsystem(self.state, ind, Lf)
-                elif p_type[ind-1] == "lk":
+                # lane keeping
+                elif p_type[ind - 1] == "lk":
                     angle = lk_angle
-                    #angle = controlsystem(self.state, ind, Lf)
+                # stop reached
+                elif all((x, y) == coord_list[ind]):
+                    print("Its time to stop")
                 else:
                     print("Here in nothingness")
-                    
+
                 print(f"Current Behaviour : {p_type[ind-1]}")
                 # if no locsys use self localization
                 # if len(inPs) < 3:

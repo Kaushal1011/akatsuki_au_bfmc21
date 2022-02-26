@@ -19,7 +19,7 @@ class MovementControl(WorkerProcess):
         # Initialize parameters
         self.angle = 0.0
         self.speed = 20.0
-
+        self.init = False
         super(MovementControl, self).__init__(inPs, outPs)
 
     def _init_threads(self):
@@ -90,6 +90,20 @@ class MovementControl(WorkerProcess):
             except Exception as e:
                 print(e)
 
+    def _set_PID(self, outPs):
+        """Set PID to True and configure PID"""
+        pid_conf_data = {}
+        pid_conf_data["action"] = "6"
+        pid_conf_data["kp"] = 0.115000
+        pid_conf_data["ki"] = 0.810000
+        pid_conf_data["kd"] = 0.000222
+        pid_conf_data["tf"] = 0.040000
+
+        pid_activate_data = {}
+        pid_activate_data["action"] = "4"
+        pid_activate_data["activate"] = True
+        return pid_activate_data, pid_conf_data
+
     def _singleUpdate(self, outPs):
         """Update the state of the controls"""
         # Initialize the data array to be sent
@@ -108,6 +122,11 @@ class MovementControl(WorkerProcess):
         # Send data
         try:
             for outP in outPs:
+                if not self.init:
+                    pid_activate_date, pid_conf_data = self._set_PID()
+                    outP.send(pid_activate_date)
+                    outP.send(pid_conf_data)
+
                 outP.send(speed_data)
                 outP.send(steer_data)
         except Exception as e:
