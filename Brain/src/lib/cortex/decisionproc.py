@@ -65,7 +65,7 @@ class CarState:
 
 
 plan = PathPlanning()
-coord_list, p_type = plan.get_path(config["start_idx"], config["end_idx"])
+coord_list, p_type, etype = plan.get_path(config["start_idx"], config["end_idx"])
 pPC = Purest_Pursuit(coord_list)
 
 
@@ -163,7 +163,7 @@ class DecisionMakingProcess(WorkerProcess):
                     angle = controlsystem(self.state, ind, Lf)
                 elif p_type[ind-1] == "lk":
                     angle = lk_angle
-                    #angle = controlsystem(self.state, ind, Lf)
+                    # angle = controlsystem(self.state, ind, Lf)
                 else:
                     print("Here in nothingness")
                     

@@ -6,7 +6,7 @@
   "enableSIM": true,
   "enableIntersectionDet": true,
   "start_idx": "86",
-  "end_idx": "40",
+  "end_idx": "170",
   "using_server": false,
   "test_track": false,
   "pc_ip": "0.0.0.0",

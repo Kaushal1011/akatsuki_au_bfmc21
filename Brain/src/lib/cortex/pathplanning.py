@@ -2,6 +2,8 @@ import heapq
 import math
 from typing import List, Tuple
 
+from scipy.interpolate import interp1d
+
 import networkx as nx
 import numpy as np
 
@@ -72,11 +74,11 @@ class PathPlanning:
         self.node_dict = self.graph.nodes(data=True)
 
     def get_path(self, start_idx: str, end_idx: str) -> Tuple[List[Tuple[int]], str]:
+        
         path_list, _ptype, _edgret = dijkstra(self.graph, start_idx, end_idx)
-        return (
-            self._smooth_point_list(self._convert_nx_path2list(path_list), _ptype),
-            _ptype,
-        )
+
+        return self._smooth_point_list(self._convert_nx_path2list(path_list), _ptype,_edgret)
+        
 
     def _convert_nx_path2list(self, path_list) -> List[Tuple[int]]:
         coord_list = []
@@ -85,11 +87,14 @@ class PathPlanning:
             coord_list.append([data["x"], data["y"]])
         return coord_list
 
-    def _smooth_point_list(self, coord_list, ptype) -> List[Tuple[int]]:
+    def _smooth_point_list(self, coord_list, ptype,etype) -> List[Tuple[int]]:
         coordlist_new = []
         count = 0
+        sizeincrease=0
         countfinal = len(coord_list)
         print(countfinal)
+        ptype_new=ptype.copy()
+        etype_new=etype.copy()
 
         while count < countfinal:
             if ptype[count] == "int":
@@ -102,19 +107,44 @@ class PathPlanning:
                 xfinmid = (xmidint + coord_list[count + 1][0]) / 2
                 yfinmid = (ymidint + coord_list[count + 1][1]) / 2
 
-                coordlist_new.append((xfinmid, yfinmid))
-                coordlist_new.append(coord_list[count + 2])
-                count += 3
+                pts=[coord_list[count],(xfinmid,yfinmid),coord_list[count+2]]
+
+                x,y=zip(*pts)
+                
+                i = np.arange(len(x))
+
+                # 5x the original number of points
+                interp_i = np.linspace(0, i.max(), 5 * i.max())
+
+                xi = interp1d(i, x, kind='quadratic')(interp_i)
+                yi = interp1d(i, y, kind='quadratic')(interp_i)
+                
+                for i in range(len(xi)):
+                    coordlist_new.append((xi[i],yi[i]))
+                    ptype_new.insert(count+sizeincrease,"int")
+                    etype_new.insert(count+sizeincrease,False)
+                    sizeincrease+=1
+                
+                
+                
+                # coordlist_new.append((xfinmid,yfinmid))
+                coordlist_new.append(coord_list[count+2])
+                count+=3
+
+                # coordlist_new.append((xfinmid, yfinmid))
+                # coordlist_new.append(coord_list[count + 2])
+                # count += 3
             else:
                 coordlist_new.append(coord_list[count])
                 count += 1
-        return coordlist_new
+
+        return coordlist_new,ptype_new,etype_new
 
 
 class Purest_Pursuit:
     def __init__(self, coord_list):
         self.k = 0.01  # look forward gain
-        self.Lfc = 0.35  # [m] look-ahead distance
+        self.Lfc = 0.25  # [m] look-ahead distance
         self.Kp = 1.0  # speed proportional gain
         self.WB = 0.3  # [m] wheel base of vehicle
         self.cx, self.cy = zip(*coord_list)
