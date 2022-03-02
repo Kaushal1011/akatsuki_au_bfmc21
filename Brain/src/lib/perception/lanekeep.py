@@ -1,4 +1,5 @@
 from threading import Thread
+from time import time
 
 # from simple_pid import PID
 from src.lib.perception.lanekeephandle import LaneKeep as LaneKeepMethod
@@ -20,7 +21,7 @@ class LaneKeepingProcess(WorkerProcess):
             List of output pipes (0 - send steering data to the movvement control process)
         """
         super(LaneKeepingProcess, self).__init__(inPs, outPs)
-        self.lk = LaneKeepMethod(use_perspective=True, computation_method="hough")
+        self.lk = LaneKeepMethod(use_perspective=False, computation_method="hough")
 
     def run(self):
         """Apply the initializing methods and start the threads."""
@@ -61,13 +62,18 @@ class LaneKeepingProcess(WorkerProcess):
         while True:
             try:
                 # Obtain image
+                i = time()
                 stamps, img = inP.recv()
+                # print("Time taken to recieve image", time()- i)
+                a = time()
                 # Apply image processing
                 val, outimage = self.lk(img)
                 angle = self.computeSteeringAnglePID(val)
 
                 for outP in outPs:
-                    outP.send((angle, outimage))
+                    outP.send((angle, None))
+
+                # print("Timetaken by LK: ", time() - a)
 
             except Exception as e:
                 print("Lane keeping error:")

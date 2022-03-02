@@ -1,4 +1,5 @@
 from threading import Thread
+from time import time
 
 from src.lib.perception.intersectiondethandle import intersection_det
 from src.templates.workerprocess import WorkerProcess
@@ -53,10 +54,11 @@ class IntersectionDetProcess(WorkerProcess):
                 # Obtain image
                 stamps, img = inP.recv()
                 # Apply image processing
+                a = time()
                 detected, _ = intersection_det(img)
                 for outP in outPs:
                     outP.send(detected)
-
+                # print("Time taken by ID:", time() - a)
             except Exception as e:
                 print("Intersection Detection error:")
                 print(e)

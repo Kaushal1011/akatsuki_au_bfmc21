@@ -1,6 +1,8 @@
 import datetime
 import math
+from socket import timeout
 from threading import Thread
+from time import time
 from typing import Optional
 
 from src.config import config
@@ -65,9 +67,10 @@ class CarState:
 
 
 plan = PathPlanning()
+a = time()
 coord_list, p_type, etype = plan.get_path(config["start_idx"], config["end_idx"])
 pPC = Purest_Pursuit(coord_list)
-
+# print("Time taken by Path Planning:", time() - a)
 
 def controlsystem(vehicle: CarState, ind, Lf):
     di = pPC.purest_pursuit_steer_control(vehicle, ind, Lf)
@@ -95,6 +98,7 @@ class DecisionMakingProcess(WorkerProcess):
         """
         super(DecisionMakingProcess, self).__init__(inPs, outPs)
         self.state = CarState()
+        self.locsys_first=True
 
     def run(self):
         """Apply the initializing methods and start the threads."""
@@ -128,21 +132,39 @@ class DecisionMakingProcess(WorkerProcess):
         """
         while True:
             try:
+                c = time()
+                t_lk = time()
                 lk_angle, _ = inPs[0].recv()
+                # print("Time taken to r lk", time() - t_lk)
+                t_id = time()
                 detected_intersection = inPs[1].recv()
+                # print("Time taken to r id", time() - t_id)
 
-                x = None
-                y = None
-                yaw = None
+                x = self.state.x
+                y = self.state.y
+                yaw = self.state.yaw
                 trafficlights = None
                 imu_data = None
                 # if locsys process is connected
-                if len(inPs) > 2:
-                    loc = inPs[2].recv()
+                t_loc = time()
 
-                    x = loc["posA"]
-                    y = loc["posB"]
-                    yaw = 2 * math.pi - (loc["rotA"] + math.pi)
+                if len(inPs) > 2:
+                    if self.locsys_first:
+                        loc = inPs[2].recv()
+
+                        x = loc["posA"]
+                        y = loc["posB"]
+                        yaw = 2 * math.pi - (loc["rotA"] + math.pi)
+                        self.locsys_first=False
+
+                    if inPs[2].poll(timeout=0.1):
+                        loc = inPs[2].recv()
+
+                        x = loc["posA"]
+                        y = loc["posB"]
+                        yaw = 2 * math.pi - (loc["rotA"] + math.pi)
+                        
+                # print("Time taken to r loc", time() - t_loc)
                 
                 # if trafficlight process is connected
                 if len(inPs) > 3:
@@ -156,14 +178,20 @@ class DecisionMakingProcess(WorkerProcess):
                 self.state.update(
                     lk_angle, detected_intersection, x, y, yaw, trafficlights
                 )
+
                 print(self.state)
                 ind, Lf = pPC.search_target_index(self.state)
+                
                 print(ind,coord_list[ind])
+
                 if p_type[ind-1] == "int":
                     angle = controlsystem(self.state, ind, Lf)
                 elif p_type[ind-1] == "lk":
                     angle = lk_angle
-                    # angle = controlsystem(self.state, ind, Lf)
+                    angle2 = controlsystem(self.state, ind, Lf)
+                    if abs(angle2-angle)>21:
+                        print("lane keeping failed")
+                        angle=angle2
                 else:
                     print("Here in nothingness")
                     
@@ -174,7 +202,7 @@ class DecisionMakingProcess(WorkerProcess):
 
                 for outP in outPs:
                     outP.send((-angle, None))
-
+                print(time() - c)
             except Exception as e:
                 print("Decision Process error:")
                 raise e

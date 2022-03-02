@@ -169,7 +169,6 @@ class Purest_Pursuit:
                         self.cx[ind + 1], self.cy[ind + 1]
                     )
                 except IndexError:
-                    print("index error")
                     distance_next_index = state.calc_distance(self.cx[-1], self.cy[-1])
 
                 if distance_this_index < distance_next_index:

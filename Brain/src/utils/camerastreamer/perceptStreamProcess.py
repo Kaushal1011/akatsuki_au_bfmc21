@@ -108,9 +108,10 @@ class PerceptStreamerProcess(WorkerProcess):
             Input pipe to read the frames from CameraProcess or CameraSpooferProcess.
         """
         encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 70]
-
+        counter = 0
         while True:
             try:
+                
                 # input from lane keeping
                 _, image = inPs[0].recv()
 
@@ -119,7 +120,11 @@ class PerceptStreamerProcess(WorkerProcess):
                     _, contours = inPs[1].recv()
                     for c in contours:
                         cv2.drawContours(image, [c], -1, (255, 0, 0), 5)
-
+                
+                counter+=1
+                if not counter % 20 == 0:
+                    break
+                
                 _, image = cv2.imencode(".jpg", image, encode_param)
                 data = image.tobytes()
                 size = len(data)

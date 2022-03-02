@@ -136,10 +136,11 @@ if config["enableSIM"]:
     dataFusionInputPs.append(lsFzzR)
 
     # Traffic Semaphore -> Decision Making (data fusion)
-    tlFzzR, tlFzzS = Pipe(duplex=False)
-    trafficProc = TrafficSIM([], [tlFzzS], TRAFFIC_SIM_PORT)
-    allProcesses.append(trafficProc)
-    dataFusionInputPs.append(tlFzzR)
+    # TODO: enable again when required
+    # tlFzzR, tlFzzS = Pipe(duplex=False)
+    # trafficProc = TrafficSIM([], [tlFzzS], TRAFFIC_SIM_PORT)
+    # allProcesses.append(trafficProc)
+    # dataFusionInputPs.append(tlFzzR)
 
 elif config["using_server"]:
     # LocSys -> Decision Making (data fusion)
@@ -149,10 +150,11 @@ elif config["using_server"]:
     dataFusionInputPs.append(lsFzzR)
 
     # Traffic Semaphore -> Decision Making (data fusion)
-    tlFzzR, tlFzzS = Pipe(duplex=False)
-    trafficProc = TrafficProcess([], [tlFzzS])
-    allProcesses.append(trafficProc)
-    dataFusionInputPs.append(tlFzzR)
+    # TODO: enable again when required
+    # tlFzzR, tlFzzS = Pipe(duplex=False)
+    # trafficProc = TrafficProcess([], [tlFzzS])
+    # allProcesses.append(trafficProc)
+    # dataFusionInputPs.append(tlFzzR)
 
     # IMU -> Decision Making (data fusion)
     if not disableIMU:
@@ -193,7 +195,7 @@ else:
 # ========================= Streamer =====================================================
 if config["enableStream"]:
     if config["enableLaneKeeping"] and config["enableIntersectionDet"]:
-        streamProc = PerceptStreamerProcess([lkStrR, idStrR], [])
+        streamProc = PerceptStreamerProcess([lkStrR], [])
     elif config["enableLaneKeeping"]:
         streamProc = PerceptStreamerProcess([lkStrR], [])
     else:

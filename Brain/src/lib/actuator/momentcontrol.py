@@ -88,6 +88,7 @@ class MovementControl(WorkerProcess):
 
                 self._singleUpdate(outPs)
             except Exception as e:
+                print("Listening error:")
                 print(e)
 
     def _singleUpdate(self, outPs):
@@ -111,4 +112,5 @@ class MovementControl(WorkerProcess):
                 outP.send(speed_data)
                 outP.send(steer_data)
         except Exception as e:
+            print("Moment Control Error:")
             print(e)

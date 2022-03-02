@@ -1,5 +1,6 @@
 import math
 from functools import reduce
+from time import time
 from typing import List, Tuple
 
 import cv2
@@ -237,7 +238,6 @@ class LaneKeep:
         #         clean = cv2.fastNlMeansDenoising(blur)
         th3 = np.array(0.7 * th1 + 0.3 * th2).astype(np.uint8)
         blur = cv2.GaussianBlur(th3, (21, 21), 0)
-
         canny = cv2.Canny(blur, self.canny_thres1, self.canny_thres2)
         #         denoised=cv2.fastNlMeansDenoisingColored(canny,None,10,10,7,21)
         return canny
@@ -283,18 +283,23 @@ class LaneKeep:
     def houghlines_angle(self, img: np.ndarray) -> float:
         """Given processed image compute steering angle"""
         # find lanes takes processed image
+        a = time()
         processed_img = self.preprocess_pipeline(img)
+        # print("Time taken by preprocess", time()- a)
+        b = time()
         # cv2.imwrite("proccessed_img.jpg", processed_img)
         lines = find_lanes(processed_img)
         # average slop takes original image
         lanelines = average_slope_intercept(img, lines)
         angle = compute_steering_angle_lanelinecoord(img[:, :, 0], lane_lines=lanelines)
-
+        # print("Time taken to find lanes", time()- b)
+        c = time()
         processed_img = cv2.cvtColor(processed_img, cv2.COLOR_GRAY2RGB)
         # draw lanelines
         processed_img = draw_line(processed_img, lanelines)
         # draw heading lines
         outimage = display_heading_line(processed_img, angle)
+        # print("Timetake to generate image", time() - c)
         # outimage = cv2.hconcat([processed_out, outimage])
         return angle, outimage
 
