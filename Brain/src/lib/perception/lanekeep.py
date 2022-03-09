@@ -71,7 +71,7 @@ class LaneKeepingProcess(WorkerProcess):
                 angle = self.computeSteeringAnglePID(val)
 
                 for outP in outPs:
-                    outP.send((angle, None))
+                    outP.send((angle, outimage))
 
                 # print("Timetaken by LK: ", time() - a)
 

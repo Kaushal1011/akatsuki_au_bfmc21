@@ -65,6 +65,7 @@ class CameraStreamerProcess(WorkerProcess):
     # ===================================== INIT THREADS =================================
     def _init_threads(self):
         """Initialize the sending thread."""
+        print("Streamer: Thread Init")
         if self._blocker.is_set():
             return
         streamTh = Thread(
@@ -82,6 +83,7 @@ class CameraStreamerProcess(WorkerProcess):
         self.client_socket = socket.socket()
         self.connection = None
         # Trying repeatedly to connect the camera receiver.
+        print("Streamer: Initialising Socket")
         try:
             while self.connection is None and not self._blocker.is_set():
                 try:
@@ -108,18 +110,18 @@ class CameraStreamerProcess(WorkerProcess):
             Input pipe to read the frames from CameraProcess or CameraSpooferProcess.
         """
         encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 70]
-
+        count = 1
         while True:
             try:
+                
                 stamps, image = inP.recv()
                 # print(stamps, image)
                 result, image = cv2.imencode(".jpg", image, encode_param)
                 data = image.tobytes()
                 size = len(data)
-
+                print(f"Streaming | sending data size: {size}")
                 self.connection.write(struct.pack("<L", size))
                 self.connection.write(data)
-
             except Exception as e:
                 print("CameraStreamer failed to stream images:", e, "\n")
                 # Reinitialize the socket for reconnecting to client.

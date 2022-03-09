@@ -33,6 +33,7 @@ sys.path.append(".")
 import socket
 import struct
 from threading import Thread
+from src.config import config
 
 import cv2
 import numpy as np
@@ -66,15 +67,18 @@ class CameraReceiverProcess(WorkerProcess):
     # ===================================== INIT SOCKET ==================================
     def _init_socket(self):
         """Initialize the socket server."""
+
         self.port = 2244
-        self.serverIp = "0.0.0.0"
+        self.serverIp = config["pc_ip"]
 
         self.server_socket = socket.socket()
         self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.server_socket.bind((self.serverIp, self.port))
 
         self.server_socket.listen(0)
+        print("socket init start")
         self.connection = self.server_socket.accept()[0].makefile("rb")
+        print("socket init")
 
     # ===================================== INIT THREADS =================================
     def _init_threads(self):
@@ -87,23 +91,25 @@ class CameraReceiverProcess(WorkerProcess):
         """Read the image from input stream, decode it and display it with the CV2 library."""
         try:
             while True:
+                print("here in read_stream")
 
                 # decode image
                 image_len = struct.unpack(
-                    "<L", self.connection.read(struct.calcsize("<L"))
-                )[0]
-                bts = self.connection.read(image_len)
+                        "<L", self.connection.read(struct.calcsize("<L"))
+                    )[0]
 
+                bts = self.connection.read(image_len)
                 # ----------------------- read image -----------------------
                 image = np.frombuffer(bts, np.uint8)
                 image = cv2.imdecode(image, cv2.IMREAD_COLOR)
                 image = np.reshape(image, self.imgSize)
                 image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-
                 # ----------------------- show images -------------------
                 cv2.imshow("Image", image)
                 cv2.waitKey(1)
-        except Exception:
+        except Exception as e:
+            print(e)
+            raise e
             pass
         finally:
             self.connection.close()

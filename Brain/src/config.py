@@ -3,7 +3,7 @@ from pprint import pprint
 
 try:
     # TODO: parse config path as an arg
-    with open("./config_car.json") as f:
+    with open("./config_sim.json") as f:
         config = json.load(f)
 
 except FileNotFoundError as e:

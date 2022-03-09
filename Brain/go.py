@@ -43,7 +43,7 @@ from src.lib.actuator.sim_connect import SimulatorConnector
 from src.lib.cortex.decisionproc import DecisionMakingProcess
 from src.lib.perception.intersection_det import IntersectionDetProcess
 from src.lib.perception.lanekeep import LaneKeepingProcess as LaneKeeping
-from src.utils.camerastreamer.perceptStreamProcess import PerceptStreamerProcess
+from src.utils.camerastreamer.CameraStreamerProcess import CameraStreamerProcess
 from src.utils.remotecontrol.RemoteControlReceiverProcess import (
     RemoteControlReceiverProcess,
 )
@@ -189,13 +189,14 @@ else:
 # ========================= Streamer =====================================================
 if config["enableStream"]:
     if config["enableLaneKeeping"] and config["enableIntersectionDet"]:
-        streamProc = PerceptStreamerProcess([lkStrR], [])
+        # shouldnt idstr go here also ?
+        streamProc = CameraStreamerProcess([lkStrR], [])
     elif config["enableLaneKeeping"]:
-        streamProc = PerceptStreamerProcess([lkStrR], [])
+        streamProc = CameraStreamerProcess([lkStrR], [])
     else:
         camStR, camStS = Pipe(duplex=False)  # camera  ->  streamer
         camOutPs.append(camStS)
-        streamProc = PerceptStreamerProcess([camStR], [])
+        streamProc = CameraStreamerProcess([camStR], [])
 
     allProcesses.append(streamProc)
 

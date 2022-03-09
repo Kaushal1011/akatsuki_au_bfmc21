@@ -107,6 +107,9 @@ class PerceptStreamerProcess(WorkerProcess):
         inP : Pipe
             Input pipe to read the frames from CameraProcess or CameraSpooferProcess.
         """
+        
+        # change this for improving performance of the stream
+
         encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 70]
         counter = 0
         while True:
