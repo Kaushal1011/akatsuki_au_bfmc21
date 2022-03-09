@@ -121,13 +121,7 @@ if config["enableIntersectionDet"]:
 
 
 # =============================== DATA ===================================================
-# LocSys client process
-# LocStR, LocStS = Pipe(duplex = False)           # LocSys  ->  brain
-# LocSysProc = LocalisationSystemProcess([], [LocStS])
-# allProcesses.append(LocSysProc)
 
-
-# TODO: condition with test server integration
 if config["enableSIM"]:
     # LocSys -> Decision Making (data fusion)
     lsFzzR, lsFzzS = Pipe(duplex=False)

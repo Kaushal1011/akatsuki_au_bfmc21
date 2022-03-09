@@ -2,7 +2,8 @@ import json
 from pprint import pprint
 
 try:
-    with open("./config.json") as f:
+    # TODO: parse config path as an arg
+    with open("./config_car.json") as f:
         config = json.load(f)
 
 except FileNotFoundError as e:
