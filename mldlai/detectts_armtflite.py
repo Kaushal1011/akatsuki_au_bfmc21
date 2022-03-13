@@ -3,7 +3,6 @@ Run object detection on images, Press ESC to exit the program
 For Raspberry PI, please use `import tflite_runtime.interpreter as tflite` instead
 """
 import re
-from tkinter import W
 import cv2
 import numpy as np
 import time
@@ -57,7 +56,7 @@ def process_image(interpreter, image, input_index,labels,w,h):
     # result = []
     # take highest score element
     score = scores[0]
-    if score > 0.7:
+    if score > 0.5:
         box=(int(positions[0][1]*w), int(positions[0][0]*h)), (int(positions[0][3]*w), int(positions[0][2]*h))
         text=labels[int(classes[0])]
         location=(int(positions[0][1]*w), int(positions[0][0]*h))

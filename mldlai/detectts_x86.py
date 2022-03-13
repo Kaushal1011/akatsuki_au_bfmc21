@@ -56,7 +56,7 @@ def detect_signs(img,model,labels):
     shapes, predictions_dict, detections,  _ = model([img])
     label_id_offset = 1
 
-    if predictions_dict[0][0] > 0.3:
+    if predictions_dict[0][0] > 0.85:
 
         box=(int(shapes[0][0][1]), int(shapes[0][0][0])), (int(shapes[0][0][3]), int(shapes[0][0][2]))
         text=labels[int(detections[0][0].numpy())-label_id_offset]
