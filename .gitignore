@@ -5,6 +5,12 @@
 nbs/*/data
 nbs/data
 
+mldlai/data
+mldlai/*/data
+mldlai/models
+mldlai/*/models
+mldlai/data.zip
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
