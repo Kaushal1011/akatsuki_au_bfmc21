@@ -59,7 +59,7 @@ class LaneKeep:
         use_perspective: bool = True,
         hls_lower: List[int] = [90, 90, 90],
         computation_method: str = "hough",
-        blur_size: Tuple[int, int] = (7, 7),
+        blur_size: Tuple[int, int] = (3, 3),
         adpt_Th_blk_size: int = 21,
         adpt_Th_C: int = 4,
         canny_thres1: int = 50,
@@ -297,6 +297,10 @@ class LaneKeep:
         # draw heading lines
         outimage = display_heading_line(processed_img, angle)
         # outimage = cv2.hconcat([processed_out, outimage])
+        if angle <0:
+            angle-=5
+        else:
+            angle+=5
         return angle, outimage
 
     def sliding_window_search(self, img: np.ndarray) -> float:

@@ -53,7 +53,7 @@ sys.path.append(".")
 # =============================== CONFIG =================================================
 enableStream = True
 enableCameraSpoof = False
-enableRc = True
+enableRc = False
 enableLaneKeeping = True
 
 # =============================== INITIALIZING PROCESSES =================================
@@ -94,10 +94,12 @@ if enableRc:
 if enableLaneKeeping:
     if enableStream:
         lkStrR, lkStrS = Pipe(duplex=False)
-
+        lkProc = LaneKeeping([lkR], [lcS, lkStrS])
+    else:
+        lkProc = LaneKeeping([lkR], [lcS])
+    
     camOutPs.append(lkS)
     movementControlR.append(lcR)
-    lkProc = LaneKeeping([lkR], [lcS, lkStrS])
     allProcesses.append(lkProc)
 
     # Movement control

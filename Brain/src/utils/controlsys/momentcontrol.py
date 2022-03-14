@@ -1,5 +1,4 @@
 import time
-
 from threading import Thread
 
 from src.templates.workerprocess import WorkerProcess
@@ -19,12 +18,13 @@ class MovementControl(WorkerProcess):
         """
         # Initialize parameters
         self.angle = 0.0
-        self.speed = 21.0
-
+        self.speed = 16.0
+        self.init = False
         super(MovementControl, self).__init__(inPs, outPs)
 
     def _init_threads(self):
         """Initialize the a thread for initial start and a thread for listening for the steering angle."""
+        self._set_PID(outPs=self.outPs)
 
         startTh = Thread(
             name="InitialStart", target=self._singleUpdate, args=(self.outPs,)
@@ -34,10 +34,7 @@ class MovementControl(WorkerProcess):
         sendTh = Thread(
             name="SteeringListen",
             target=self._listen_for_steering,
-            args=(
-                self.inPs[0],
-                self.outPs,
-            ),
+            args=(self.inPs[0], self.outPs,),
         )
         self.threads.append(sendTh)
 
@@ -85,31 +82,50 @@ class MovementControl(WorkerProcess):
                     self.speed = 0.0
                     self._singleUpdate(outPs)
                     time.sleep(2)
-                    self.speed = 21.0
+                    self.speed = 20.0
 
                 self._singleUpdate(outPs)
             except Exception as e:
+                print("Listening error:")
                 print(e)
+
+    def _set_PID(self, outPs):
+        """Set PID to True and configure PID"""
+        pid_conf_data = {}
+        pid_conf_data["action"] = "6"
+        pid_conf_data["kp"] = 0.115000
+        pid_conf_data["ki"] = 0.810000
+        pid_conf_data["kd"] = 0.000222
+        pid_conf_data["tf"] = 0.040000
+
+        pid_activate_data = {}
+        pid_activate_data["action"] = "4"
+        pid_activate_data["activate"] = True
+
+        for outP in outPs:
+            outP.send(pid_activate_data)
+            outP.send(pid_conf_data)
 
     def _singleUpdate(self, outPs):
         """Update the state of the controls"""
         # Initialize the data array to be sent
-        data = {}
+        speed_data = {}
 
-        # Set longitudinal control
-        # if(self.speed != 0):
-        #     data['action'] = 'MCTL'
-        #     data['speed'] = float(self.speed/100.0)
+        speed_data["action"] = "1"
+        speed_data["speed"] = float(self.speed / 100.0)
         # else:
         #     data['action'] = 'BRAK'
 
+        steer_data = {}
         # Set lateral control
-        data["action"] = "2"
-        data["steerAngle"] = float(self.angle)
-        print(data)
+        steer_data["action"] = "2"
+        steer_data["steerAngle"] = float(self.angle)
+        # print(data)
         # Send data
         try:
             for outP in outPs:
-                outP.send(data)
+                outP.send(speed_data)
+                outP.send(steer_data)
         except Exception as e:
+            print("Moment Control Error:")
             print(e)
