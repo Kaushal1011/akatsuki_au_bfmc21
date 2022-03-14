@@ -3,7 +3,7 @@ from pprint import pprint
 
 try:
     # TODO: parse config path as an arg
-    with open("./config_sim.json") as f:
+    with open("./config_pc.json") as f:
         config = json.load(f)
 
 except FileNotFoundError as e:
@@ -20,6 +20,7 @@ except FileNotFoundError as e:
         "using_server": False,
         "start_idx": "86",
         "end_idx": "27",
+        "home_loc": False,
     }
 
 required_keys = [
@@ -34,6 +35,7 @@ required_keys = [
     "end_idx",
     "pc_ip",
     "pi_ip",
+    "home_loc",
 ]
 
 

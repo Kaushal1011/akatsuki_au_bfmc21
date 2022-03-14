@@ -6,6 +6,7 @@ from scipy.interpolate import interp1d
 
 import networkx as nx
 import numpy as np
+from copy import deepcopy
 
 
 def dijkstra(G, start, target):
@@ -60,6 +61,23 @@ def dijkstra(G, start, target):
     return fp, ptyperet, edgeret
 
 
+def add_yaw(G):
+    node_dict = deepcopy(dict(G.nodes(data=True)))
+    for current_node in node_dict:
+        for v in G.adj[current_node]:
+            c_data = node_dict[current_node]
+            v_data = node_dict[v]
+            dx = v_data["x"] - c_data["x"]
+            dy = v_data["y"] - c_data["y"]
+            # print(c_data, v_data, "\n", dx, dy)
+            yaw = math.atan2(dy, dx)
+            if "yaw" in node_dict[current_node]:
+                node_dict[current_node]["yaw"] += [yaw]
+            else:
+                node_dict[current_node].update({"yaw": [yaw]})
+    return node_dict
+
+
 class PathPlanning:
     def __init__(self, test: bool = False) -> None:
         if test:
@@ -71,7 +89,7 @@ class PathPlanning:
                 "./src/lib/cortex/path_data/comp_track.graphml"
             )
 
-        self.node_dict = self.graph.nodes(data=True)
+        self.node_dict = add_yaw(self.graph)
 
     def get_path(self, start_idx: str, end_idx: str) -> Tuple[List[Tuple[int]], str]:
         
@@ -79,6 +97,24 @@ class PathPlanning:
 
         return self._smooth_point_list(self._convert_nx_path2list(path_list), _ptype,_edgret)
         
+
+    def get_nearest_node(self, x, y, yaw):
+        dx = []
+        dy = []
+        for node in self.node_dict:
+            dx.append(self.node_dict[node]["x"] - x)
+            dy.append(self.node_dict[node]["y"] - y)
+
+        d = np.hypot(dx, dy)
+        idxs = np.argsort(d)
+        for idx in idxs:
+            try:
+                dyaw = np.array(self.node_dict[str(idx)]["yaw"]) - yaw
+            except KeyError as e:
+                print(e)
+                continue
+            if (abs(dyaw) < 0.7).any():
+                return idx  # , self.node_dict[str(idx)]
 
     def _convert_nx_path2list(self, path_list) -> List[Tuple[int]]:
         coord_list = []

@@ -37,9 +37,10 @@ HOST = "0.0.0.0"  # Standard loopback interface address (localhost)
 
 class ServerSIM(WorkerProcess):
     # ===================================== INIT =========================================
-    def __init__(self, inPs, outPs, port: int):
+    def __init__(self, inPs, outPs, port: int, log=False):
         """Connect LocSys of simulator to Brain"""
         self.port = port
+        self.log = log
         super(ServerSIM, self).__init__(inPs, outPs)
 
     # ===================================== RUN ==========================================
@@ -83,6 +84,8 @@ class ServerSIM(WorkerProcess):
                 bts, addr = self.server_socket.recvfrom(1024)
                 bts = bts.decode()
                 command = json.loads(bts)
+                if self.log:
+                    print(command)
                 for outP in outPs:
                     outP.send(command)
         except Exception as e:
