@@ -46,6 +46,8 @@ def localize(img: np.ndarray) -> np.ndarray:
     # f_img = cv2.drawContours(processed_img2, [blue_box], -1, (255,0,0), 2)
     # plt.figure(figsize=(12,12))
     # plt.imshow(f_img[100:200,350:450])
+    x = round(6 * x / 720, 2)
+    y = round(6 * y / 720, 2)
     return x, y
 
 
