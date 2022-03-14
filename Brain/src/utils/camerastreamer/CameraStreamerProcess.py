@@ -113,7 +113,7 @@ class CameraStreamerProcess(WorkerProcess):
         count = 1
         while True:
             try:
-                
+
                 stamps, image = inP.recv()
                 # print(stamps, image)
                 result, image = cv2.imencode(".jpg", image, encode_param)

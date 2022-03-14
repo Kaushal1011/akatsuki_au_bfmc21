@@ -9,6 +9,7 @@ from threading import Thread
 from workerprocess import WorkerProcess
 
 CLIENT_IP = "192.168.43.61"
+PORT = 8888
 
 
 def localize(img: np.ndarray) -> np.ndarray:
@@ -100,17 +101,13 @@ def annotate_image(x, y, image):
     )
 
 
-HOST = "0.0.0.0"  # Standard loopback interface address (localhost)
-PORT = 8888
-
-
 class LocalisationServer(WorkerProcess):
     """Home Localisation Server"""
 
     def __init__(self, preview=False) -> None:
 
         self.port = PORT
-        self.clientIp = CLIENT_IP
+        self.serverIp = CLIENT_IP
         self.preview = preview
         self.client_socket = socket.socket(
             family=socket.AF_INET, type=socket.SOCK_DGRAM
@@ -192,7 +189,7 @@ class LocalisationServer(WorkerProcess):
                     }
                     print(data)
                     data = json.dumps(data).encode()
-                    self.client_socket.sendto(data, (self.clientIp, self.port))
+                    self.client_socket.sendto(data, (self.serverIp, self.port))
                     if self.preview:
                         imgOutput = annotate_image(x, y, image)
                         cv2.imshow("Track Image", imgOutput)
