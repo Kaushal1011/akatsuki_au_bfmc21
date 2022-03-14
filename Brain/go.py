@@ -33,6 +33,7 @@ from src.config import config
 from src.data.localisationssystem.locsysProc import LocalisationSystemProcess
 from src.data.server_sim import ServerSIM as LocSysSIM
 from src.data.server_sim import ServerSIM as TrafficSIM
+from src.data.server_sim import ServerSIM as HomeLocSys
 from src.data.trafficlights.trafficProc import TrafficProcess
 from src.hardware.camera.cameraprocess import CameraProcess
 from src.hardware.camera.CameraSpooferProcess import CameraSpooferProcess
@@ -61,7 +62,7 @@ sys.path.append(".")
 
 TRAFFIC_SIM_PORT = 7777
 LOCSYS_SIM_PORT = 8888
-
+LOCSYS_HOME_PORT = 8888
 # =============================== INITIALIZING PROCESSES =================================
 # Pipe collections
 allProcesses = []
@@ -134,6 +135,15 @@ if config["enableSIM"]:
     trafficProc = TrafficSIM([], [tlFzzS], TRAFFIC_SIM_PORT)
     allProcesses.append(trafficProc)
     dataFusionInputPs.append(tlFzzR)
+
+if config["home_loc"]:
+    # LocSys -> Decision Making (data fusion)
+    print("Starting Home Loc Sys")
+    lsFzzR, lsFzzS = Pipe(duplex=False)
+    locsysProc = HomeLocSys([], [lsFzzS], LOCSYS_SIM_PORT, log=True)
+    allProcesses.append(locsysProc)
+    dataFusionInputPs.append(lsFzzR)
+
 
 elif config["using_server"]:
     # LocSys -> Decision Making (data fusion)
