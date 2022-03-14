@@ -141,7 +141,9 @@ if config["home_loc"]:
     # LocSys -> Decision Making (data fusion)
     print("Starting Home Loc Sys")
     lsFzzR, lsFzzS = Pipe(duplex=False)
-    locsysProc = HomeLocSys([], [lsFzzS], LOCSYS_SIM_PORT, log=True)
+    locsysProc = HomeLocSys(
+        [], [lsFzzS], LOCSYS_SIM_PORT, host_ip=config["pi_ip"], log=True
+    )
     allProcesses.append(locsysProc)
     dataFusionInputPs.append(lsFzzR)
 

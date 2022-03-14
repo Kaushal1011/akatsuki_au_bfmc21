@@ -8,9 +8,10 @@ from threading import Thread
 
 from workerprocess import WorkerProcess
 
+CLIENT_IP = "192.168.43.61"
+
 
 def localize(img: np.ndarray) -> np.ndarray:
-    # AREA_THRES = 1000.0
     AREA_THRES = 100.0
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     # preprocess
@@ -46,8 +47,8 @@ def localize(img: np.ndarray) -> np.ndarray:
     # f_img = cv2.drawContours(processed_img2, [blue_box], -1, (255,0,0), 2)
     # plt.figure(figsize=(12,12))
     # plt.imshow(f_img[100:200,350:450])
-    x = round(6 * x / 720, 2)
-    y = round(6 * y / 720, 2)
+    x = round(6 * x / 720, 2) if x else None
+    y = round(6 * y / 720, 2) if y else None
     return x, y
 
 
@@ -84,7 +85,7 @@ def get_image(bytes1, a, b):
 
 
 def annotate_image(x, y, image):
-    org = [int(x), int(y)]
+    org = [int((x * 720) / 6), int((y * 720) / 6)]
     if x > 500:
         org[0] = 500
     if y > 650:
@@ -109,7 +110,7 @@ class LocalisationServer(WorkerProcess):
     def __init__(self, preview=False) -> None:
 
         self.port = PORT
-        self.serverIp = HOST
+        self.clientIp = CLIENT_IP
         self.preview = preview
         self.client_socket = socket.socket(
             family=socket.AF_INET, type=socket.SOCK_DGRAM
@@ -153,7 +154,34 @@ class LocalisationServer(WorkerProcess):
                 b = bytes1.find(b"\xff\xd9")
                 if idx < skip_count or count % 1 == 1 or a == -1 or b == -1:
                     continue
-                image = get_image(bytes1, a, b)
+                jpg = bytes1[a : b + 2]
+                bytes1 = bytes1[b + 2 :]
+                i = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
+                # specify desired output size
+                width = 720
+                height = 1280
+                # specify conjugate x,y coordinates (not y,x)
+                input = np.float32([[2, 370], [589, 51], [1264, 66], [806, 719]])
+                output = np.float32(
+                    [[0, 0], [width - 1, 0], [width - 1, width - 1], [0, width - 1]]
+                )
+
+                # compute perspective matrixbytes1 = bytes1[b+2:]
+                i = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
+                # specify desired output size
+                width = 720
+                # height = 1280
+                matrix = cv2.getPerspectiveTransform(input, output)
+
+                # do perspective transformation setting area outside input to black
+                image = cv2.warpPerspective(
+                    i,
+                    matrix,
+                    (width, width),
+                    cv2.INTER_LINEAR,
+                    borderMode=cv2.BORDER_CONSTANT,
+                    borderValue=(0, 0, 0),
+                )
                 x, y = localize(image)
                 if x and y:
                     data = {
@@ -164,7 +192,7 @@ class LocalisationServer(WorkerProcess):
                     }
                     print(data)
                     data = json.dumps(data).encode()
-                    self.client_socket.sendto(data, (self.serverIp, self.port))
+                    self.client_socket.sendto(data, (self.clientIp, self.port))
                     if self.preview:
                         imgOutput = annotate_image(x, y, image)
                         cv2.imshow("Track Image", imgOutput)

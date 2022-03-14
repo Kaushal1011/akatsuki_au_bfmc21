@@ -32,14 +32,13 @@ from threading import Thread
 
 from src.templates.workerprocess import WorkerProcess
 
-HOST = "0.0.0.0"  # Standard loopback interface address (localhost)
-
 
 class ServerSIM(WorkerProcess):
     # ===================================== INIT =========================================
-    def __init__(self, inPs, outPs, port: int, log=False):
+    def __init__(self, inPs, outPs, port: int, host_ip: str = "0.0.0.0", log=False):
         """Connect LocSys of simulator to Brain"""
         self.port = port
+        self.host_ip = host_ip
         self.log = log
         super(ServerSIM, self).__init__(inPs, outPs)
 
@@ -53,7 +52,7 @@ class ServerSIM(WorkerProcess):
     def _init_socket(self):
         """Initialize the communication socket server."""
         self.port = self.port
-        self.serverIp = HOST
+        self.serverIp = self.host_ip
 
         self.server_socket = socket.socket(
             family=socket.AF_INET, type=socket.SOCK_DGRAM
