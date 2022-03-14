@@ -2,17 +2,18 @@ import datetime
 import math
 from threading import Thread
 from typing import Optional
-
+import numpy as np
 from src.config import config
-from src.lib.cortex.pathplanning import PathPlanning, Purest_Pursuit
+from src.lib.cortex.pathplanning import MPC_Controller, PathPlanning, Purest_Pursuit, ParkPathPlanning, interpolate_b_spline_path, interpolate_path
 from src.templates.workerprocess import WorkerProcess
 from time import time
+
 
 class CarState:
     def __init__(self, v=0.12, dt=0.1, car_len=0.365) -> None:
         self.steering_angle = 0.0
         self.det_intersection = False
-        #TODO: get initial position from config IDK
+        # TODO: get initial position from config IDK
         self.x = 0.83
         self.y = 14.67
         self.yaw = 0
@@ -30,7 +31,8 @@ class CarState:
         self.last_update_time = time()
         self.x = self.x + self.v * math.cos(self.yaw) * dt
         self.y = self.y + self.v * math.sin(self.yaw) * dt
-        self.yaw = self.yaw + self.v / self.car_len * math.tan(steering_angle) * dt
+        self.yaw = self.yaw + self.v / self.car_len * \
+            math.tan(steering_angle) * dt
 
     def calc_distance(self, point_x, point_y):
         dx = self.rear_x - point_x
@@ -84,6 +86,32 @@ plan_path()
 
 def controlsystem(vehicle: CarState, ind, Lf):
     di = pPC.purest_pursuit_steer_control(vehicle, ind, Lf)
+
+    di = di * 180 / math.pi
+
+    if di > 21:
+        di = 21
+    elif di < -21:
+        di = -21
+
+    return di
+
+
+def parkingsystem(vehicle: CarState, ind, Lf):
+    mPC = MPC_Controller()
+    park_path_planner = ParkPathPlanning(obs)   # array of obstacle co-ordinates
+    new_end, park_path, ensure_path1, ensure_path2 = park_path_planner.generate_park_scenario(int(start[0]), int(start[1]), int(end[0]), int(end[1]))
+    path = park_path_planner.plan_path(int(start[0]), int(start[1]), int(new_end[0]), int(new_end[1]))
+    path = np.vstack([path, ensure_path1])
+    interpolated_path = interpolate_path(path, sample_rate=5)
+    interpolated_park_path = interpolate_path(park_path, sample_rate=2)
+    interpolated_park_path = np.vstack([ensure_path1[::-1], interpolated_park_path, ensure_path2[::-1]])
+
+    final_park_path = np.vstack(
+        [interpolated_path, interpolated_park_path, ensure_path2])
+
+    di = mPC.optimize(vehicle, final_park_path)
+
     di = di * 180 / math.pi
 
     if di > 21:
@@ -156,7 +184,7 @@ class DecisionMakingProcess(WorkerProcess):
                     x = loc["posA"]
                     y = loc["posB"]
                     yaw = 2 * math.pi - (loc["rotA"] + math.pi)
-                    
+
                 # if trafficlight process is connected
                 if len(inPs) > 3:
                     trafficlights = inPs[3].recv()
@@ -185,7 +213,7 @@ class DecisionMakingProcess(WorkerProcess):
                     print("Here in nothingness")
 
                 print(f"Current Behaviour : {p_type[ind-1]}")
-                
+
                 # if no locsys use self localization
                 if len(inPs) < 3:
                     print("Using self localization")
