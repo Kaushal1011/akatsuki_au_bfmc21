@@ -44,6 +44,7 @@ from src.lib.actuator.sim_connect import SimulatorConnector
 from src.lib.cortex.decisionproc import DecisionMakingProcess
 from src.lib.perception.intersection_det import IntersectionDetProcess
 from src.lib.perception.lanekeep import LaneKeepingProcess as LaneKeeping
+from src.lib.perception.signdetection import SignDetectionProcess
 from src.utils.camerastreamer.CameraStreamerProcess import CameraStreamerProcess
 from src.utils.remotecontrol.RemoteControlReceiverProcess import (
     RemoteControlReceiverProcess,
@@ -69,9 +70,9 @@ allProcesses = []
 movementControlR = []
 camOutPs = []
 # Note: ensure the sequence in which pipes are added to dataFusionInputPs
-# [LaneKeep, IntersectionDet, LocSys, TrafficLight]
+# [LaneKeep, IntersectionDet, SignDetection, LocSys, TrafficLight]
 dataFusionInputPs = []
-
+dataFusionInputName = []
 # =============================== RC CONTROL =================================================
 if config["enableRc"]:
     # rc      ->  serial handler
@@ -95,6 +96,7 @@ if config["enableLaneKeeping"]:
 
     camOutPs.append(lkS)
     dataFusionInputPs.append(lkFzzR)
+    dataFusionInputName.append("lk")
 
     if config["enableStream"]:
         lkStrR, lkStrS = Pipe(duplex=False)
@@ -113,6 +115,8 @@ if config["enableIntersectionDet"]:
 
     camOutPs.append(camiDS)
     dataFusionInputPs.append(iDFzzR)
+    dataFusionInputName.append("iD")
+
     if config["enableStream"]:
         idStrR, idStrS = Pipe(duplex=False)
         idProc = IntersectionDetProcess([camiDR], [iDFzzS, idStrS])
@@ -120,30 +124,39 @@ if config["enableIntersectionDet"]:
         idProc = IntersectionDetProcess([camiDR], [iDFzzS])
     allProcesses.append(idProc)
 
+if config["enableSignDet"]:
+    # Camera process -> Sign Detection
+    camsDR, camsDS = Pipe(duplex=False)
+
+    # Sign Detection -> Data Fusion (Decision Process)
+    sDFzzR, sDFzzS = Pipe(duplex=False)
+    camOutPs.append(camsDS)
+    dataFusionInputPs.append(sDFzzR)
+    dataFusionInputName.append("sD")
+
+    # TODO: To Streamer / Dashboard
+    sDProc = SignDetectionProcess([camsDR], [sDFzzS])
+    allProcesses.append(sDProc)
 
 # =============================== DATA ===================================================
 
+# -------LOCSYS----------
 if config["enableSIM"]:
     # LocSys -> Decision Making (data fusion)
     lsFzzR, lsFzzS = Pipe(duplex=False)
     locsysProc = LocSysSIM([], [lsFzzS], LOCSYS_SIM_PORT)
     allProcesses.append(locsysProc)
     dataFusionInputPs.append(lsFzzR)
+    dataFusionInputName.append("loc")
 
-    # Traffic Semaphore -> Decision Making (data fusion)
-    # TODO: enable again when required
-    # tlFzzR, tlFzzS = Pipe(duplex=False)
-    # trafficProc = TrafficSIM([], [tlFzzS], TRAFFIC_SIM_PORT)
-    # allProcesses.append(trafficProc)
-    # dataFusionInputPs.append(tlFzzR)
-
-if config["home_loc"]:
+elif config["home_loc"]:
     # LocSys -> Decision Making (data fusion)
     print("Starting Home Loc Sys")
     lsFzzR, lsFzzS = Pipe(duplex=False)
     locsysProc = LocalisationProcess([], [lsFzzS])
     allProcesses.append(locsysProc)
     dataFusionInputPs.append(lsFzzR)
+    dataFusionInputName.append("loc")
 
 
 elif config["using_server"]:
@@ -152,25 +165,43 @@ elif config["using_server"]:
     locsysProc = LocalisationSystemProcess([], [lsFzzS])
     allProcesses.append(locsysProc)
     dataFusionInputPs.append(lsFzzR)
+    dataFusionInputName.append("loc")
 
-    # Traffic Semaphore -> Decision Making (data fusion)
-    # TODO: enable again when required
-    # tlFzzR, tlFzzS = Pipe(duplex=False)
-    # trafficProc = TrafficProcess([], [tlFzzS])
-    # allProcesses.append(trafficProc)
-    # dataFusionInputPs.append(tlFzzR)
 
-    # IMU -> Decision Making (data fusion)
-    if not disableIMU:
-        imuFzzR, imuFzzS = Pipe(duplex=False)
-        imuProc = IMUProcess([], [imuFzzS])
-        allProcesses.append(imuProc)
-        dataFusionInputPs.append(imuFzzR)
+# -------TrafficLightSemaphore----------
+# TODO: enable again when required
+# if config["enableSIM"]:
+#     # Traffic Semaphore -> Decision Making (data fusion)
+#     tlFzzR, tlFzzS = Pipe(duplex=False)
+#     trafficProc = TrafficSIM([], [tlFzzS], TRAFFIC_SIM_PORT)
+#     allProcesses.append(trafficProc)
+#     dataFusionInputPs.append(tlFzzR)
+#     dataFusionInputName.append("tl")
+
+# elif config["using_server"]:
+#     # Traffic Semaphore -> Decision Making (data fusion)
+#     tlFzzR, tlFzzS = Pipe(duplex=False)
+#     trafficProc = TrafficProcess([], [tlFzzS])
+#     allProcesses.append(trafficProc)
+#     dataFusionInputPs.append(tlFzzR)
+#     dataFusionInputName.append("tl")
+
+# -------IMU----------
+# IMU -> Decision Making (data fusion)
+if not disableIMU:
+    print("IMU process started")
+    imuFzzR, imuFzzS = Pipe(duplex=False)
+    imuProc = IMUProcess([], [imuFzzS])
+    allProcesses.append(imuProc)
+    dataFusionInputPs.append(imuFzzR)
+    dataFusionInputName.append("imu")
 
 
 # ======================= Decision Making =========================================
 
-datafzzProc = DecisionMakingProcess(dataFusionInputPs, [FzzMcS])
+datafzzProc = DecisionMakingProcess(
+    dataFusionInputPs, [FzzMcS], inPsnames=dataFusionInputName
+)
 allProcesses.append(datafzzProc)
 movementControlR.append(FzzMcR)
 

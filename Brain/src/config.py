@@ -1,9 +1,12 @@
 import json
 from pprint import pprint
 
+# TODO: add argparser for config
+config_path = "./config_pc.json"
+print(f"Configured using config file : {config_path}")
 try:
     # TODO: parse config path as an arg
-    with open("./config_sim.json") as f:
+    with open(config_path) as f:
         config = json.load(f)
 
 except FileNotFoundError as e:
@@ -30,6 +33,7 @@ required_keys = [
     "enableLaneKeeping",
     "enableSIM",
     "enableIntersectionDet",
+    "enableSignDet",
     "using_server",
     "start_idx",
     "end_idx",

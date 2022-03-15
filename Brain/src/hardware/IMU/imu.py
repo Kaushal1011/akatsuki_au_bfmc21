@@ -37,7 +37,7 @@ import time
 try:
     import RTIMU
 except ImportError as e:
-    print("Require pi for imu support")
+    print("WARN: Require raspberryPi for IMU | Skipping IMU")
     raise e
 
 
@@ -83,7 +83,7 @@ class imu(threading.Thread):
                 for outP in self.outPs:
                     outP.send({"roll": self.roll, "pitch": self.pitch, "yaw": self.yaw})
                 # time.sleep(self.poll_interval * 1.0 / 1000.0)
-            
+
             time.sleep(0.5)
 
     def stop(self):
