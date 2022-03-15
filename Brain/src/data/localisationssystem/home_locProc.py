@@ -71,7 +71,7 @@ class LocalisationProcess(WorkerProcess):
     def _init_threads(self):
         """Initialize the read thread to transmite the received messages to other processes."""
         readTh = Thread(
-            name="ReceiverCommandThread", target=self._read_stream, args=(self.outPs,)
+            name="LocSysRecvThread", target=self._read_stream, args=(self.outPs,)
         )
         self.threads.append(readTh)
 
@@ -96,7 +96,7 @@ class LocalisationProcess(WorkerProcess):
                     outP.send(command)
 
         except Exception as e:
-            print("Home Lov Error")
+            print("Home LocSys Error")
             print(e)
 
         finally:

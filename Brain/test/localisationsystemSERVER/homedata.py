@@ -8,7 +8,7 @@ from threading import Thread
 
 from workerprocess import WorkerProcess
 
-CLIENT_IP = "192.168.43.61"
+PI_IP = "192.168.43.61"
 PORT = 8888
 
 
@@ -106,16 +106,22 @@ class LocalisationServer(WorkerProcess):
 
     def __init__(self, preview=False) -> None:
 
-        self.port = PORT
-        self.serverIp = CLIENT_IP
-        self.preview = preview
-        self.client_socket = socket.socket(
-            family=socket.AF_INET, type=socket.SOCK_DGRAM
-        )
         super(LocalisationServer, self).__init__(inPs=[], outPs=[])
+
+        self.preview = preview
+        self.port = PORT
+        self.serverIp = PI_IP
+        self.threads = list()
 
     def run(self):
         """Apply the initializing methods and start the threads."""
+        self._init_threads()
+        self._init_socket()
+        for th in self.threads:
+            th.start()
+
+        for th in self.threads:
+            th.join()
         super(LocalisationServer, self).run()
 
     def _init_threads(self):
@@ -126,6 +132,12 @@ class LocalisationServer(WorkerProcess):
         thr = Thread(name="LocalisationServer", target=self._the_thread, args=(),)
         thr.daemon = True
         self.threads.append(thr)
+
+    def _init_socket(self):
+        """Initialize the communication socket client."""
+        self.client_socket = socket.socket(
+            family=socket.AF_INET, type=socket.SOCK_DGRAM
+        )
 
     def _the_thread(self):
         """Obtains image, applies the required image processing and computes the steering angle value.
