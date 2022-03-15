@@ -161,11 +161,12 @@ elif config["using_server"]:
     # dataFusionInputPs.append(tlFzzR)
 
     # IMU -> Decision Making (data fusion)
-    if not disableIMU:
-        imuFzzR, imuFzzS = Pipe(duplex=False)
-        imuProc = IMUProcess([], [imuFzzS])
-        allProcesses.append(imuProc)
-        dataFusionInputPs.append(imuFzzR)
+if not disableIMU:
+    print("IMU process started")
+    imuFzzR, imuFzzS = Pipe(duplex=False)
+    imuProc = IMUProcess([], [imuFzzS])
+    allProcesses.append(imuProc)
+    dataFusionInputPs.append(imuFzzR)
 
 
 # ======================= Decision Making =========================================

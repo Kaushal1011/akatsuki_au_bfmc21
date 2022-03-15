@@ -48,8 +48,8 @@ def localize(img: np.ndarray) -> np.ndarray:
     # f_img = cv2.drawContours(processed_img2, [blue_box], -1, (255,0,0), 2)
     # plt.figure(figsize=(12,12))
     # plt.imshow(f_img[100:200,350:450])
-    x = round(6 * x / 720, 2) if x else 0.1
-    y = round(6 * y / 720, 2) if y else 0.1
+    x = round(6 * x / 720, 2) if x else 0
+    y = round(6 * y / 720, 2) if y else 0
     return x, y
 
 
@@ -157,6 +157,7 @@ class LocalisationServer(WorkerProcess):
         )
         bytes1 = bytes()
         if r.status_code == 200:
+            start_time = time.time()
             for idx, chunk in enumerate(r.iter_content(chunk_size=100000)):
                 count += 1
                 bytes1 += chunk
@@ -193,8 +194,8 @@ class LocalisationServer(WorkerProcess):
                     borderValue=(0, 0, 0),
                 )
                 x, y = localize(image)
-                print(x, y)
-                if x and y:
+                if x and y and idx % 10 == 0:
+                    print("Time taken", time.time() - start_time)
                     data = {
                         "timestamp": time.time(),
                         "posA": x,
