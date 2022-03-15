@@ -40,7 +40,7 @@ if __name__=="__main__":
             area_arr.append(area)
             sign_arr.append(text)
             print(text)
-            if area<10000:
+            if area<0:
                 continue
             frame=draw_box(img,text,location,box)
             print(box)
