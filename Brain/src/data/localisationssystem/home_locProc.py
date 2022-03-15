@@ -91,7 +91,7 @@ class LocalisationProcess(WorkerProcess):
 
                 bts = bts.decode()
                 command = json.loads(bts)
-                print(command)
+                # print(command)
                 for outP in outPs:
                     outP.send(command)
 

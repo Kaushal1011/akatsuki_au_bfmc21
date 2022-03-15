@@ -49,6 +49,8 @@ class CarState:
         yaw: Optional[float] = None,
         tl: Optional[dict] = None,
     ) -> None:
+        dt = time() - self.last_update_time
+        self.last_update_time = time()
         if angle:
             self.steering_angle = angle
         if det_intersection:
@@ -76,7 +78,7 @@ a = time()
 if config["preplan"]==False:
     coord_list, p_type, etype = plan.get_path(config["start_idx"], config["end_idx"])
 else:
-    preplanpath=joblib.load("../../../../nbs/preplanpath.z")
+    preplanpath=joblib.load("../nbs/preplan.z")
     coord_list=[i for i in zip(preplanpath["x"],preplanpath["y"])]
     p_type=preplanpath["ptype"]
     etype=preplanpath["etype"]
@@ -173,14 +175,15 @@ class DecisionMakingProcess(WorkerProcess):
 
                     if inPs[2].poll(timeout=0.1):
                         loc = inPs[2].recv()
-
+                        use_self_loc = False
                         x = loc["posA"]
                         y = loc["posB"]
                         if "rotA" in loc.keys():
                             yaw = 2 * math.pi - (loc["rotA"] + math.pi)
                         elif "radA" in loc.keys():
                             yaw = 2 * math.pi - (loc["radA"] + math.pi)
-
+                    else:
+                        use_self_loc = True
                 # print("Time taken to r loc", time() - t_loc)
                 # TODO: add back
                 # # if trafficlight process is connected
@@ -190,18 +193,24 @@ class DecisionMakingProcess(WorkerProcess):
 
                 # if imu process is connected
                 if len(inPs) > 3:
-                    imu_data = inPs[3].recv()
-                    print("IMU:", imu_data)
-
+                    if inPs[3].poll(timeout=0.1):
+                        imu_data = inPs[3].recv()
+                        # print("IMU:", imu_data)
+                        yaw_imu = imu_data["yaw"] - 360
+                        print("imu_yaw", yaw_imu)
+                        yaw_imu = yaw_imu if yaw_imu > 180 else yaw_imu + 360
+                        yaw = (yaw_imu*math.pi)/180
+                        print("yaw", yaw)
+                    
                 self.state.update(
                     lk_angle, detected_intersection, x, y, yaw, trafficlights
                 )
 
-                print(self.state)
+                # print(self.state)
                 ind, Lf = pPC.search_target_index(self.state)
 
-                print(ind, coord_list[ind])
-
+                print("Target -> ",ind, coord_list[ind])
+                print(f"current ->  ({x}, {y})")
                 if p_type[ind - 1] == "int":
                     angle = controlsystem(self.state, ind, Lf)
                 # lane keeping
@@ -214,10 +223,10 @@ class DecisionMakingProcess(WorkerProcess):
                 else:
                     print("Here in nothingness")
 
-                print(f"Current Behaviour : {p_type[ind-1]}")
+                # print(f"Current Behaviour : {p_type[ind-1]}")
 
                 # if no locsys use self localization
-                if len(inPs) < 3:
+                if len(inPs) < 3 or use_self_loc:
                     print("Using self localization")
                     self.state.update_pos(angle)
 
