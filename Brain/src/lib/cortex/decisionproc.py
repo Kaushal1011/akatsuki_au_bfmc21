@@ -157,7 +157,11 @@ class DecisionMakingProcess(WorkerProcess):
 
                         x = loc["posA"]
                         y = loc["posB"]
-                        yaw = 2 * math.pi - (loc["rotA"] + math.pi)
+                        if "rotA" in loc.keys():
+                            yaw = 2 * math.pi - (loc["rotA"] + math.pi)
+                        elif "radA" in loc.keys():
+                            yaw = 2 * math.pi - (loc["radA"] + math.pi)
+
                         self.locsys_first = False
 
                     if inPs[2].poll(timeout=0.1):
@@ -165,7 +169,10 @@ class DecisionMakingProcess(WorkerProcess):
 
                         x = loc["posA"]
                         y = loc["posB"]
-                        yaw = 2 * math.pi - (loc["rotA"] + math.pi)
+                        if "rotA" in loc.keys():
+                            yaw = 2 * math.pi - (loc["rotA"] + math.pi)
+                        elif "radA" in loc.keys():
+                            yaw = 2 * math.pi - (loc["radA"] + math.pi)
 
                 # print("Time taken to r loc", time() - t_loc)
                 # TODO: add back
