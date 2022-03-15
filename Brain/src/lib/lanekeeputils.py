@@ -189,11 +189,11 @@ class LaneKeep:
 
         # change here if it fails to detect
         white_lower = np.array(
-            [np.round(0 / 2), np.round(0.15 * 255), np.round(0.00 * 255)]
+            [np.round(0 / 2), np.round(0.05 * 255), np.round(0.00 * 255)]
         )
 
         white_upper = np.array(
-            [np.round(360 / 2), np.round(0.80 * 255), np.round(1 * 255)]
+            [np.round(360 / 2), np.round(1 * 255), np.round(1 * 255)]
         )
 
         white_mask = cv2.inRange(hls, white_lower, white_upper)

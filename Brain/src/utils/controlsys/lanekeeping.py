@@ -63,7 +63,7 @@ class LaneKeepingProcess(WorkerProcess):
 
     def computeSteeringAnglePID(self, val):
         # keep the angle between max steer angle
-        val = max(-17, min(val - 90, 17))
+        val = max(-21, min(val - 90, 21))
         # # Apply pid
         # newVal = self.pid(val)
 
