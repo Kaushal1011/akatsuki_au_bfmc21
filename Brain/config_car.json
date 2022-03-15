@@ -9,7 +9,7 @@
   "test_track": false,
   "start_idx": "86",
   "end_idx": "40",
-  "pc_ip": "192.168.43.61",
-  "pi_ip": "192.168.43.225",
+  "pc_ip": "192.168.178.18",
+  "pi_ip": "192.168.178.89",
   "home_loc": true
 }

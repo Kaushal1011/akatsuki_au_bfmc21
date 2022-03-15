@@ -8,7 +8,7 @@ from threading import Thread
 
 from workerprocess import WorkerProcess
 
-PI_IP = "192.168.43.61"
+PI_IP = "192.168.178.89"
 PORT = 8888
 
 
@@ -48,8 +48,8 @@ def localize(img: np.ndarray) -> np.ndarray:
     # f_img = cv2.drawContours(processed_img2, [blue_box], -1, (255,0,0), 2)
     # plt.figure(figsize=(12,12))
     # plt.imshow(f_img[100:200,350:450])
-    x = round(6 * x / 720, 2) if x else None
-    y = round(6 * y / 720, 2) if y else None
+    x = round(6 * x / 720, 2) if x else 0.1
+    y = round(6 * y / 720, 2) if y else 0.1
     return x, y
 
 
@@ -149,13 +149,14 @@ class LocalisationServer(WorkerProcess):
         outP : Pipe
             Output pipe to send the steering angle value to other process.
         """
+        print("Started Home Localization System")
         count = 0
         skip_count = 10
         r = requests.get(
             "http://10.20.2.114/asp/video.cgi", auth=("admin", "admin"), stream=True
         )
+        bytes1 = bytes()
         if r.status_code == 200:
-            bytes1 = bytes()
             for idx, chunk in enumerate(r.iter_content(chunk_size=100000)):
                 count += 1
                 bytes1 += chunk
@@ -192,6 +193,7 @@ class LocalisationServer(WorkerProcess):
                     borderValue=(0, 0, 0),
                 )
                 x, y = localize(image)
+                print(x, y)
                 if x and y:
                     data = {
                         "timestamp": time.time(),
