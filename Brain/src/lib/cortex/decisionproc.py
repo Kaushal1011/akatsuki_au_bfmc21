@@ -9,7 +9,7 @@ from src.config import config
 from src.lib.cortex.pathplanning import PathPlanning, Purest_Pursuit
 from src.templates.workerprocess import WorkerProcess
 from time import time
-
+import joblib
 
 class CarState:
     def __init__(self, v=0.12, dt=0.1, car_len=0.365) -> None:
@@ -73,7 +73,14 @@ class CarState:
 
 plan = PathPlanning()
 a = time()
-coord_list, p_type, etype = plan.get_path(config["start_idx"], config["end_idx"])
+if config["preplan"]==False:
+    coord_list, p_type, etype = plan.get_path(config["start_idx"], config["end_idx"])
+else:
+    preplanpath=joblib.load("../../../../nbs/preplanpath.z")
+    coord_list=[i for i in zip(preplanpath["x"],preplanpath["y"])]
+    p_type=preplanpath["ptype"]
+    etype=preplanpath["etype"]
+
 pPC = Purest_Pursuit(coord_list)
 # print("Time taken by Path Planning:", time() - a)
 
