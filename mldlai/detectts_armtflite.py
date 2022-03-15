@@ -7,8 +7,8 @@ import cv2
 import numpy as np
 import time
 
-import tensorflow.lite as tflite
-# import tflite_runtime.interpreter as tflite
+# import tensorflow.lite as tflite
+import tflite_runtime.interpreter as tflite
 
 from PIL import Image
 from typing import *
@@ -24,7 +24,7 @@ def load_labels(label_path):
 
 def load_model(model_path):
     r"""Load TFLite model, returns a Interpreter instance."""
-    interpreter = tflite.Interpreter(model_path=model_path)
+    interpreter = tflite.Interpreter(model_path=model_path, num_threads=2)
     interpreter.allocate_tensors()
     return interpreter
 
