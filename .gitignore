@@ -10,7 +10,8 @@ mldlai/*/data
 mldlai/models
 mldlai/*/models
 mldlai/data.zip
-
+# ignore model path
+**/models
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

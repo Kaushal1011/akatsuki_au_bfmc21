@@ -4,6 +4,7 @@
   "enableRc": false,
   "enableLaneKeeping": true,
   "enableIntersectionDet": true,
+  "enableSignDet": true,
   "enableSIM": false,
   "using_server": false,
   "test_track": false,
@@ -12,5 +13,5 @@
   "pc_ip": "192.168.178.18",
   "pi_ip": "192.168.178.89",
   "home_loc": true,
-  "preplan":true
+  "preplan": true
 }

@@ -1,9 +1,10 @@
 {
   "enableStream": false,
-  "enableCameraSpoof": false,
+  "enableCameraSpoof": true,
   "enableRc": false,
   "enableLaneKeeping": true,
   "enableIntersectionDet": true,
+  "enableSignDet": true,
   "enableSIM": false,
   "using_server": false,
   "test_track": false,
@@ -11,5 +12,6 @@
   "end_idx": "40",
   "pc_ip": "0.0.0.0",
   "pi_ip": "0.0.0.0",
-  "home_loc": false
+  "home_loc": false,
+  "preplan": false
 }

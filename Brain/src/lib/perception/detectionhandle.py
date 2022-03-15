@@ -2,11 +2,11 @@ import cv2
 import numpy as np
 import time
 
-# import joblib
+import platform
 
-device = "PI"
+device = platform.uname().processor
 
-if device == "PC":
+if device == "x86_64":
     from detectts_x86 import setup, detect_signs, draw_box
 else:
     from detectts_armtflite import setup, detect_signs, draw_box

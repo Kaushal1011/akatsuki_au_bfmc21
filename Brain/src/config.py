@@ -2,7 +2,7 @@ import json
 from pprint import pprint
 
 # TODO: add argparser for config
-config_path = "./config_car.json"
+config_path = "./config_pc.json"
 print(f"Configured using config file : {config_path}")
 try:
     # TODO: parse config path as an arg
@@ -33,6 +33,7 @@ required_keys = [
     "enableLaneKeeping",
     "enableSIM",
     "enableIntersectionDet",
+    "enableSignDet",
     "using_server",
     "start_idx",
     "end_idx",
