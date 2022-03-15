@@ -189,11 +189,11 @@ class LaneKeep:
 
         # change here if it fails to detect
         white_lower = np.array(
-            [np.round(0 / 2), np.round(0.25 * 255), np.round(0.00 * 255)]
+            [np.round(0 / 2), np.round(0.15 * 255), np.round(0.00 * 255)]
         )
 
         white_upper = np.array(
-            [np.round(360 / 2), np.round(1.00 * 255), np.round(1 * 255)]
+            [np.round(360 / 2), np.round(0.80 * 255), np.round(1 * 255)]
         )
 
         white_mask = cv2.inRange(hls, white_lower, white_upper)
@@ -203,7 +203,7 @@ class LaneKeep:
         # L value can be arbitrary (we want everything between bright and dark yellow), e.g. within [0.0 ... 1.0]
         # S value must be above some threshold (we want at least some saturation), e.g. within [0.35 ... 1.0]
         yellow_lower = np.array(
-            [np.round(30 / 2), np.round(0.15 * 255), np.round(0.45 * 255)]
+            [np.round(30 / 2), np.round(0.10 * 255), np.round(0.45 * 255)]
         )
         yellow_upper = np.array(
             [np.round(60 / 2), np.round(0.80 * 255), np.round(1.00 * 255)]
