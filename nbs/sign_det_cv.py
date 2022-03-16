@@ -33,9 +33,9 @@ while True:
     
     mask0 = cv2.inRange(hsv_img, red1, red2)
     mask1 = cv2.inRange(hsv_img, blue1, blue2)
-    # mask2 = cv2.inRange(hsv_img, yellow1, yellow2)
+    mask2 = cv2.inRange(hsv_img, yellow1, yellow2)
 
-    maskf = mask0 + mask1
+    maskf = mask1
 
     imgRes = cv2.bitwise_and(img, img, mask=maskf)
     imgBlur = cv2.GaussianBlur(imgRes, (7,7), 1)
@@ -54,13 +54,15 @@ while True:
     for cnt in contours:
         area = cv2.contourArea(cnt)
         areaMin = cv2.getTrackbarPos("Area", "Parameters")
-        if area> areaMin:    
-            cv2.drawContours(imgContour, cnt, -1, (255,0,255), 7)
+        if area< 50000 and area >1000:    
             peri = cv2.arcLength(cnt, True)
-            approx = cv2.approxPolyDP(cnt, 0.02*peri, True)
+            approx = cv2.approxPolyDP(cnt, 0.05*peri, True)
+            if len(approx)==4 or len(approx)==6:
+                cv2.drawContours(imgContour, [approx], -1, (255,0,255), 7)
             # print(len(approx))
-            x_, y_, w, h = cv2.boundingRect(approx)
-            cv2.rectangle(imgContour, (x_, y_), (x_+w, y_+h), (0,255,0), 5)
+                x_, y_, w, h = cv2.boundingRect(approx)
+                cv2.rectangle(imgContour, (x_, y_), (x_+w, y_+h), (0,255,0), 5)
+                cv2.putText(imgContour,"Points: " + str(len(approx)), (x_ + w + 20, y_ + 20), cv2.FONT_HERSHEY_COMPLEX, .7, (0,255,0), 2)
 
     cv2.imshow("Result", imgContour)
 
