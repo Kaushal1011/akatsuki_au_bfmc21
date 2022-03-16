@@ -130,12 +130,17 @@ if config["enableSignDet"]:
 
     # Sign Detection -> Data Fusion (Decision Process)
     sDFzzR, sDFzzS = Pipe(duplex=False)
+    if config["enableStream"]:
+        sDStR, sDStS = Pipe(duplex = False)
+        sDProc = SignDetectionProcess([camsDR], [sDFzzS, sDStS])
+    else:
+        sDProc = SignDetectionProcess([camsDR], [sDFzzS])
+    
     camOutPs.append(camsDS)
     dataFusionInputPs.append(sDFzzR)
     dataFusionInputName.append("sD")
 
     # TODO: To Streamer / Dashboard
-    sDProc = SignDetectionProcess([camsDR], [sDFzzS])
     allProcesses.append(sDProc)
 
 # =============================== DATA ===================================================
@@ -235,9 +240,12 @@ if config["enableStream"]:
     # elif config["enableLaneKeeping"]:
     #     streamProc = CameraStreamerProcess([lkStrR], [])
     # else:
-    camStR, camStS = Pipe(duplex=False)  # camera  ->  streamer
-    camOutPs.append(camStS)
-    streamProc = CameraStreamerProcess([camStR], [])
+    if config["enableSignDet"]:
+        streamProc = CameraStreamerProcess([sDStR], [])
+    else:
+        camStR, camStS = Pipe(duplex=False)  # camera  ->  streamer
+        camOutPs.append(camStS)
+        streamProc = CameraStreamerProcess([camStR], [])
 
     allProcesses.append(streamProc)
 
