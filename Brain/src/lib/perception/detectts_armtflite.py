@@ -7,8 +7,8 @@ import cv2
 import numpy as np
 import time
 
-import tensorflow.lite as tflite
-# import tflite_runtime.interpreter as tflite
+# import tensorflow.lite as tflite
+import tflite_runtime.interpreter as tflite
 
 from PIL import Image
 from typing import *

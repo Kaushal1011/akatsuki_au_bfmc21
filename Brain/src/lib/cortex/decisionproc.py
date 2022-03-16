@@ -17,8 +17,9 @@ class CarState:
         self.steering_angle = 0.0
         self.det_intersection = False
         # TODO: get initial position from config IDK
-        self.x = 0.83
-        self.y = 14.67
+        self.x = 0.75
+        # 0.75, 4.8
+        self.y = 4.8
         self.yaw = 0
         self.tl = {}
         self.v = v
@@ -77,11 +78,15 @@ plan = PathPlanning()
 a = time()
 if config["preplan"] == False:
     coord_list, p_type, etype = plan.get_path(config["start_idx"], config["end_idx"])
+    
 else:
     preplanpath = joblib.load("../nbs/preplan.z")
     coord_list = [i for i in zip(preplanpath["x"], preplanpath["y"])]
+    coord_list = coord_list[:10:20]
     p_type = preplanpath["ptype"]
+    p_type = p_type[:10:20]
     etype = preplanpath["etype"]
+    etype = etype[:10:20]
 
 pPC = Purest_Pursuit(coord_list)
 # print("Time taken by Path Planning:", time() - a)
@@ -151,12 +156,12 @@ class DecisionMakingProcess(WorkerProcess):
                 t_lk = time()
                 idx = self.inPsnames.index("lk")
                 lk_angle, _ = inPs[idx].recv()
-                print("Time taken to r lk", time() - t_lk, "R ", lk_angle)
+                # print("Time taken to r lk", time() - t_lk, "R ", lk_angle)
 
                 t_id = time()
                 idx = self.inPsnames.index("iD")
                 detected_intersection = inPs[idx].recv()
-                print("Time taken to r id", time() - t_id, "R ", detected_intersection)
+                # print("Time taken to r id", time() - t_id, "R ", detected_intersection)
 
                 x = self.state.x
                 y = self.state.y
@@ -169,7 +174,7 @@ class DecisionMakingProcess(WorkerProcess):
                     idx = self.inPsnames.index("sD")
                     if inPs[idx].poll(timeout=0.1):
                         label = inPs[idx].recv()
-                        print(f"Time taken {time() - t_sD} sD -> {label}")
+                        # print(f"Time taken {time() - t_sD} sD -> {label}")
 
                 # locsys
                 # t_loc = time()
@@ -214,9 +219,9 @@ class DecisionMakingProcess(WorkerProcess):
                     if inPs[idx].poll(timeout=0.1):
                         imu_data = inPs[idx].recv()
                         # print("IMU:", imu_data)
-                        yaw_imu = imu_data["yaw"] - 360
+                        yaw_imu = 360- imu_data["yaw"] 
                         print("imu_yaw", yaw_imu)
-                        yaw_imu = yaw_imu if yaw_imu > 180 else yaw_imu + 360
+                        yaw_imu = yaw_imu if yaw_imu > 180 else -yaw_imu 
                         yaw = (yaw_imu * math.pi) / 180
                         print("yaw", yaw)
 

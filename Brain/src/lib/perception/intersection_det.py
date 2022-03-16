@@ -56,7 +56,6 @@ class IntersectionDetProcess(WorkerProcess):
                 # Apply image processing
                 a = time()
                 detected, _ = intersection_det(img)
-                print("R iD")
                 for outP in outPs:
                     outP.send(detected)
                 
