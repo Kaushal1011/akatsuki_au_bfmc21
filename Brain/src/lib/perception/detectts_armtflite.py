@@ -25,7 +25,7 @@ def load_labels(label_path):
 
 def load_model(model_path):
     r"""Load TFLite model, returns a Interpreter instance."""
-    interpreter = tflite.Interpreter(model_path=model_path, num_threads=2)
+    interpreter = tflite.Interpreter(model_path=model_path, num_threads=4)
     interpreter.allocate_tensors()
     return interpreter
 
@@ -72,8 +72,8 @@ def process_image(interpreter, image, input_index, labels, w, h):
 
 def setup() -> Tuple[Callable, List[str]]:
 
-    PATH_TO_SAVED_MODEL = "./data/trafficsigns.tflite"
-    PATH_TO_LABELS = "./src/lib/perception/data/labels.txt"
+    PATH_TO_SAVED_MODEL = "./models/trafficsigns.tflite"
+    PATH_TO_LABELS = "./labels.txt"
 
     print("Loading model...", end="")
     start_time = time.time()

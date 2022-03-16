@@ -29,7 +29,7 @@
 import json
 import socket
 from threading import Thread
-
+from errno import EWOULDBLOCK
 from src.templates.workerprocess import WorkerProcess
 
 REMOTE_PORT = 8888
@@ -84,14 +84,14 @@ class LocalisationProcess(WorkerProcess):
         outPs : list(Pipe)
             List of the output pipes.
         """
+        # self.server_socket.setblocking(False)
         try:
             while True:
-
                 bts, addr = self.server_socket.recvfrom(1024)
 
                 bts = bts.decode()
                 command = json.loads(bts)
-                # print(command)
+                # print("LOCSYS", command)
                 for outP in outPs:
                     outP.send(command)
 

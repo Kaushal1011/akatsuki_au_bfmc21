@@ -1,12 +1,14 @@
 import cv2
 import numpy as np
 import time
-
+import platform
 # import joblib
 
-device = "PI"
 
-if device == "PC":
+device = platform.uname().processor
+
+if device == "x86_64":
+    print("Using x86")
     from detectts_x86 import setup, detect_signs, draw_box
 else:
     from detectts_armtflite import setup, detect_signs, draw_box
@@ -18,7 +20,7 @@ if __name__ == "__main__":
     #  area_arr=[]
     # sign_arr=[]
 
-    cap = cv2.VideoCapture("./data/bfmc2020_online_1.avi")
+    cap = cv2.VideoCapture("./data/bfmc/bfmc2020_online_1.avi")
     frame_count = 0
     while cap.isOpened():
         frame_count += 1
@@ -27,12 +29,14 @@ if __name__ == "__main__":
             img = frame.copy()
         except:
             break
-
+        if frame_count %5 != 0:
+            continue
         width = img.shape[1]
         height = img.shape[0]
         # should be top right quarter
         img = img[: int(height / 2), int(width / 2) :]
         a = time.time()
+        print(model)
         out = detect_signs(img, model, labels)
         print(time.time() - a)
         if out is not None:
@@ -47,6 +51,7 @@ if __name__ == "__main__":
             if area<0:
 =======
             area = (box[1][0] - box[0][0]) * (box[1][1] - box[0][1])
+            print(text)
             # area_arr.append(area)
             # sign_arr.append(text)
             # print(text)

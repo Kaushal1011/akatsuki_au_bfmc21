@@ -111,7 +111,7 @@ class CameraSpooferProcess(WorkerProcess):
 
                         for p in self.outPs:
                             p.send([[stamp], frame])
-
+                        print("Sending Image from Cam Spoofer")
                     else:
                         break
 
