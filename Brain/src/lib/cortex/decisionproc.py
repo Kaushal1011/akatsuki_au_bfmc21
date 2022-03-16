@@ -262,23 +262,18 @@ class DecisionMakingProcess(WorkerProcess):
                     if inPs[idx].poll(timeout=0.1):
                         imu_data = inPs[idx].recv()
                         yaw_imu = imu_data["yaw"]
-                        if self.state
                         # print("IMU:", imu_data)
                         # yaw_imu = 360 - imu_data["yaw"]
                         # print("imu_yaw", yaw_imu, "yaw", yaw)
                         #yaw_imu = yaw_imu if yaw_imu > 180 else -yaw_imu
-                        if yaw_imu > 180:
-                            yaw_imu = yaw_imu - 360
                         yaw_imu = (yaw_imu * math.pi) / 180
-                        if abs(yaw_imu - yaw) < 1.57:
-                            yaw = yaw_imu
-                        print("yaw", yaw)
+                        yaw_f = yaw_imu
+                        print("yaw", yaw_f)
 
                 self.state.update(
-                    lk_angle, detected_intersection, x, y, yaw, trafficlights
+                    lk_angle, detected_intersection, x, y, yaw_f, trafficlights
                 )
-                states_l.append((x, y, yaw))
-                print(states_l)
+                # states_l.append((x, y, yaw_f))
                 # print(self.state)
                 ind, Lf = pPC.search_target_index(self.state)
                 # print("searched")
