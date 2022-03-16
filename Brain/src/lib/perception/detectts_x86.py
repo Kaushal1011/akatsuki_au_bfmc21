@@ -52,8 +52,8 @@ def draw_box(img, text, location, box):
 
 
 def detect_signs(img, model, labels):
-
     shapes, predictions_dict, detections, _ = model([img])
+
     label_id_offset = 1
 
     if predictions_dict[0][0] > 0.85:

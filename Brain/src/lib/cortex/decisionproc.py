@@ -148,17 +148,15 @@ class DecisionMakingProcess(WorkerProcess):
             try:
                 c = time()
 
-                # t_lk = time()
-                assert "lk" in self.inPsnames and self.inPsnames.index("lk") == 0
-                if inPs[0].poll(timeout=0.1):
-                    lk_angle, _ = inPs[0].recv()
-                # print("Time taken to r lk", time() - t_lk)
+                t_lk = time()
+                idx = self.inPsnames.index("lk")
+                lk_angle, _ = inPs[idx].recv()
+                print("Time taken to r lk", time() - t_lk, "R ", lk_angle)
 
-                # t_id = time()
-                assert "iD" in self.inPsnames and self.inPsnames.index("iD") == 1
-                if inPs[1].poll(timeout=0.1):
-                    detected_intersection = inPs[1].recv()
-                # print("Time taken to r id", time() - t_id)
+                t_id = time()
+                idx = self.inPsnames.index("iD")
+                detected_intersection = inPs[idx].recv()
+                print("Time taken to r id", time() - t_id, "R ", detected_intersection)
 
                 x = self.state.x
                 y = self.state.y
@@ -166,19 +164,20 @@ class DecisionMakingProcess(WorkerProcess):
                 trafficlights = None
                 imu_data = None
                 # sign Detection
-                if len(inPs) > 2:
-                    assert "sD" in self.inPsnames and self.inPsnames.index("sD") == 2
-                    if inPs[2].poll(timeout=0.1):
-                        label = inPs[2].recv()
-                        print(f"Sign Detected -> {label}")
+                t_sD = time()
+                if "sD" in self.inPsnames:
+                    idx = self.inPsnames.index("sD")
+                    if inPs[idx].poll(timeout=0.1):
+                        label = inPs[idx].recv()
+                        print(f"Time taken {time() - t_sD} sD -> {label}")
 
                 # locsys
                 # t_loc = time()
-                if len(inPs) > 3:
-                    assert "loc" in self.inPsnames and self.inPsnames.index("loc") == 3
+                if "loc" in self.inPsnames:
+                    idx = self.inPsnames.index("loc")
                     if self.locsys_first:
-                        if inPs[3].poll(timeout=0.1):
-                            loc = inPs[3].recv()
+                        if inPs[idx].poll(timeout=0.1):
+                            loc = inPs[idx].recv()
 
                             x = loc["posA"]
                             y = loc["posB"]
@@ -190,8 +189,8 @@ class DecisionMakingProcess(WorkerProcess):
                             self.locsys_first = False
                         use_self_loc = False
 
-                    if inPs[3].poll(timeout=0.1):
-                        loc = inPs[3].recv()
+                    if inPs[idx].poll(timeout=0.1):
+                        loc = inPs[idx].recv()
                         use_self_loc = False
                         x = loc["posA"]
                         y = loc["posB"]
@@ -210,10 +209,10 @@ class DecisionMakingProcess(WorkerProcess):
                 #     print(trafficlights)
 
                 # imu
-                if len(inPs) > 4:
-                    assert "imu" in self.inPsnames and self.inPsnames.index("imu") == 4
-                    if inPs[4].poll(timeout=0.1):
-                        imu_data = inPs[4].recv()
+                if "imu" in self.inPsnames:
+                    idx = self.inPsnames.index("imu")
+                    if inPs[idx].poll(timeout=0.1):
+                        imu_data = inPs[idx].recv()
                         # print("IMU:", imu_data)
                         yaw_imu = imu_data["yaw"] - 360
                         print("imu_yaw", yaw_imu)

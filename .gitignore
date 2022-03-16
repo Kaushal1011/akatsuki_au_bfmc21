@@ -5,7 +5,7 @@
 # ignore data directory
 nbs/*/data
 nbs/data
-
+**/data
 mldlai/data
 mldlai/*/data
 mldlai/models

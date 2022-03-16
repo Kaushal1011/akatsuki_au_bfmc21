@@ -107,6 +107,7 @@ class SIMCameraProcess(WorkerProcess):
                 image = np.reshape(image, self.imgSize)
                 image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
                 stamp = time.time()
+                print("Recieved Image")
                 for outP in outPs:
                     outP.send([[stamp], image])
         except Exception:

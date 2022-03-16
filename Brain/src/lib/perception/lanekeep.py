@@ -69,6 +69,7 @@ class LaneKeepingProcess(WorkerProcess):
                 # Apply image processing
                 val, outimage = self.lk(img)
                 angle = self.computeSteeringAnglePID(val)
+                print("R lk")
 
                 for outP in outPs:
                     outP.send((angle, outimage))
