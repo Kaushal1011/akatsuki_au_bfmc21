@@ -43,12 +43,20 @@ if __name__ == "__main__":
             box, text, location = out
             # box 0 is top left box 1 is bottom right
             # area = wxh w=x2-x1 h=y2-y1
+<<<<<<< HEAD
+            area=(box[1][0]-box[0][0])*(box[1][1]-box[0][1])
+            area_arr.append(area)
+            sign_arr.append(text)
+            print(text)
+            if area<0:
+=======
             area = (box[1][0] - box[0][0]) * (box[1][1] - box[0][1])
             print(text)
             # area_arr.append(area)
             # sign_arr.append(text)
             # print(text)
             if area < 10000:
+>>>>>>> b191bf2346692a6e428c01f053b9e68edf26f5e3
                 continue
             frame = draw_box(img, text, location, box)
             # print(box)
