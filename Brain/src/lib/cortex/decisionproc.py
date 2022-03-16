@@ -80,13 +80,55 @@ if config["preplan"] == False:
     coord_list, p_type, etype = plan.get_path(config["start_idx"], config["end_idx"])
 
 else:
-    preplanpath = joblib.load("../nbs/preplan.z")
-    coord_list = [i for i in zip(preplanpath["x"], preplanpath["y"])]
-    coord_list = coord_list[:10:20]
-    p_type = preplanpath["ptype"]
-    p_type = p_type[:10:20]
-    etype = preplanpath["etype"]
-    etype = etype[:10:20]
+    #preplanpath = joblib.load("../nbs/preplan.z")
+    #coord_list = [i for i in zip(preplanpath["x"], preplanpath["y"])]
+    #coord_list = coord_list[::20][:10]
+    #p_type = preplanpath["ptype"]
+    #p_type = p_type[::20][:10]
+    #etype = preplanpath["etype"]
+    #etype = etype[::20][:10]
+    x = [0.43333333333333335,
+ 0.7334782167192219,
+ 1.0327789026366971,
+ 1.3304090181131871,
+ 1.6273122715012551,
+ 1.9276796040349833,
+ 2.2357436727832916,
+ 2.5473493531490745,
+ 2.849128703940845,
+ 3.1272422346075093,
+ 3.3650246431161848,
+ 3.514789492251189,
+ 3.5330685683813887,
+ 3.4763725958632294,
+ 3.422491394198657,
+ 3.3952757765637904,
+ 3.38832117201392,
+ 3.3948885479970725,
+ 3.4082388719612755]
+    y = [5.375,
+ 5.399206687172543,
+ 5.420777729826494,
+ 5.437096730434421,
+ 5.447458635270175,
+ 5.454664770993198,
+ 5.461396724255643,
+ 5.456763260609604,
+ 5.414965281234685,
+ 5.309440642282311,
+ 5.117332536650728,
+ 4.856460526791408,
+ 4.565010233123334,
+ 4.261050571123405,
+ 3.956337449625672,
+ 3.6546373612678087,
+ 3.3552354477843,
+ 3.057367311303062,
+ 2.760268553952013]
+    coord_list = list(zip(x,y))
+    p_type=["int" for i in range(len(coord_list))]
+    etype=[False for i in range(len(coord_list))]
+    print("no. of points", len(coord_list))
 
 pPC = Purest_Pursuit(coord_list)
 # print("Time taken by Path Planning:", time() - a)
@@ -149,6 +191,7 @@ class DecisionMakingProcess(WorkerProcess):
             Output pipe to send the steering angle value to other process.
         """
         use_self_loc = False
+        states_l = []
         while True:
             try:
                 c = time()
@@ -156,12 +199,12 @@ class DecisionMakingProcess(WorkerProcess):
                 t_lk = time()
                 idx = self.inPsnames.index("lk")
                 lk_angle, _ = inPs[idx].recv()
-                print(f"Time taken lk {(time() - t_lk):.3f}s {lk_angle}")
+                # print(f"Time taken lk {(time() - t_lk):.3f}s {lk_angle}")
 
                 t_id = time()
                 idx = self.inPsnames.index("iD")
                 detected_intersection = inPs[idx].recv()
-                print(f"Time taken id {(time() - t_id):.3f}s  {detected_intersection}")
+                # print(f"Time taken id {(time() - t_id):.3f}s  {detected_intersection}")
 
                 x = self.state.x
                 y = self.state.y
@@ -181,7 +224,7 @@ class DecisionMakingProcess(WorkerProcess):
                 if "loc" in self.inPsnames:
                     idx = self.inPsnames.index("loc")
                     if self.locsys_first:
-                        if inPs[idx].poll(timeout=0.1):
+                        if inPs[idx].poll(timeout=0.3):
                             loc = inPs[idx].recv()
 
                             x = loc["posA"]
@@ -205,7 +248,7 @@ class DecisionMakingProcess(WorkerProcess):
                             yaw = 2 * math.pi - (loc["radA"] + math.pi)
                     else:
                         use_self_loc = True
-                    print(f"Time taken loc {(time() - t_loc):.2f}s {loc}")
+                    # print(f"Time taken loc {(time() - t_loc):.2f}s {loc}")
 
                 # TODO: add back
                 # # if trafficlight process is connected
@@ -218,32 +261,40 @@ class DecisionMakingProcess(WorkerProcess):
                     idx = self.inPsnames.index("imu")
                     if inPs[idx].poll(timeout=0.1):
                         imu_data = inPs[idx].recv()
+                        yaw_imu = imu_data["yaw"]
+                        if self.state
                         # print("IMU:", imu_data)
-                        yaw_imu = 360 - imu_data["yaw"]
-                        print("imu_yaw", yaw_imu)
-                        yaw_imu = yaw_imu if yaw_imu > 180 else -yaw_imu
-                        yaw = (yaw_imu * math.pi) / 180
+                        # yaw_imu = 360 - imu_data["yaw"]
+                        # print("imu_yaw", yaw_imu, "yaw", yaw)
+                        #yaw_imu = yaw_imu if yaw_imu > 180 else -yaw_imu
+                        if yaw_imu > 180:
+                            yaw_imu = yaw_imu - 360
+                        yaw_imu = (yaw_imu * math.pi) / 180
+                        if abs(yaw_imu - yaw) < 1.57:
+                            yaw = yaw_imu
                         print("yaw", yaw)
 
                 self.state.update(
                     lk_angle, detected_intersection, x, y, yaw, trafficlights
                 )
-
-                print(self.state)
+                states_l.append((x, y, yaw))
+                print(states_l)
+                # print(self.state)
                 ind, Lf = pPC.search_target_index(self.state)
-                print("searched")
+                # print("searched")
                 print(f"({x}, {y}) -> {ind}, {coord_list[ind]}")
-                if p_type[ind - 1] == "int":
-                    angle = controlsystem(self.state, ind, Lf)
+                # if p_type[ind - 1] == "int":
+                angle = controlsystem(self.state, ind, Lf)
+                print(f"Angle {angle}")
                 # lane keeping
-                elif p_type[ind - 1] == "lk":
-                    angle = lk_angle
-                    angle2 = controlsystem(self.state, ind, Lf)
-                    if abs(angle2 - angle) > 21:
-                        print("lane keeping failed")
-                        angle = angle2
-                else:
-                    print("Here in nothingness")
+                #elif p_type[ind - 1] == "lk":
+                #    angle = lk_angle
+                #    angle2 = controlsystem(self.state, ind, Lf)
+                #    if abs(angle2 - angle) > 21:
+                #        print("lane keeping failed")
+                #        angle = angle2
+                #else:
+                #    print("Here in nothingness")
 
                 # print(f"Current Behaviour : {p_type[ind-1]}")
 
@@ -255,6 +306,9 @@ class DecisionMakingProcess(WorkerProcess):
                 for outP in outPs:
                     outP.send((-angle, None))
                 print(time() - c)
+                
             except Exception as e:
                 print("Decision Process error:")
                 raise e
+            joblib.dump(states_l, 'dump.shakal')
+                

@@ -69,7 +69,7 @@ class LaneKeepingProcess(WorkerProcess):
 
                 for outP in outPs:
                     outP.send((angle, outimage))
-                    print("Sending from Lane Keeping")
+                    # print("Sending from Lane Keeping")
 
                 # print("Timetaken by LK: ", time() - a)
 

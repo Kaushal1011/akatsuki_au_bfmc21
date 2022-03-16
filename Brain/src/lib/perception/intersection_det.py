@@ -55,7 +55,7 @@ class IntersectionDetProcess(WorkerProcess):
                 detected, _ = intersection_det(img)
                 for outP in outPs:
                     outP.send(detected)
-                    print("Sending from Intersection Detection")
+                    # print("Sending from Intersection Detection")
                 # print("Time taken by ID:", time() - a)
             except Exception as e:
                 print("Intersection Detection error:")

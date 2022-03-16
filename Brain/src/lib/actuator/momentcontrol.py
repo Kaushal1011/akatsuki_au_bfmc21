@@ -18,7 +18,7 @@ class MovementControl(WorkerProcess):
         """
         # Initialize parameters
         self.angle = 0.0
-        self.speed = 13.0
+        self.speed = 14.0
         self.init = False
         super(MovementControl, self).__init__(inPs, outPs)
 
@@ -48,7 +48,7 @@ class MovementControl(WorkerProcess):
     def stop(self):
         """Apply the stopping methods and stops the threads"""
         # Make a reset before stop
-        self.speed = 0.0
+        self.speed = 14.0
         self.angle = 0.0
         self._singleUpdate(self.outPs)
 
@@ -126,7 +126,7 @@ class MovementControl(WorkerProcess):
             for outP in outPs:
                 outP.send(speed_data)
                 outP.send(steer_data)
-                print("Sending from Moment Control\n")
+                # print("Sending from Moment Control\n")
         except Exception as e:
             print("Moment Control Error:")
             print(e)
