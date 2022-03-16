@@ -68,7 +68,7 @@ class CarState:
             self.tl = tl
 
     def __repr__(self) -> str:
-        return f"{datetime.datetime.now()}| {self.steering_angle}, {self.det_intersection}, {self.x}, {self.y}, {self.yaw}"
+        return f"{datetime.datetime.now()}| {self.steering_angle:.4f}, {self.det_intersection}, {self.x:.4f}, {self.y:.4f}, {self.yaw:.4f}"
 
     def asdict(self) -> dict:
         return {"angle": self.steering_angle, "intersection": self.det_intersection}
@@ -78,7 +78,7 @@ plan = PathPlanning()
 a = time()
 if config["preplan"] == False:
     coord_list, p_type, etype = plan.get_path(config["start_idx"], config["end_idx"])
-    
+
 else:
     preplanpath = joblib.load("../nbs/preplan.z")
     coord_list = [i for i in zip(preplanpath["x"], preplanpath["y"])]
@@ -156,12 +156,12 @@ class DecisionMakingProcess(WorkerProcess):
                 t_lk = time()
                 idx = self.inPsnames.index("lk")
                 lk_angle, _ = inPs[idx].recv()
-                # print("Time taken to r lk", time() - t_lk, "R ", lk_angle)
+                print(f"Time taken lk {(time() - t_lk):.3f}s {lk_angle}")
 
                 t_id = time()
                 idx = self.inPsnames.index("iD")
                 detected_intersection = inPs[idx].recv()
-                # print("Time taken to r id", time() - t_id, "R ", detected_intersection)
+                print(f"Time taken id {(time() - t_id):.3f}s  {detected_intersection}")
 
                 x = self.state.x
                 y = self.state.y
@@ -174,10 +174,10 @@ class DecisionMakingProcess(WorkerProcess):
                     idx = self.inPsnames.index("sD")
                     if inPs[idx].poll(timeout=0.1):
                         label = inPs[idx].recv()
-                        # print(f"Time taken {time() - t_sD} sD -> {label}")
+                        print(f"Time taken sD {(time() - t_sD):.2f}s {label}")
 
                 # locsys
-                # t_loc = time()
+                t_loc = time()
                 if "loc" in self.inPsnames:
                     idx = self.inPsnames.index("loc")
                     if self.locsys_first:
@@ -205,7 +205,7 @@ class DecisionMakingProcess(WorkerProcess):
                             yaw = 2 * math.pi - (loc["radA"] + math.pi)
                     else:
                         use_self_loc = True
-                # print("Time taken to r loc", time() - t_loc)
+                    print(f"Time taken loc {(time() - t_loc):.2f}s {loc}")
 
                 # TODO: add back
                 # # if trafficlight process is connected
@@ -219,9 +219,9 @@ class DecisionMakingProcess(WorkerProcess):
                     if inPs[idx].poll(timeout=0.1):
                         imu_data = inPs[idx].recv()
                         # print("IMU:", imu_data)
-                        yaw_imu = 360- imu_data["yaw"] 
+                        yaw_imu = 360 - imu_data["yaw"]
                         print("imu_yaw", yaw_imu)
-                        yaw_imu = yaw_imu if yaw_imu > 180 else -yaw_imu 
+                        yaw_imu = yaw_imu if yaw_imu > 180 else -yaw_imu
                         yaw = (yaw_imu * math.pi) / 180
                         print("yaw", yaw)
 
@@ -229,11 +229,10 @@ class DecisionMakingProcess(WorkerProcess):
                     lk_angle, detected_intersection, x, y, yaw, trafficlights
                 )
 
-                # print(self.state)
+                print(self.state)
                 ind, Lf = pPC.search_target_index(self.state)
-
-                print("Target -> ", ind, coord_list[ind])
-                print(f"current ->  ({x}, {y})")
+                print("searched")
+                print(f"({x}, {y}) -> {ind}, {coord_list[ind]}")
                 if p_type[ind - 1] == "int":
                     angle = controlsystem(self.state, ind, Lf)
                 # lane keeping

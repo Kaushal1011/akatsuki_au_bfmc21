@@ -35,10 +35,7 @@ class LaneKeepingProcess(WorkerProcess):
         thr = Thread(
             name="StreamSending",
             target=self._the_thread,
-            args=(
-                self.inPs[0],
-                self.outPs,
-            ),
+            args=(self.inPs[0], self.outPs,),
         )
         thr.daemon = True
         self.threads.append(thr)
@@ -72,6 +69,7 @@ class LaneKeepingProcess(WorkerProcess):
 
                 for outP in outPs:
                     outP.send((angle, outimage))
+                    print("Sending from Lane Keeping")
 
                 # print("Timetaken by LK: ", time() - a)
 

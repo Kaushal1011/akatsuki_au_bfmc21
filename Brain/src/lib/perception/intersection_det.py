@@ -31,10 +31,7 @@ class IntersectionDetProcess(WorkerProcess):
         thr = Thread(
             name="StreamSending",
             target=self._the_thread,
-            args=(
-                self.inPs[0],
-                self.outPs,
-            ),
+            args=(self.inPs[0], self.outPs,),
         )
         thr.daemon = True
         self.threads.append(thr)
@@ -58,7 +55,7 @@ class IntersectionDetProcess(WorkerProcess):
                 detected, _ = intersection_det(img)
                 for outP in outPs:
                     outP.send(detected)
-                
+                    print("Sending from Intersection Detection")
                 # print("Time taken by ID:", time() - a)
             except Exception as e:
                 print("Intersection Detection error:")

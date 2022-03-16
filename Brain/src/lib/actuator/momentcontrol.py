@@ -126,6 +126,7 @@ class MovementControl(WorkerProcess):
             for outP in outPs:
                 outP.send(speed_data)
                 outP.send(steer_data)
+                print("Sending from Moment Control\n")
         except Exception as e:
             print("Moment Control Error:")
             print(e)
