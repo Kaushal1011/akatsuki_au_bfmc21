@@ -30,6 +30,7 @@ class CarState:
         self.rear_y = self.y - ((car_len / 2) * math.sin(self.yaw))
         self.closest_pt = None
         self.last_update_time = time()
+        self.predelta=None
 
     def update_pos(self, steering_angle):
         dt = time() - self.last_update_time
@@ -51,7 +52,7 @@ class CarState:
         y: Optional[float] = None,
         yaw: Optional[float] = None,
         tl: Optional[dict] = None,
-    ) -> None:
+    ) -> float:
         self.last_update_time = time()
         if angle:
             self.steering_angle = angle
@@ -67,6 +68,7 @@ class CarState:
             self.yaw = yaw
         if tl:
             self.tl = tl
+        return self.last_update_time
 
     def __repr__(self) -> str:
         return f"{datetime.datetime.now()}| {self.steering_angle:.4f}, {self.det_intersection}, {self.x:.4f}, {self.y:.4f}, {self.yaw:.4f}"
