@@ -12,5 +12,6 @@
   "test_track": false,
   "pc_ip": "0.0.0.0",
   "pi_ip": "0.0.0.0",
-  "home_loc": false
+  "home_loc": false,
+  "preplan": false
 }
