@@ -11,6 +11,7 @@ from src.templates.workerprocess import WorkerProcess
 from time import time
 import joblib
 
+import math
 
 class CarState:
     def __init__(self, v=0.12, dt=0.1, car_len=0.365) -> None:
@@ -87,44 +88,8 @@ else:
     #p_type = p_type[::20][:10]
     #etype = preplanpath["etype"]
     #etype = etype[::20][:10]
-    x = [0.43333333333333335,
- 0.7334782167192219,
- 1.0327789026366971,
- 1.3304090181131871,
- 1.6273122715012551,
- 1.9276796040349833,
- 2.2357436727832916,
- 2.5473493531490745,
- 2.849128703940845,
- 3.1272422346075093,
- 3.3650246431161848,
- 3.514789492251189,
- 3.5330685683813887,
- 3.4763725958632294,
- 3.422491394198657,
- 3.3952757765637904,
- 3.38832117201392,
- 3.3948885479970725,
- 3.4082388719612755]
-    y = [5.375,
- 5.399206687172543,
- 5.420777729826494,
- 5.437096730434421,
- 5.447458635270175,
- 5.454664770993198,
- 5.461396724255643,
- 5.456763260609604,
- 5.414965281234685,
- 5.309440642282311,
- 5.117332536650728,
- 4.856460526791408,
- 4.565010233123334,
- 4.261050571123405,
- 3.956337449625672,
- 3.6546373612678087,
- 3.3552354477843,
- 3.057367311303062,
- 2.760268553952013]
+    x = [0.5, 1, 1.5, 2, 2.5]
+    y = [5.0]*5
     coord_list = list(zip(x,y))
     p_type=["int" for i in range(len(coord_list))]
     etype=[False for i in range(len(coord_list))]
@@ -266,7 +231,9 @@ class DecisionMakingProcess(WorkerProcess):
                         # yaw_imu = 360 - imu_data["yaw"]
                         # print("imu_yaw", yaw_imu, "yaw", yaw)
                         #yaw_imu = yaw_imu if yaw_imu > 180 else -yaw_imu
-                        yaw_imu = (yaw_imu * math.pi) / 180
+                        yaw_imu = math.radians(yaw_imu)
+                        if yaw_imu > math.pi:
+                            yaw_imu -= 2*math.pi
                         yaw_f = yaw_imu
                         print("yaw", yaw_f)
 
@@ -274,6 +241,7 @@ class DecisionMakingProcess(WorkerProcess):
                     lk_angle, detected_intersection, x, y, yaw_f, trafficlights
                 )
                 # states_l.append((x, y, yaw_f))
+                # print(states_l)
                 # print(self.state)
                 ind, Lf = pPC.search_target_index(self.state)
                 # print("searched")

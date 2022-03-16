@@ -179,8 +179,8 @@ class PathPlanning:
 
 class Purest_Pursuit:
     def __init__(self, coord_list):
-        self.k = 0.005  # look forward gain
-        self.Lfc = 0.24  # [m] look-ahead distance
+        self.k = 0.01  # look forward gain
+        self.Lfc = 0.125  # [m] look-ahead distance
         self.Kp = 1.0  # speed proportional gain
         self.WB = 0.3  # [m] wheel base of vehicle
         self.cx, self.cy = zip(*coord_list)
