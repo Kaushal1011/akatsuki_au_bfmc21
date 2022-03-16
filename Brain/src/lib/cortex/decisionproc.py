@@ -183,7 +183,7 @@ class DecisionMakingProcess(WorkerProcess):
                 if "sD" in self.inPsnames:
                     idx = self.inPsnames.index("sD")
                     if inPs[idx].poll(timeout=0.1):
-                        label = inPs[idx].recv()
+                        label, area = inPs[idx].recv()
                         print(f"Time taken sD {(time() - t_sD):.2f}s {label}")
 
                 # locsys
