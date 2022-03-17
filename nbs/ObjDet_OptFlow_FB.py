@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 from scipy.stats import mode
 
 directions_map = np.zeros([10, 5])
-# cap = cv2.VideoCapture("optical_flow_det.mp4")
-cap = cv2.VideoCapture(0)
+input_video_path = '/home/b0nzo/Documents/akatsuki_au_bfmc21/nbs/optical_flow_det.mp4'
+cap = cv2.VideoCapture(input_video_path)
 
 ret, first_frame = cap.read()
 print(len(first_frame))
@@ -14,20 +14,20 @@ hsv = np.zeros_like(first_frame)
 hsv[:, :, 1] = 255
 param = {
         'pyr_scale': 0.5,  # Image scale (<1) to build pyramids for each image
-        'levels': 5,  # Number of pyramid layers
-        'winsize': 25,  # Averaging window size
-        'iterations': 5,  # Number of iterations the algorithm does at each pyramid level
-        'poly_n': 7,  # Size of the pixel neighborhood used to find polynomial expansion in each pixel
-        'poly_sigma': 1.5,  # Standard deviation of the Gaussian that is used to smooth derivatives used as a basis for the polynomial expansion
+        'levels': 3,  # Number of pyramid layers
+        'winsize': 15,  # Averaging window size
+        'iterations': 3,  # Number of iterations the algorithm does at each pyramid level
+        'poly_n': 5,  # Size of the pixel neighborhood used to find polynomial expansion in each pixel
+        'poly_sigma': 1.2,  # Standard deviation of the Gaussian that is used to smooth derivatives used as a basis for the polynomial expansion
         'flags': cv2.OPTFLOW_LK_GET_MIN_EIGENVALS
     }
 
 while True:
     ret, frame = cap.read()
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    # flow = cv2.calcOpticalFlowFarneback(prev_gray, gray, None, **param)
-    optical_flow = cv2.optflow.DualTVL1OpticalFlow_create()
-    flow = optical_flow.calc(prev_gray, gray, None)
+    flow = cv2.calcOpticalFlowFarneback(prev_gray, gray, None, **param)
+    # optical_flow = cv2.optflow.DualTVL1OpticalFlow_create()
+    # flow = optical_flow.calc(prev_gray, gray, None)
     mag, ang = cv2.cartToPolar(
         flow[:, :, 0], flow[:, :, 1], angleInDegrees=True)
     ang_180 = ang/2

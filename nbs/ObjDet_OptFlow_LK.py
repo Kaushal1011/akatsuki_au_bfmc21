@@ -3,12 +3,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import mode
 
+# input_video_path = '/home/b0nzo/Documents/akatsuki_au_bfmc21/nbs/optical_flow_det.mp4'
+# cap = cv2.VideoCapture(input_video_path)
 # cap = cv2.VideoCapture("optical_flow_det.mp4")
 cap = cv2.VideoCapture(0)
 
 # params for shi-tsomasi corner detection
-feature_params = dict(maxCorners=300, qualityLevel=0.2,
-                      minDistance=2, blockSize=7)
+feature_params = dict(maxCorners=1000, qualityLevel=0.05,
+                      minDistance=10)
 # params for lukas-konade sparse optical flow
 lk_params = dict(winSize=(15, 15), maxLevel=2, criteria=(
     cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
@@ -18,6 +20,7 @@ ret, first_frame = cap.read()
 print(len(first_frame))
 prev_gray = cv2.cvtColor(first_frame, cv2.COLOR_BGR2GRAY)
 prev = cv2.goodFeaturesToTrack(prev_gray, mask = None, **feature_params)
+mask = np.zeros_like(first_frame)
 
 while(cap.isOpened()):
     ret, frame = cap.read()

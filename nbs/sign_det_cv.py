@@ -1,4 +1,6 @@
 import cv2
+from cv2 import imread
+from matplotlib.pyplot import hsv
 import numpy as np
 
 frameWidth = 640
@@ -8,8 +10,8 @@ cap.set(3, frameWidth)
 cap.set(4, frameHeight)
 blue1 = np.array([110,50,50])
 blue2 = np.array([130,255,255])
-red1 = np.array([170,50,50])
-red2 = np.array([180,255,255])
+red1 = np.array([179,205,66])
+red2 = np.array([179,204,255])
 yellow1 = np.array([10,52,50])
 yellow2 = np.array([40,255,255])
 
@@ -27,15 +29,16 @@ cv2.createTrackbar("Area", "Parameters", 5000, 30000, empty)
 
 while True:
     ret, img = cap.read()
+    # img_path = "/home/b0nzo/Documents/akatsuki_au_bfmc21/nbs/frame_250.png"
+    # img = cv2.imread(img_path)
     imgContour = img.copy()
-
-    hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV_FULL)
     
     mask0 = cv2.inRange(hsv_img, red1, red2)
     mask1 = cv2.inRange(hsv_img, blue1, blue2)
     mask2 = cv2.inRange(hsv_img, yellow1, yellow2)
 
-    maskf = mask1
+    maskf = mask2
 
     imgRes = cv2.bitwise_and(img, img, mask=maskf)
     imgBlur = cv2.GaussianBlur(imgRes, (7,7), 1)
@@ -65,6 +68,6 @@ while True:
                 cv2.putText(imgContour,"Points: " + str(len(approx)), (x_ + w + 20, y_ + 20), cv2.FONT_HERSHEY_COMPLEX, .7, (0,255,0), 2)
 
     cv2.imshow("Result", imgContour)
-
+    # cv2.imwrite(f'/home/b0nzo/Documents/akatsuki_au_bfmc21/nbs/hsv_img_stop.png', hsv_img)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
