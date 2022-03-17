@@ -1,47 +1,74 @@
 import datetime
 import math
+from selectors import EpollSelector
 from socket import timeout
 from threading import Thread
 from time import time
 from typing import Optional
 
 from src.config import config
-from src.lib.cortex.pathplanning import PathPlanning, Purest_Pursuit
+from src.lib.cortex.pathplanning import PathPlanning, Purest_Pursuit,MPC_Controller
 from src.templates.workerprocess import WorkerProcess
 from time import time
 import joblib
+import numpy as np
+
+
 
 import math
 
 class CarState:
-    def __init__(self, v=0.12, dt=0.1, car_len=0.365) -> None:
+    def __init__(self, v=0.15, dt=0.1, car_len=0.365) -> None:
         self.steering_angle = 0.0
         self.det_intersection = False
         # TODO: get initial position from config IDK
-        self.x = 0.75
+        self.x = 0
         # 0.75, 4.8
-        self.y = 4.8
+        self.y = 14
         self.yaw = 0
         self.tl = {}
         self.v = v
         self.dt = dt
         self.car_len = car_len
+        self.L = car_len 
         self.rear_x = self.x - ((car_len / 2) * math.cos(self.yaw))
         self.rear_y = self.y - ((car_len / 2) * math.sin(self.yaw))
         self.closest_pt = None
         self.last_update_time = time()
+        self.state = np.array([[self.x, self.y, self.v, self.yaw]]).T
 
     def update_pos(self, steering_angle):
-        dt = time() - self.last_update_time
+        self.dt = time() - self.last_update_time
         self.last_update_time = time()
-        self.x = self.x + self.v * math.cos(self.yaw) * dt
-        self.y = self.y + self.v * math.sin(self.yaw) * dt
-        self.yaw = self.yaw + self.v / self.car_len * math.tan(steering_angle) * dt
+        self.x = self.x + self.v * math.cos(self.yaw) * self.dt
+        self.y = self.y + self.v * math.sin(self.yaw) * self.dt
+        self.yaw = self.yaw + self.v / self.car_len * math.tan(steering_angle) * self.dt
 
     def calc_distance(self, point_x, point_y):
         dx = self.rear_x - point_x
         dy = self.rear_y - point_y
         return math.hypot(dx, dy)
+    
+    def mcalc_distance(self, point_x, point_y):
+        dx = self.x - point_x
+        dy = self.y - point_y
+        return math.hypot(dx, dy)
+    
+    def move(self, accelerate, delta):
+        x_dot = self.v*np.cos(self.yaw)
+        y_dot = self.v*np.sin(self.yaw)
+        v_dot = accelerate
+        yaw_dot = self.v*np.tan(delta)/self.L
+        return np.array([[x_dot, y_dot, v_dot, yaw_dot]]).T
+
+    def update_state(self, state_dot):
+        # self.u_k = command
+        # self.z_k = state
+        self.state = self.state + self.dt*state_dot
+        self.x = self.state[0,0]
+        self.y = self.state[1,0]
+        self.v = self.state[2,0]
+        self.yaw = self.state[3,0]
 
     def update(
         self,
@@ -51,13 +78,16 @@ class CarState:
         y: Optional[float] = None,
         yaw: Optional[float] = None,
         tl: Optional[dict] = None,
+        v: Optional[float] = None,
     ) -> None:
-        self.last_update_time = time()
+        
         if angle:
             self.steering_angle = angle
         if det_intersection:
             self.det_intersection = det_intersection
         if x:
+            self.dt=time()-self.last_update_time
+            self.last_update_time = time()
             self.x = x
             self.rear_x = self.x - ((self.car_len / 2) * math.cos(self.yaw))
         if y:
@@ -65,6 +95,8 @@ class CarState:
             self.rear_y = self.y - ((self.car_len / 2) * math.sin(self.yaw))
         if yaw:
             self.yaw = yaw
+        if v:
+            self.v=v
         if tl:
             self.tl = tl
 
@@ -96,6 +128,7 @@ else:
     print("no. of points", len(coord_list))
 
 pPC = Purest_Pursuit(coord_list)
+mPC= MPC_Controller(coord_list)
 # print("Time taken by Path Planning:", time() - a)
 
 
@@ -109,6 +142,19 @@ def controlsystem(vehicle: CarState, ind, Lf):
         di = -21
 
     return di
+
+def mcontrolsystem(vehicle: CarState, ind):
+    
+    acc,di=mPC.optimize(vehicle,ind)
+
+    di=di*180/math.pi
+
+    if di > 21:
+        di = 21
+    elif di < -21:
+        di = -21
+
+    return acc,di
 
 
 class DecisionMakingProcess(WorkerProcess):
@@ -157,6 +203,7 @@ class DecisionMakingProcess(WorkerProcess):
         """
         use_self_loc = False
         states_l = []
+        ind_m=0
         while True:
             try:
                 c = time()
@@ -212,7 +259,7 @@ class DecisionMakingProcess(WorkerProcess):
                         elif "radA" in loc.keys():
                             yaw = 2 * math.pi - (loc["radA"] + math.pi)
                     else:
-                        use_self_loc = True
+                        use_self_loc = False
                     # print(f"Time taken loc {(time() - t_loc):.2f}s {loc}")
 
                 # TODO: add back
@@ -236,10 +283,14 @@ class DecisionMakingProcess(WorkerProcess):
                             yaw_imu -= 2*math.pi
                         yaw_f = yaw_imu
                         print("yaw", yaw_f)
+                        yaw=yaw_f
+                
+            
 
                 self.state.update(
-                    lk_angle, detected_intersection, x, y, yaw_f, trafficlights
+                    lk_angle, detected_intersection, x, y, yaw, trafficlights
                 )
+                
                 # states_l.append((x, y, yaw_f))
                 # print(states_l)
                 # print(self.state)
@@ -249,6 +300,27 @@ class DecisionMakingProcess(WorkerProcess):
                 # if p_type[ind - 1] == "int":
                 angle = controlsystem(self.state, ind, Lf)
                 print(f"Angle {angle}")
+
+                if config["useMPC"]:
+                    # get own index search for mPC
+                    cp=np.argmin([self.state.mcalc_distance(i[0],i[1]) for  i in coord_list ])
+                    print("closest point : ",coord_list[cp])
+                    ind_m = np.argmin([self.state.mcalc_distance(i[0],i[1]) for  i in coord_list[ind_m:] ])
+                    print("closest point  not visited: ",coord_list[ind_m])
+                    acc,delta=mcontrolsystem(self.state,cp)
+                    print("dt value: ",self.state.dt)
+
+                    if self.state.dt>0.3:
+                        self.state.dt=0.3
+                    else:    
+                        tempv=self.state.v+ acc * self.state.dt
+                        if tempv>0.3:
+                            tempv=0.3
+                        elif tempv<-0.3:
+                            tempv=-0.3
+                        self.state.update(v=tempv)
+
+
                 # lane keeping
                 #elif p_type[ind - 1] == "lk":
                 #    angle = lk_angle
@@ -267,7 +339,10 @@ class DecisionMakingProcess(WorkerProcess):
                     self.state.update_pos(angle)
 
                 for outP in outPs:
-                    outP.send((-angle, None))
+                    if config["useMPC"]:
+                        outP.send((-delta, self.state.v))
+                    else:
+                        outP.send((-angle, self.state.v))
                 print(time() - c)
                 
             except Exception as e:

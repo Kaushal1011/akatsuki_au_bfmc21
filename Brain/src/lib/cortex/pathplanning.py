@@ -3,10 +3,11 @@ import math
 from typing import List, Tuple
 
 from scipy.interpolate import interp1d
-
+from scipy.optimize import minimize
 import networkx as nx
 import numpy as np
 from copy import deepcopy
+import copy
 
 
 def dijkstra(G, start, target):
@@ -237,3 +238,48 @@ class Purest_Pursuit:
         delta = math.atan2(2.0 * self.WB * math.sin(alpha) / Lf, 1.0)
 
         return delta
+
+class MPC_Controller:
+    def __init__(self,coords):
+        self.horiz = None
+        self.R = np.diag([0.01, 0.01])                 # input cost matrix
+        self.Rd = np.diag([0.01, 1.0])                 # input difference cost matrix
+        self.Q = np.diag([1.0, 1.0])                   # state cost matrix
+        self.Qf = self.Q                               # state final matrix
+        self.maxvn=-.5
+        self.maxvp=.5
+        self.coords=coords
+        self.MPC_HORIZON=5
+
+
+    def mpc_cost(self, u_k, my_car, points):
+        mpc_car = copy.copy(my_car)
+        u_k = u_k.reshape(self.horiz, 2).T
+        z_k = np.zeros((2, self.horiz+1))
+    
+        desired_state = points.T
+        cost = 0.0
+
+        for i in range(self.horiz):
+            state_dot = mpc_car.move(u_k[0,i], u_k[1,i])
+            mpc_car.update_state(state_dot)
+        
+            z_k[:,i] = [mpc_car.x, mpc_car.y]
+            cost += np.sum(self.R@(u_k[:,i]**2))
+            cost += np.sum(self.Q@((desired_state[:,i]-z_k[:,i])**2))
+            if i < (self.horiz-1):     
+                cost += np.sum(self.Rd@((u_k[:,i+1] - u_k[:,i])**2))
+        return cost
+
+    def optimize(self, my_car, index):
+        # print(self.coords)
+        print(index)
+        points=self.coords[index:index+self.MPC_HORIZON]
+        points=np.array(points)
+        print(points)
+        self.horiz = points.shape[0]
+        bnd = [(-self.maxvn, self.maxvp),(np.deg2rad(-21), np.deg2rad(21))]*self.horiz
+        print("in optimise")
+        result = minimize(self.mpc_cost, args=(my_car, points), x0 = np.zeros((2*self.horiz)), method='SLSQP', bounds = bnd)
+        print("out optimise")
+        return result.x[0],  result.x[1]
