@@ -194,7 +194,7 @@ class LocalisationServer(WorkerProcess):
                     borderValue=(0, 0, 0),
                 )
                 x, y = localize(image)
-                if x and y and idx % 10 == 0:
+                if x and y and idx % 4 == 0:
                     print("Time taken", time.time() - start_time)
                     data = {
                         "timestamp": time.time(),

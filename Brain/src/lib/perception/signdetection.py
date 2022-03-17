@@ -5,6 +5,7 @@ from src.templates.workerprocess import WorkerProcess
 import platform
 from copy import deepcopy
 import cv2
+
 device = platform.uname().processor
 
 if device == "x86_64":
@@ -60,11 +61,11 @@ class SignDetectionProcess(WorkerProcess):
         model, labels = setup()
         label_areas = []
         while True:
-            with open("labelareas.txt", "w") as f: 
+            with open("labelareas.txt", "w") as f:
                 try:
                     stamps, img = inP[0].recv()
-                    count += 1        
-                    if count %5 != 0:
+                    count += 1
+                    if count % 5 != 0:
                         continue
                     print("R sD")
                     # Apply image processing
