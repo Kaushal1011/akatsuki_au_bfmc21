@@ -5,7 +5,7 @@ from time import time
 from src.lib.perception.lanekeephandle import LaneKeep as LaneKeepMethod
 from src.templates.workerprocess import WorkerProcess
 
-MAX_STEER = 17
+MAX_STEER = 21
 
 
 class LaneKeepingProcess(WorkerProcess):
@@ -21,7 +21,7 @@ class LaneKeepingProcess(WorkerProcess):
             List of output pipes (0 - send steering data to the movvement control process)
         """
         super(LaneKeepingProcess, self).__init__(inPs, outPs)
-        self.lk = LaneKeepMethod(use_perspective=False, computation_method="hough")
+        self.lk = LaneKeepMethod(use_perspective=True, computation_method="hough")
 
     def run(self):
         """Apply the initializing methods and start the threads."""
@@ -43,7 +43,9 @@ class LaneKeepingProcess(WorkerProcess):
     # ===================================== Custom methods =========================================
     def computeSteeringAnglePID(self, val):
         # keep the angle between max steer angle
-        val = max(-MAX_STEER, min(val - 90, MAX_STEER))
+        val = val - 90
+        val = val*1.2
+        val = max(-MAX_STEER, min(val, MAX_STEER))
         return val
 
     def _the_thread(self, inP, outPs):

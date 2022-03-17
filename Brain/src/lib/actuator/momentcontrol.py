@@ -18,7 +18,7 @@ class MovementControl(WorkerProcess):
         """
         # Initialize parameters
         self.angle = 0.0
-        self.speed = 15.0
+        self.speed = .16
         self.init = False
         super(MovementControl, self).__init__(inPs, outPs)
 
@@ -48,7 +48,7 @@ class MovementControl(WorkerProcess):
     def stop(self):
         """Apply the stopping methods and stops the threads"""
         # Make a reset before stop
-        self.speed = 14.0
+        self.speed = 0.0
         self.angle = 0.0
         self._singleUpdate(self.outPs)
 
@@ -70,6 +70,7 @@ class MovementControl(WorkerProcess):
             except Exception as e:
                 print("Listening error:")
                 print(e)
+                
 
     def _listen_for_stop(self, inP, outPs):
         while True:
@@ -82,7 +83,7 @@ class MovementControl(WorkerProcess):
                     self.speed = 0.0
                     self._singleUpdate(outPs)
                     time.sleep(2)
-                    self.speed = 20.0
+                    self.speed = .20
 
                 self._singleUpdate(outPs)
             except Exception as e:
@@ -112,7 +113,7 @@ class MovementControl(WorkerProcess):
         speed_data = {}
 
         speed_data["action"] = "1"
-        speed_data["speed"] = float(self.speed / 100.0)
+        speed_data["speed"] = float(self.speed)
         # else:
         #     data['action'] = 'BRAK'
 

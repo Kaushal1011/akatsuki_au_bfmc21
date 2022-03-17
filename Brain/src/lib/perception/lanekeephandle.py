@@ -57,15 +57,15 @@ class LaneKeep:
     def __init__(
         self,
         use_perspective: bool = True,
-        hls_lower: List[int] = [90, 90, 90],
+        hls_lower: List[int] = [70, 70, 70],
         computation_method: str = "hough",
         blur_size: Tuple[int, int] = (7, 7),
         adpt_Th_blk_size: int = 21,
         adpt_Th_C: int = 4,
         canny_thres1: int = 50,
         canny_thres2: int = 150,
-        luroi: float = 0.15,
-        ruroi: float = 0.85,
+        luroi: float = 0.35,
+        ruroi: float = 0.65,
         lbroi: float = 0,
         rbroi: float = 1,
         hroi: float = 0.45,
@@ -239,8 +239,10 @@ class LaneKeep:
         th3 = np.array(0.7 * th1 + 0.3 * th2).astype(np.uint8)
         blur = cv2.GaussianBlur(th3, (21, 21), 0)
         canny = cv2.Canny(blur, self.canny_thres1, self.canny_thres2)
+        kernel = np.ones((5,5), dtype = "uint8")
+        dilation = cv2.dilate(canny, kernel, iterations = 1)
         #         denoised=cv2.fastNlMeansDenoisingColored(canny,None,10,10,7,21)
-        return canny
+        return dilation
         # return hls_result, gray, thres, blur, canny
 
     def persepective_wrap(self, img: np.ndarray) -> np.ndarray:
@@ -711,7 +713,7 @@ def find_lanes(thresh_canny):
         [type]: [description]
     """
     lines = cv2.HoughLinesP(
-        thresh_canny, 1, np.pi / 180, 15, minLineLength=40, maxLineGap=10
+        thresh_canny, 1, np.pi / 180, 15, minLineLength=20, maxLineGap=20
     )
     return lines
 

@@ -100,7 +100,7 @@ if config["enableLaneKeeping"]:
 
     if config["enableStream"]:
         lkStrR, lkStrS = Pipe(duplex=False)
-        lkProc = LaneKeeping([lkR], [lkFzzS])
+        lkProc = LaneKeeping([lkR], [lkFzzS, lkStrS])
     else:
         lkProc = LaneKeeping([lkR], [lkFzzS])
 
@@ -234,14 +234,13 @@ else:
 
 # ========================= Streamer =====================================================
 if config["enableStream"]:
-    # if config["enableLaneKeeping"] and config["enableIntersectionDet"]:
-    #     # shouldnt idstr go here also ?
-    #     streamProc = CameraStreamerProcess([lkStrR], [])
-    # elif config["enableLaneKeeping"]:
-    #     streamProc = CameraStreamerProcess([lkStrR], [])
-    # else:
     if config["enableSignDet"]:
         streamProc = CameraStreamerProcess([sDStR], [])
+    elif config["enableLaneKeeping"] and config["enableIntersectionDet"]:
+        # shouldnt idstr go here also ?
+        streamProc = CameraStreamerProcess([lkStrR], [])
+    elif config["enableLaneKeeping"]:
+        streamProc = CameraStreamerProcess([lkStrR], [])
     else:
         camStR, camStS = Pipe(duplex=False)  # camera  ->  streamer
         camOutPs.append(camStS)

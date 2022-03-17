@@ -38,8 +38,8 @@ def detect_signs(img, model, labels):
     hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     blue1 = np.array([110, 50, 50])
     blue2 = np.array([130, 255, 255])
-    red1 = np.array([0, 10, 10])
-    red2 = np.array([20, 255, 255])
+    red1 = np.array([120, 0, 0])
+    red2 = np.array([180, 255, 255])
     yellow1 = np.array([10, 52, 50])
     yellow2 = np.array([40, 255, 255])
 

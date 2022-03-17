@@ -180,7 +180,7 @@ class PathPlanning:
 class Purest_Pursuit:
     def __init__(self, coord_list):
         self.k = 0.01  # look forward gain
-        self.Lfc = 0.125  # [m] look-ahead distance
+        self.Lfc = 0.5  # [m] look-ahead distance
         self.Kp = 1.0  # speed proportional gain
         self.WB = 0.3  # [m] wheel base of vehicle
         self.cx, self.cy = zip(*coord_list)
@@ -232,8 +232,10 @@ class Purest_Pursuit:
             ty = self.cy[-1]
             ind = len(self.cx) - 1
 
+        print(tx,ty)
+        print(state.rear_y,state.rear_x)
         alpha = math.atan2(ty - state.rear_y, tx - state.rear_x) - state.yaw
-
+        print(alpha)
         delta = math.atan2(2.0 * self.WB * math.sin(alpha) / Lf, 1.0)
 
         return delta
