@@ -37,7 +37,7 @@ from src.config import config
 
 import cv2
 import numpy as np
-
+from src.config import config
 from src.templates.workerprocess import WorkerProcess
 
 
@@ -55,8 +55,10 @@ class CameraReceiverProcess(WorkerProcess):
             List of output pipes
         """
         super(CameraReceiverProcess, self).__init__(inPs, outPs)
-
-        self.imgSize = (480, 640, 3)
+        if config["enableSignDet"]:
+            self.imgSize = (240, 320, 3)
+        else:
+            self.imgSize = (480, 640, 3)
 
     # ===================================== RUN ==========================================
     def run(self):

@@ -8,8 +8,10 @@ import networkx as nx
 import numpy as np
 from copy import deepcopy
 import cvxpy
-from util import pi_2_pi,get_nparray_from_matrix,smooth_yaw,calc_speed_profile
+from src.lib.cortex.util import pi_2_pi,get_nparray_from_matrix,smooth_yaw,calc_speed_profile,calc_spline_course
+from src.config import config
 import time
+
 
 class State:
     """
@@ -111,7 +113,11 @@ class PathPlanning:
         
         path_list, _ptype, _edgret = dijkstra(self.graph, start_idx, end_idx)
 
-        return self._smooth_point_list(self._convert_nx_path2list(path_list), _ptype,_edgret)
+        if config["useMPC"]:
+            return self._convert_nx_path2list(path_list), _ptype,_edgret
+        else:
+            return self._smooth_point_list(self._convert_nx_path2list(path_list), _ptype,_edgret)
+        
         
 
     def get_nearest_node(self, x, y, yaw):
@@ -257,31 +263,43 @@ class Purest_Pursuit:
 
 class MPC:
 
-    def __init__(self,coord_list,initial_state) -> None:
-        
-        self.cx, self.cy = zip(*coord_list)
+    def __init__(self,coord_list,initial_state = State(x=0, y=0, yaw=0, v=0.0)) -> None:
+               
+        self.ax, self.ay = zip(*coord_list)
+        self.TARGET_SPEED = 0.3 # [m/s] target speed
+        self.dl=0.1
+        # print(self.ax,self.ay)
+        self.cx, self.cy, self.cyaw, self.ck, self.s = calc_spline_course(
+        self.ax, self.ay, ds=self.dl)
+
+        # print(self.cx,self.cy)
+        # print(5/0)
+
+        self.sp=calc_speed_profile(self.cx, self.cy, self.cyaw, self.TARGET_SPEED)
+        # reverse yaw
         self.old_nearest_point_index = None
 
         self.NX = 4  # x = x, y, v, yaw
         self.NU = 2  # a = [accel, steer]
         self.T = 5  # horizon length
-
+        self.odelta, self.oa =  [0.0] * self.T,  [0.0] * self.T
+ 
         # mpc parameters
         self.R = np.diag([0.01, 0.01])  # input cost matrix
         self.Rd = np.diag([0.01, 1.0])  # input difference cost matrix
         self.Q = np.diag([1.0, 1.0, 0.5, 0.5])  # state cost matrix
         self.Qf = self.Q  # state final matrix
         self.GOAL_DIS = .15  # goal distance
-        self.STOP_SPEED = 0.5 / 3.6  # stop speed
+        self.STOP_SPEED = 0.1  # stop speed
         # self.MAX_TIME = 500.0  # max simulation time
         # iterative paramter
         self.MAX_ITER = 3  # Max iteration
         self.DU_TH = 0.1  # iteration finish param
 
-        self.TARGET_SPEED = 10.0 / 3.6  # [m/s] target speed
+        
         self.N_IND_SEARCH = 10  # Search index number
 
-        self.DT = 0.2  # [s] time tick
+        self.DT = 0.1  # [s] time tick
 
         self.dtcal=time.time()
 
@@ -296,11 +314,11 @@ class MPC:
 
         self.MAX_STEER = math.radians(21.0)  # maximum steering angle [rad]
         self.MAX_DSTEER = math.radians(30.0)  # maximum steering speed [rad/s]
-        self.MAX_SPEED = 0.3  # maximum speed [m/s]
-        self.MIN_SPEED = -0.3  # minimum speed [m/s]
-        self.MAX_ACCEL = 0.01  # maximum accel [m/ss]
+        self.MAX_SPEED = 0.32  # maximum speed [m/s]
+        self.MIN_SPEED = -0.32  # minimum speed [m/s]
+        self.MAX_ACCEL = 0.05  # maximum accel [m/ss]
 
-        goal = [self.cx[-1], self.cy[-1]]
+        self.goal = [self.cx[-1], self.cy[-1]]
 
         self.state = initial_state
 
@@ -310,7 +328,7 @@ class MPC:
         elif self.state.yaw - self.cyaw[0] <= -math.pi:
             self.state.yaw += math.pi * 2.0
 
-        self.target_ind, _ = self.calc_nearest_index(self.state, self.cx, self.cy, cyaw, 0)
+        self.target_ind, _ = self.calc_nearest_index(self.state, self.cx, self.cy, self.cyaw, 0)
 
         self.odelta, self.oa = None, None
 
@@ -341,7 +359,10 @@ class MPC:
         return A, B, C    
     
     def update_state(self,state, a, delta):
-
+        
+        # self.DT=time.time()-self.dtcal
+        # self.dtcal=time.time()
+        # print(self.DT)
         # input check
         if delta >= self.MAX_STEER:
             delta = self.MAX_STEER
@@ -363,20 +384,21 @@ class MPC:
     def update_state_new(self,state, a, delta):
         self.DT=time.time()-self.dtcal
         self.dtcal=time.time()
+        print("DT: ",self.DT)
         # input check
         if delta >= self.MAX_STEER:
             delta = self.MAX_STEER
         elif delta <= -self.MAX_STEER:
             delta = -self.MAX_STEER
 
-        self.state.x = state.x 
-        self.state.y = state.y 
-        self.state.yaw = state.yaw 
-        self.state.v = state.v + a * self.DT
+        state.x = state.x + state.v * math.cos(state.yaw) * self.DT
+        state.y = state.y + state.v * math.sin(state.yaw) * self.DT
+        state.yaw = state.yaw + state.v / self.WB * math.tan(delta) * self.DT
+        state.v = state.v + a * self.DT
 
-        if self.state. v > self.MAX_SPEED:
+        if state. v > self.MAX_SPEED:
             self.state.v = self.MAX_SPEED
-        elif self.state. v < self.MIN_SPEED:
+        elif state. v < self.MIN_SPEED:
             self.state.v = self.MIN_SPEED
 
         return state
@@ -436,6 +458,7 @@ class MPC:
             xbar = self.predict_motion(x0, oa, od, xref)
             poa, pod = oa[:], od[:]
             oa, od, ox, oy, oyaw, ov = self.linear_mpc_control(xref, xbar, x0, dref)
+            # print(type(oa),type(poa),type(od),type(pod))
             du = sum(abs(oa - poa)) + sum(abs(od - pod))  # calc u change value
             if du <= self.DU_TH:
                 break
@@ -565,26 +588,43 @@ class MPC:
 
         return False
 
-    def MPC_steer_control(self, state, ind):
+
+    
+
+    def MPC_steer_control(self, state, ind=None):
 
 
         xref, target_ind, dref = self.calc_ref_trajectory(
-            state, self.cx, self.cy, self.cyaw, self.ck, self.sp, self.dl, ind)
+            state, self.cx, self.cy, self.cyaw, self.ck, self.sp, self.dl, self.target_ind)
+        
+        self.target_ind=target_ind
+        print("target ind",target_ind)
+        print(self.cx[target_ind],self.cy[target_ind])
 
         x0 = [state.x, state.y, state.v, state.yaw]  # current state
-
-        oa, odelta, ox, oy, oyaw, ov = self.iterative_linear_mpc_control(
-            xref, x0, dref, oa, odelta)
-
-        if odelta is not None:
-            di, ai = odelta[0], oa[0]
+        print(x0)
+        try:
+            self.oa, self.odelta, ox, oy, oyaw, ov = self.iterative_linear_mpc_control(
+            xref, x0, dref, self.oa, self.odelta)
+            if self.odelta is not None:
+                di, ai = self.odelta[0], self.oa[0]
+                print("di,ai",di,ai)
+            
+        except Exception as e:
+            print(e)
 
         #update state outside of this
         # state = self.update_state(state, ai, di)
 
+        # self.state = self.update_state_new(state, ai, di)
+        self.state = self.update_state_new(state, 0, 0)
+
         if self.check_goal(state, self.goal, target_ind, len(self.cx)):
             print("Goal")
-            return None
+            return None,None,True
         
-        return di,ai
+        
+        
+        return di,ai,False
+        # return None,None
 

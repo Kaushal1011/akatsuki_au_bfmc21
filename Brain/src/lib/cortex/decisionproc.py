@@ -6,7 +6,7 @@ from time import time
 from typing import Optional
 
 from src.config import config
-from src.lib.cortex.pathplanning import PathPlanning, Purest_Pursuit
+from src.lib.cortex.pathplanning import PathPlanning, Purest_Pursuit,MPC
 from src.templates.workerprocess import WorkerProcess
 from time import time
 import joblib
@@ -14,7 +14,7 @@ import joblib
 import math
 
 class CarState:
-    def __init__(self, v=0.12, dt=0.1, car_len=0.365) -> None:
+    def __init__(self, v=0.20, dt=0.1, car_len=0.365) -> None:
         self.steering_angle = 0.0
         self.det_intersection = False
         # TODO: get initial position from config IDK
@@ -51,6 +51,7 @@ class CarState:
         x: Optional[float] = None,
         y: Optional[float] = None,
         yaw: Optional[float] = None,
+        v: Optional[float] = None,
         tl: Optional[dict] = None,
     ) -> float:
         self.last_update_time = time()
@@ -66,6 +67,9 @@ class CarState:
             self.rear_y = self.y - ((self.car_len / 2) * math.sin(self.yaw))
         if yaw:
             self.yaw = yaw
+        if v:
+            print("set v")
+            self.v = v
         if tl:
             self.tl = tl
         return self.last_update_time
@@ -98,6 +102,22 @@ else:
     print("no. of points", len(coord_list))
 
 pPC = Purest_Pursuit(coord_list)
+
+if config["useMPC"]:
+
+    MPCcon=MPC(coord_list)
+    def mcontrolsystem(vehicle:CarState):
+        di,ai,gr=MPCcon.MPC_steer_control(vehicle)
+
+        di = di * 180 / math.pi
+
+        if di > 21:
+            di = 21
+        elif di < -21:
+            di = -21
+        
+        return di,ai,gr
+
 # print("Time taken by Path Planning:", time() - a)
 
 
@@ -240,8 +260,11 @@ class DecisionMakingProcess(WorkerProcess):
                         print("yaw", yaw_f)
 
                 self.state.update(
-                    lk_angle, detected_intersection, x, y, yaw_f, trafficlights
+                    lk_angle, detected_intersection, x, y, yaw, trafficlights
                 )
+
+                
+                    
                 # states_l.append((x, y, yaw_f))
                 # print(states_l)
                 # print(self.state)
@@ -251,6 +274,18 @@ class DecisionMakingProcess(WorkerProcess):
                 # if p_type[ind - 1] == "int":
                 angle = controlsystem(self.state, ind, Lf)
                 print(f"Angle {angle}")
+                # try:
+                if config["useMPC"]:
+                    
+                    
+                    di,ai,goal_reached=mcontrolsystem(self.state)
+                    self.state.update(v=self.state.v + ai * MPCcon.DT)
+                    # print("new_v",self.state.v + ai * MPCcon.DT)
+                    # print("MPC output",di,ai)
+                    if goal_reached:
+                        print("Goal Reached")
+                # except Exception as e:
+                #     print(e)    
                 # lane keeping
                 #elif p_type[ind - 1] == "lk":
                 #    angle = lk_angle
@@ -265,15 +300,20 @@ class DecisionMakingProcess(WorkerProcess):
 
                 # if no locsys use self localization
                 if len(inPs) < 3 or use_self_loc:
-                    print("Using self localization")
-                    self.state.update_pos(angle)
+                    pass
+                    # print("Using self localization")
+                    # self.state.update_pos(angle)
 
                 for outP in outPs:
-                    outP.send((-angle, None))
-                print(time() - c)
+                    if config["useMPC"]:
+                        outP.send((di,self.state.v ))
+                    else:
+                        outP.send((-angle,self.state.v))
+    
+                print("Sent to moment control in ",time() - c)
                 
             except Exception as e:
                 print("Decision Process error:")
                 raise e
-            joblib.dump(states_l, 'dump.shakal')
+            # joblib.dump(states_l, 'dump.shakal')
                 

@@ -241,6 +241,7 @@ if config["enableStream"]:
     #     streamProc = CameraStreamerProcess([lkStrR], [])
     # else:
     if config["enableSignDet"]:
+        print("Sign Detection in Streamer")
         streamProc = CameraStreamerProcess([sDStR], [])
     else:
         camStR, camStS = Pipe(duplex=False)  # camera  ->  streamer
