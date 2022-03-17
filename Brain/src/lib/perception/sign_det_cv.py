@@ -3,7 +3,9 @@ import numpy as np
 from functools import partial
 import time
 from typing import Tuple
-
+import io
+import picamera
+import picamera.array
 
 def empty(a):
     pass
@@ -36,7 +38,7 @@ def detect_signs(img, model, labels):
     hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     blue1 = np.array([110, 50, 50])
     blue2 = np.array([130, 255, 255])
-    red1 = np.array([0, 50, 50])
+    red1 = np.array([0, 10, 10])
     red2 = np.array([20, 255, 255])
     yellow1 = np.array([10, 52, 50])
     yellow2 = np.array([40, 255, 255])
@@ -83,7 +85,7 @@ def draw_box(img, text, location, box):
     thickness = 1
     font = cv2.FONT_HERSHEY_SIMPLEX
 
-    retimg = cv2.rectangle(img, box[0], box[1], color, thickness)
+    retimg = cv2.rectangle(img, box[0], box[1], color, 4)
     retimg = cv2.putText(
         retimg, text, location, font, fontScale, color, thickness, cv2.LINE_AA
     )
@@ -91,31 +93,29 @@ def draw_box(img, text, location, box):
 
 
 if __name__ == "__main__":
-
-    frameWidth = 640
-    frameHeight = 480
-    cap = cv2.VideoCapture()
-    cap.set(3, frameWidth)
-    cap.set(4, frameHeight)
+    
     interpreter, labels = setup()
+    with picamera.PiCamera() as camera:
+        camera.resolution = (1640, 1232)
+        camera.framerate = 15
 
-    # img = cv2.imread("./data/IMG_1048.JPG", cv2.IMREAD_COLOR)
-    # scale_percent = 20  # percent of original size
-    # width = int(img.shape[1] * scale_percent / 100)
-    # height = int(img.shape[0] * scale_percent / 100)
-    # dim = (width, height)
+        camera.brightness = 60
+        camera.shutter_speed = 1200
+        camera.contrast = 50
+        camera.iso = 0  # auto
+        camera.exposure_mode = "night"
+        camera.start_preview()
+        time.sleep(0.1)
+        with picamera.array.PiRGBArray(camera) as stream:
+            camera.capture(stream, format='bgr')
+            # At this point the image is available as stream.array
+            image = stream.array
 
-    # # resize image
-    # frame = cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
-    # print(frame.shape)
-    while True:
-        ret, frame = cap.read()
-
-        out = detect_signs(frame, interpreter, labels)
-        if out:
-            box, text, location = out
-            print(box, text, location)
-            cv2.imshow("object detection", draw_box(frame, text, location, box))
-
-        if cv2.waitKey(1) & 0xFF == ord("q"):
-            break
+            out = detect_signs(image, interpreter, labels)
+            if out:
+                box, text, location = out
+                print(box, text, location)
+                cv2.imwrite("object_detection.jpg", draw_box(image, text, location, box))
+            else:
+                cv2.imwrite("object_detection.jpg", image)
+                
