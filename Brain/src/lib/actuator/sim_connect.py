@@ -3,8 +3,8 @@ import socket
 from threading import Thread
 
 from src.templates.workerprocess import WorkerProcess
-
-HOST = "0.0.0.0"  # Standard loopback interface address (localhost)
+from src.config import config
+HOST = config["pc_ip"]
 PORT = 65432
 
 
