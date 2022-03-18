@@ -88,15 +88,17 @@ class SignDetectionProcess(WorkerProcess):
                         #     continue
                         frame = draw_box(img, label, location, box)
 
-                        print(label, area)
-                        f.write(f"{label}, {area}")
+                        # print(label, area)
                         # for outP in outPs:
                         outPs[0].send((label, area))
+
                         if len(outPs) > 1:
                             outPs[1].send((1, frame))
                     else:
+                        outPs[0].send((None, 0))
                         if len(outPs) > 1:
                             outPs[1].send((1, img))
+                            
                 except Exception as e:
                     print("Sign Detection error:")
                     print(e)

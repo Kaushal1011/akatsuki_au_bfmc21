@@ -33,12 +33,12 @@ class CarState:
         self.stopped = False
         self.stop_slow_start_time = None
 
-    def update_pos(self, steering_angle):
+    def update_pos(self):
         dt = time() - self.last_update_time
         self.last_update_time = time()
         self.x = self.x + self.v * math.cos(self.yaw) * dt
         self.y = self.y + self.v * math.sin(self.yaw) * dt
-        self.yaw = self.yaw + self.v / self.car_len * math.tan(steering_angle) * dt
+        self.yaw = self.yaw + self.v / self.car_len * math.tan(self.steering_angle) * dt
 
     def calc_distance(self, point_x, point_y):
         dx = self.rear_x - point_x
@@ -77,12 +77,12 @@ class CarState:
 
     def update(
         self,
-        angle: Optional[float] = None,
         det_intersection: Optional[bool] = None,
         x: Optional[float] = None,
         y: Optional[float] = None,
         yaw: Optional[float] = None,
         tl: Optional[dict] = None,
+        angle: Optional[float] = None,
     ) -> None:
         self.last_update_time = time()
         if angle:
@@ -142,6 +142,11 @@ def controlsystem(vehicle: CarState, ind, Lf):
 
     return di
 
+def check_goal(tx:float,ty:float, x:float,y:float ) -> bool:
+    """Check if we have reached the goal"""
+    if math.sqrt((tx-x)**2 + (ty -y)**2 ) < 0.1:
+        return True
+    return False
 
 class DecisionMakingProcess(WorkerProcess):
     # ===================================== Worker process =========================================
@@ -188,7 +193,6 @@ class DecisionMakingProcess(WorkerProcess):
             Output pipe to send the steering angle value to other process.
         """
         use_self_loc = False
-        states_l = []
         should_stop = False
         while True:
             try:
@@ -219,7 +223,7 @@ class DecisionMakingProcess(WorkerProcess):
                             should_stop = self.state.stop()
                         else:
                             self.state.stopped = False
-                            self.state.stop_start_time = None
+                            self.state.stop_slow_start_time = None
                         # print(f"Time taken sD {(time() - t_sD):.2f}s {label}")
                         print(f"{label} should_stop {should_stop} release {self.state.stopped}")
 
@@ -278,37 +282,44 @@ class DecisionMakingProcess(WorkerProcess):
                         # print("yaw", yaw_f)
 
                 self.state.update(
-                    lk_angle, detected_intersection, x, y, yaw, trafficlights
+                    det_intersection=detected_intersection,
+                    x=x,
+                    y=y,
+                    yaw=yaw,
+                    tl=trafficlights
                 )
 
                 # states_l.append((x, y, yaw_f))
                 # print(states_l)
                 # print(self.state)
-                ind, Lf = pPC.search_target_index(self.state)
                 # print("searched")
                 # print(f"({x}, {y}) -> {ind}, {coord_list[ind]}")
                 # if p_type[ind - 1] == "int":
-                angle = controlsystem(self.state, ind, Lf)
-                # print(f"Angle {angle}")
-                # lane keeping
-                #elif p_type[ind - 1] == "lk":
-                #    angle = lk_angle
-                #    angle2 = controlsystem(self.state, ind, Lf)
-                #    if abs(angle2 - angle) > 21:
-                #        print("lane keeping failed")
-                #        angle = angle2
-                #else:
-                #    print("Here in nothingness")
+                
+                # --------- GOAL STATE -------------------------
+                if check_goal(*coord_list[-1],self.state.x, self.state.y):
+                    self.state.v = 0
+                    self.state.steering_angle = 0
+                else:
+                    # --------- CONTROL SYS -------------------
+                    ind, Lf = pPC.search_target_index(self.state)
+                    self.state.steering_angle = controlsystem(self.state, ind, Lf)
+                    # --------- LANE KEEPING ------------------
+                    if p_type[ind - 1] == "lk":
+                        if abs(self.state.steering_angle - lk_angle) < 30:
+                            self.state.steering_angle = lk_angle
+                        else:
+                            print("lane keeping failed")
 
                 # print(f"Current Behaviour : {p_type[ind-1]}")
                 # if no locsys use self localization
                 if len(inPs) < 3 or use_self_loc:
-                    # print("Using self localization")
-                    self.state.update_pos(angle)
+                    print("Using self localization")
+                    self.state.update_pos()
 
                 for outP in outPs:
-                    outP.send((-angle, self.state.v))
-                print(f"{-angle}, {self.state.v} {(time() - c):.2f}s")
+                    outP.send((-self.state.steering_angle, self.state.v))
+                print(f"{-self.state.steering_angle}, {self.state.v} {(time() - c):.2f}s")
                 
             except Exception as e:
                 print("Decision Process error:")
