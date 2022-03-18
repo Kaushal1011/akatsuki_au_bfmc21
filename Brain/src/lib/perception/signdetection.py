@@ -89,7 +89,7 @@ class SignDetectionProcess(WorkerProcess):
                         frame = draw_box(img, label, location, box)
 
                         # print(label, area)
-                        # for outP in outPs:
+                        # for outP in outPs:.templates.
                         outPs[0].send((label, area))
 
                         if len(outPs) > 1:
