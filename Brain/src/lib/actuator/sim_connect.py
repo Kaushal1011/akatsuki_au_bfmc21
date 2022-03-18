@@ -3,8 +3,8 @@ import socket
 from threading import Thread
 
 from src.templates.workerprocess import WorkerProcess
-
-HOST = "0.0.0.0"  # Standard loopback interface address (localhost)
+from src.config import config
+HOST = config["pc_ip"]
 PORT = 65432
 
 
@@ -55,7 +55,7 @@ class SimulatorConnector(WorkerProcess):
             try:
                 # time.sleep(1.0)
                 command = inP.recv()
-                print(command)
+                # print(command)
                 if command is not None:
                     command = json.dumps(command).encode()
                     self.client_socket.sendto(command, (self.serverIp, self.port))

@@ -50,12 +50,12 @@ from src.utils.remotecontrol.RemoteControlReceiverProcess import (
     RemoteControlReceiverProcess,
 )
 
-disableIMU = False
+isPI = True
 try:
     from src.utils.IMU.imuProc import IMUProcess
 except Exception as e:
     print(e)
-    disableIMU = True
+    isPI = False
 # ========================================================================
 # SCRIPT USED FOR WIRING ALL COMPONENTS
 # ========================================================================
@@ -193,7 +193,7 @@ elif config["using_server"]:
 
 # -------IMU----------
 # IMU -> Decision Making (data fusion)
-if not disableIMU:
+if isPI and not config["enableSIM"]:
     print("IMU process started")
     imuFzzR, imuFzzS = Pipe(duplex=False)
     imuProc = IMUProcess([], [imuFzzS])
@@ -214,19 +214,32 @@ movementControlR.append(FzzMcR)
 # ======================= Actuator =================================================
 
 # Movement control
-# Movement control -> Serial handler
-cfR, cfS = Pipe(duplex=False)
-
-cfProc = MovementControl(movementControlR, [cfS])
-allProcesses.append(cfProc)
+if config["enableSIM"] and isPI:
+    # Movement control -> Serial handler
+    mcSHR, mcSHS = Pipe(duplex=False)
+    # Moment control -> SIM Serial Handler
+    mcSSHR, mcSSHS = Pipe(duplex=False)
+    cfProc = MovementControl(movementControlR, [mcSHS, mcSSHS])
+    allProcesses.append(cfProc)
+else:
+    # Movement control -> Serial handler
+    mcSHR, mcSHS = Pipe(duplex=False)
+    cfProc = MovementControl(movementControlR, [mcSHS])
+    allProcesses.append(cfProc)
 
 # Serial handler or Simulator Connector
-if config["enableSIM"]:
-    shProc = SimulatorConnector([cfR], [])
+if config["enableSIM"] and isPI:
+    shProc = SimulatorConnector([mcSSHR], [])
+    allProcesses.append(shProc)
+    shProc = SerialHandlerProcess([ mcSHR], [])
+    allProcesses.append(shProc)
+
+elif config["enableSIM"] and not isPI:
+    shProc = SimulatorConnector([mcSHR], [])
     allProcesses.append(shProc)
 else:
     try:
-        shProc = SerialHandlerProcess([cfR], [])
+        shProc = SerialHandlerProcess([mcSHR], [])
         allProcesses.append(shProc)
     except Exception:
         print("ERROR: Falied to start Serial Handler")
