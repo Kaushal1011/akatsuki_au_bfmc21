@@ -77,9 +77,9 @@ class SignDetectionProcess(WorkerProcess):
                     a = time.time()
                     # print(self.model)
                     out = detect_signs(img, model, labels)
-                    print("Time taken by model ", time.time() - a, "s")
+                    # print("Time taken by model ", time.time() - a, "s")
                     if out is not None:
-                        print("Model prediction {label}")
+                        # print("Model prediction {label}")
                         box, label, location = out
                         # box 0 is top left box 1 is bottom right
                         # area = wxh w=x2-x1 h=y2-y1
@@ -92,8 +92,11 @@ class SignDetectionProcess(WorkerProcess):
                         f.write(f"{label}, {area}")
                         # for outP in outPs:
                         outPs[0].send((label, area))
-                        if len(outPs > 1):
+                        if len(outPs) > 1:
                             outPs[1].send((1, frame))
+                    else:
+                        if len(outPs) > 1:
+                            outPs[1].send((1, img))
                 except Exception as e:
                     print("Sign Detection error:")
                     print(e)

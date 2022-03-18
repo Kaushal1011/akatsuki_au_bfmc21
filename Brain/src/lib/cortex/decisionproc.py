@@ -14,11 +14,12 @@ import joblib
 import math
 
 class CarState:
-    def __init__(self, v=0.12, dt=0.1, car_len=0.365) -> None:
+    def __init__(self, v=0.18, dt=0.1, car_len=0.365) -> None:
         self.steering_angle = 0.0
         self.det_intersection = False
         # TODO: get initial position from config IDK
         self.x = 0.75
+        self.max_v = v
         # 0.75, 4.8
         self.y = 4.8
         self.yaw = 0
@@ -30,6 +31,8 @@ class CarState:
         self.rear_y = self.y - ((car_len / 2) * math.sin(self.yaw))
         self.closest_pt = None
         self.last_update_time = time()
+        self.stopped = False
+        self.stop_slow_start_time = None
 
     def update_pos(self, steering_angle):
         dt = time() - self.last_update_time
@@ -42,6 +45,36 @@ class CarState:
         dx = self.rear_x - point_x
         dy = self.rear_y - point_y
         return math.hypot(dx, dy)
+    
+    def stop(self) -> float:
+        print("here in stop")
+        # set when the car stopped
+        if not self.stop_slow_start_time:
+            self.stop_slow_start_time = time()
+        # stop for wait secs
+        if (time() - self.stop_slow_start_time) <= 4:
+            print("Stop -> Stopping")
+            self.v = 0
+        # after wait secs start moving
+        elif (time() - self.stop_slow_start_time) > 4:
+            print("Stop -> Release")
+            self.stopped = True
+            self.v = self.max_v
+    
+    def slow(self) -> float:
+        print("here in stop")
+        # set when the car stopped
+        if not self.stop_slow_start_time:
+            self.stop_slow_start_time = time()
+        # stop for wait secs
+        if (time() - self.stop_slow_start_time) <= 4:
+            print("Stop -> Stopping")
+            self.v = 0.5*self.max_v
+        # after wait secs start moving
+        elif (time() - self.stop_slow_start_time) > 4:
+            print("Stop -> Release")
+            self.stopped = True
+            self.v = self.max_v
 
     def update(
         self,
@@ -157,6 +190,7 @@ class DecisionMakingProcess(WorkerProcess):
         """
         use_self_loc = False
         states_l = []
+        should_stop = False
         while True:
             try:
                 c = time()
@@ -169,7 +203,7 @@ class DecisionMakingProcess(WorkerProcess):
                 t_id = time()
                 idx = self.inPsnames.index("iD")
                 detected_intersection = inPs[idx].recv()
-                # print(f"Time taken id {(time() - t_id):.3f}s  {detected_intersection}")
+                print(f"Detected {detected_intersection}")
 
                 x = self.state.x
                 y = self.state.y
@@ -182,7 +216,13 @@ class DecisionMakingProcess(WorkerProcess):
                     idx = self.inPsnames.index("sD")
                     if inPs[idx].poll(timeout=0.1):
                         label, area = inPs[idx].recv()
-                        print(f"Time taken sD {(time() - t_sD):.2f}s {label}")
+                        if area > 2000:
+                            should_stop = self.state.stop()
+                        else:
+                            self.state.stopped = False
+                            self.state.stop_start_time = None
+                        # print(f"Time taken sD {(time() - t_sD):.2f}s {label}")
+                        print(f"{label} should_stop {should_stop} release {self.state.stopped}")
 
                 # locsys
                 t_loc = time()
@@ -235,20 +275,22 @@ class DecisionMakingProcess(WorkerProcess):
                         if yaw_imu > math.pi:
                             yaw_imu -= 2*math.pi
                         yaw_f = yaw_imu
-                        print("yaw", yaw_f)
+                        yaw = yaw_f
+                        # print("yaw", yaw_f)
 
                 self.state.update(
-                    lk_angle, detected_intersection, x, y, yaw_f, trafficlights
+                    lk_angle, detected_intersection, x, y, yaw, trafficlights
                 )
+
                 # states_l.append((x, y, yaw_f))
                 # print(states_l)
                 # print(self.state)
                 ind, Lf = pPC.search_target_index(self.state)
                 # print("searched")
-                print(f"({x}, {y}) -> {ind}, {coord_list[ind]}")
+                # print(f"({x}, {y}) -> {ind}, {coord_list[ind]}")
                 # if p_type[ind - 1] == "int":
                 angle = controlsystem(self.state, ind, Lf)
-                print(f"Angle {angle}")
+                # print(f"Angle {angle}")
                 # lane keeping
                 #elif p_type[ind - 1] == "lk":
                 #    angle = lk_angle
@@ -260,15 +302,14 @@ class DecisionMakingProcess(WorkerProcess):
                 #    print("Here in nothingness")
 
                 # print(f"Current Behaviour : {p_type[ind-1]}")
-
                 # if no locsys use self localization
                 if len(inPs) < 3 or use_self_loc:
-                    print("Using self localization")
+                    # print("Using self localization")
                     self.state.update_pos(angle)
 
                 for outP in outPs:
-                    outP.send((-angle, None))
-                print(time() - c)
+                    outP.send((-angle, self.state.v))
+                print(f"{-angle}, {self.state.v} {(time() - c):.2f}s")
                 
             except Exception as e:
                 print("Decision Process error:")
