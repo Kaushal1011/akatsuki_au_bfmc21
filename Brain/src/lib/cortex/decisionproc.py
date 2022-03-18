@@ -12,6 +12,7 @@ from time import time
 
 import math
 
+
 class CarState:
     def __init__(self, v=0.18, dt=0.1, car_len=0.365) -> None:
         self.steering_angle = 0.0
@@ -44,8 +45,8 @@ class CarState:
         dx = self.rear_x - point_x
         dy = self.rear_y - point_y
         return math.hypot(dx, dy)
-    
-    def stop(self) -> float:
+
+    def stop(self, label: str = "stop") -> float:
         print("here in stop")
         # set when the car stopped
         if not self.stop_slow_start_time:
@@ -53,22 +54,10 @@ class CarState:
         # stop for wait secs
         if (time() - self.stop_slow_start_time) <= 4:
             print("Stop -> Stopping")
-            self.v = 0
-        # after wait secs start moving
-        elif (time() - self.stop_slow_start_time) > 4:
-            print("Stop -> Release")
-            self.stopped = True
-            self.v = self.max_v
-    
-    def slow(self) -> float:
-        print("here in stop")
-        # set when the car stopped
-        if not self.stop_slow_start_time:
-            self.stop_slow_start_time = time()
-        # stop for wait secs
-        if (time() - self.stop_slow_start_time) <= 4:
-            print("Stop -> Stopping")
-            self.v = 0.5*self.max_v
+            if label == "stop":
+                self.v = 0
+            else:
+                self.v = 0.5 * self.max_v
         # after wait secs start moving
         elif (time() - self.stop_slow_start_time) > 4:
             print("Stop -> Release")
@@ -113,18 +102,18 @@ if config["preplan"] == False:
     coord_list, p_type, etype = plan.get_path(config["start_idx"], config["end_idx"])
 
 else:
-    #preplanpath = joblib.load("../nbs/preplan.z")
-    #coord_list = [i for i in zip(preplanpath["x"], preplanpath["y"])]
-    #coord_list = coord_list[::20][:10]
-    #p_type = preplanpath["ptype"]
-    #p_type = p_type[::20][:10]
-    #etype = preplanpath["etype"]
-    #etype = etype[::20][:10]
+    # preplanpath = joblib.load("../nbs/preplan.z")
+    # coord_list = [i for i in zip(preplanpath["x"], preplanpath["y"])]
+    # coord_list = coord_list[::20][:10]
+    # p_type = preplanpath["ptype"]
+    # p_type = p_type[::20][:10]
+    # etype = preplanpath["etype"]
+    # etype = etype[::20][:10]
     x = [0.5, 1, 1.5, 2, 2.5]
-    y = [5.0]*5
-    coord_list = list(zip(x,y))
-    p_type=["int" for i in range(len(coord_list))]
-    etype=[False for i in range(len(coord_list))]
+    y = [5.0] * 5
+    coord_list = list(zip(x, y))
+    p_type = ["int" for i in range(len(coord_list))]
+    etype = [False for i in range(len(coord_list))]
     print("no. of points", len(coord_list))
 
 pPC = Purest_Pursuit(coord_list)
@@ -142,11 +131,7 @@ def controlsystem(vehicle: CarState, ind, Lf):
 
     return di
 
-def check_goal(tx:float,ty:float, x:float,y:float ) -> bool:
-    """Check if we have reached the goal"""
-    if math.sqrt((tx-x)**2 + (ty -y)**2 ) < 0.1:
-        return True
-    return False
+
 
 class DecisionMakingProcess(WorkerProcess):
     # ===================================== Worker process =========================================
@@ -177,7 +162,10 @@ class DecisionMakingProcess(WorkerProcess):
         thr = Thread(
             name="DecisionMakingThread",
             target=self._the_thread,
-            args=(self.inPs, self.outPs,),
+            args=(
+                self.inPs,
+                self.outPs,
+            ),
         )
         thr.daemon = True
         self.threads.append(thr)
@@ -193,7 +181,7 @@ class DecisionMakingProcess(WorkerProcess):
             Output pipe to send the steering angle value to other process.
         """
         use_self_loc = False
-        should_stop = False
+        sign, sign_area = None, 0
         while True:
             try:
                 c = time()
@@ -218,14 +206,12 @@ class DecisionMakingProcess(WorkerProcess):
                 if "sD" in self.inPsnames:
                     idx = self.inPsnames.index("sD")
                     if inPs[idx].poll(timeout=0.1):
-                        label, area = inPs[idx].recv()
-                        if area > 2000:
-                            should_stop = self.state.stop()
-                        else:
+                        sign, sign_area = inPs[idx].recv()
+                        if sign is None:
                             self.state.stopped = False
                             self.state.stop_slow_start_time = None
                         # print(f"Time taken sD {(time() - t_sD):.2f}s {label}")
-                        print(f"{label} should_stop {should_stop} release {self.state.stopped}")
+                        print(f"{sign} {sign_area}")
 
                 # locsys
                 t_loc = time()
@@ -273,10 +259,10 @@ class DecisionMakingProcess(WorkerProcess):
                         # print("IMU:", imu_data)
                         # yaw_imu = 360 - imu_data["yaw"]
                         # print("imu_yaw", yaw_imu, "yaw", yaw)
-                        #yaw_imu = yaw_imu if yaw_imu > 180 else -yaw_imu
+                        # yaw_imu = yaw_imu if yaw_imu > 180 else -yaw_imu
                         yaw_imu = math.radians(yaw_imu)
                         if yaw_imu > math.pi:
-                            yaw_imu -= 2*math.pi
+                            yaw_imu -= 2 * math.pi
                         yaw_f = yaw_imu
                         yaw = yaw_f
                         # print("yaw", yaw_f)
@@ -286,7 +272,7 @@ class DecisionMakingProcess(WorkerProcess):
                     x=x,
                     y=y,
                     yaw=yaw,
-                    tl=trafficlights
+                    tl=trafficlights,
                 )
 
                 # states_l.append((x, y, yaw_f))
@@ -295,11 +281,20 @@ class DecisionMakingProcess(WorkerProcess):
                 # print("searched")
                 # print(f"({x}, {y}) -> {ind}, {coord_list[ind]}")
                 # if p_type[ind - 1] == "int":
-                
+
                 # --------- GOAL STATE -------------------------
-                if check_goal(*coord_list[-1],self.state.x, self.state.y):
-                    self.state.v = 0
-                    self.state.steering_angle = 0
+
+                # d = abs(coord_list[-1][0] - x) + abs((coord_list[-1][1] - y))
+                # print(f"Goal distance {d}")
+                # if d < 0.3:
+                #     print("Goal Reached")
+                #     self.state.v = 0.0
+                #     self.state.steering_angle = 0.0
+                # # else:
+                # check_goal(coord_list[-1][0],coord_list[-1][1], self.state.x, self.state.y)
+                # --------- STOP STATE -------------------
+                if sign and sign_area > 2000:
+                    self.state.stop()
                 else:
                     # --------- CONTROL SYS -------------------
                     ind, Lf = pPC.search_target_index(self.state)
@@ -317,11 +312,12 @@ class DecisionMakingProcess(WorkerProcess):
                     print("Using self localization")
                     self.state.update_pos()
 
+                print(
+                    f"{-self.state.steering_angle}, {self.state.v} {(time() - c):.2f}s"
+                )
                 for outP in outPs:
                     outP.send((-self.state.steering_angle, self.state.v))
-                print(f"{-self.state.steering_angle}, {self.state.v} {(time() - c):.2f}s")
-                
+
             except Exception as e:
                 print("Decision Process error:")
                 raise e
-                
