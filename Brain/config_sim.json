@@ -5,13 +5,13 @@
   "enableLaneKeeping": true,
   "enableSIM": true,
   "enableIntersectionDet": true,
-  "enableSignDet": true,
+  "enableSignDet": false,
   "start_idx": "86",
   "end_idx": "170",
   "using_server": false,
   "test_track": false,
-  "pc_ip": "0.0.0.0",
-  "pi_ip": "0.0.0.0",
+  "pc_ip": "192.168.43.13",
+  "pi_ip": "192.168.43.225",
   "home_loc": false,
   "preplan": false
 }
