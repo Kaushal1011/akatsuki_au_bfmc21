@@ -1,9 +1,5 @@
-from cProfile import label
 import cv2
-from cv2 import blur
 import numpy as np
-from functools import partial
-import time
 from scipy import stats as st
 from typing import List, Tuple
 
@@ -36,6 +32,7 @@ def check_stop(img, area_threshold: Tuple[int, int]):
             x, y, w, h = cv2.boundingRect(approx)
             
             return True, x, y, w, h
+    return None,None,None,None,None
 
 def check_priority(img, area_threshold: Tuple[int, int]):
     imgContour = img.copy()
@@ -62,6 +59,7 @@ def check_priority(img, area_threshold: Tuple[int, int]):
             x, y, w, h = cv2.boundingRect(approx)
             
             return True, x, y, w, h
+    return None,None,None,None,None
 
 def check_cross(img, area_threshold: Tuple[int, int]):
     imgContour = img.copy()
@@ -100,6 +98,7 @@ def check_cross(img, area_threshold: Tuple[int, int]):
             contours_crop, hierarchy = cv2.findContours(croppedDil, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
             if len(contours_crop) != 0:     
                 return True, x, y, w, h
+    return None,None,None,None,None
 
 def check_park(img, area_threshold: Tuple[int, int]):
     imgContour = img.copy()
@@ -138,27 +137,30 @@ def check_park(img, area_threshold: Tuple[int, int]):
             contours_crop, hierarchy = cv2.findContours(croppedDil, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
             if len(contours_crop) == 0:   
                 return True, x, y, w, h
+    return None,None,None,None,None
 
 
 
 
 def detection(img, label):
     text = "not detected"
-    if check_stop(img)[0]:
-        _,x,y,w,h = check_stop(img)
-        box = [(x, y), (x + w, y + h)]
+    cs,csx,csy,csw,csh=check_stop(img,(700,25000))
+    cp,cpx,cpy,cpw,cph=check_priority(img,(700,25000))
+    cpa,cpax,cpay,cpaw,cpah=check_park(img,(700,25000))
+    cc,ccx,ccy,ccw,cch=check_cross(img,(700,25000))
+    box,text=None,None
+    if cs:
+        box = [(csx, csy), (csx + csw, csy + csh)]
         text = label[0]
-    elif check_priority(img)[0]:
-        _,x,y,w,h = check_stop(img)
-        box = [(x, y), (x + w, y + h)]
+    elif cp:
+        box = [(cpx, cpy), (cpx + cpw, cpy + cph)]
         text = label[3]
-    elif check_park(img)[0]:
-        _,x,y,w,h = check_stop(img)
-        box = [(x, y), (x + w, y + h)]
+    elif cpa:
+        
+        box = [(cpax, cpay), (cpax + cpaw, cpay + cpah)]
         text = label[1]
-    elif check_cross(img)[0]:
-        _,x,y,w,h = check_stop(img)
-        box = [(x, y), (x + w, y + h)]
+    elif cc:
+        box = [(ccx, ccy), (ccx + ccw, ccy + cch)]
         text = label[2]
 
     return box, text
@@ -168,7 +170,7 @@ def detection(img, label):
 
 def setup():
     print("Starting pseudo sign detection")
-    detect_fn = None
+    detect_fn = detection
     my_list = ["stop", "parking", "crosswalk", "priority"]
 
     
@@ -186,7 +188,6 @@ def draw_box(img, text, location, box):
         retimg, text, location, font, fontScale, color, thickness, cv2.LINE_AA
     )
     return retimg
-
 
 if __name__ == "__main__":
 
