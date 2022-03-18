@@ -3,14 +3,13 @@ import time
 
 from src.templates.workerprocess import WorkerProcess
 import platform
-from copy import deepcopy
 import cv2
 
 device = platform.uname().processor
 
 if device == "x86_64":
     print("Using x86 model")
-    from src.lib.perception.sign_det_cv import setup, detect_signs, draw_box
+    from src.lib.perception.detectts_x86 import setup, detect_signs, draw_box
 else:
     from src.lib.perception.sign_det_cv import setup, detect_signs, draw_box
 
@@ -59,46 +58,43 @@ class SignDetectionProcess(WorkerProcess):
         print("Started Sign Detection")
         count = 0
         model, labels = setup()
-        label_areas = []
         while True:
-            with open("labelareas.txt", "w") as f:
-                try:
-                    stamps, img = inP[0].recv()
-                    count += 1
-                    if count % 5 != 0:
-                        continue
-                    print("R sD")
-                    # Apply image processing
-                    width = img.shape[1]
-                    height = img.shape[0]
-                    # should be top right quarter
-                    img = img[: int(height / 2), int(width / 2) :]
+            try:
+                stamps, img = inP[0].recv()
+                count += 1
+                if count % 5 != 0:
+                    continue
+                # Apply image processing
+                width = img.shape[1]
+                height = img.shape[0]
+                # should be top right quarter
+                img = img[: int(height / 2), int(width / 2) :]
 
-                    a = time.time()
-                    # print(self.model)
-                    out = detect_signs(img, model, labels)
-                    # print("Time taken by model ", time.time() - a, "s")
-                    if out is not None:
-                        # print("Model prediction {label}")
-                        box, label, location = out
-                        # box 0 is top left box 1 is bottom right
-                        # area = wxh w=x2-x1 h=y2-y1
-                        area = (box[1][0] - box[0][0]) * (box[1][1] - box[0][1])
-                        # if area < 10000:
-                        #     continue
-                        frame = draw_box(img, label, location, box)
+                a = time.time()
+                # print(self.model)
+                out = detect_signs(img, model, labels)
+                # print("Time taken by model ", time.time() - a, "s")
+                if out is not None:
+                    # print("Model prediction {label}")
+                    box, label, location = out
+                    # box 0 is top left box 1 is bottom right
+                    # area = wxh w=x2-x1 h=y2-y1
+                    area = (box[1][0] - box[0][0]) * (box[1][1] - box[0][1])
+                    # if area < 10000:
+                    #     continue
+                    frame = draw_box(img, label, location, box)
 
-                        # print(label, area)
-                        # for outP in outPs:
-                        outPs[0].send((label, area))
+                    # print(label, area)
+                    # for outP in outPs:
+                    outPs[0].send((label, area))
 
-                        if len(outPs) > 1:
-                            outPs[1].send((1, frame))
-                    else:
-                        outPs[0].send((None, 0))
-                        if len(outPs) > 1:
-                            outPs[1].send((1, img))
-                            
-                except Exception as e:
-                    print("Sign Detection error:")
-                    print(e)
+                    if len(outPs) > 1:
+                        outPs[1].send((1, frame))
+                else:
+                    outPs[0].send((None, 0))
+                    if len(outPs) > 1:
+                        outPs[1].send((1, img))
+                        
+            except Exception as e:
+                print("Sign Detection error:")
+                print(e)

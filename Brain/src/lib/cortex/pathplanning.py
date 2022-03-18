@@ -3,11 +3,11 @@ import math
 from typing import List, Tuple
 
 from scipy.interpolate import interp1d
-
+from src.lib.cortex import cubic_spline_planner
 import networkx as nx
 import numpy as np
 from copy import deepcopy
-
+from src.config import config
 
 def dijkstra(G, start, target):
     d = {start: 0}
@@ -42,13 +42,15 @@ def dijkstra(G, start, target):
         if ptype[i] == "int":
             try:
                 ptyperet[i - 1] = "int"
-            except Exception:
-                pass
+            except Exception as e:
+                print("pathplanning.py[46]",e)
+
             try:
                 ptyperet[i + 1] = "int"
                 i += 1
-            except Exception:
-                pass
+            except Exception as e:
+                print("pathplanning.py[52]",e)
+                
 
     edgeret = []
 
@@ -77,6 +79,18 @@ def add_yaw(G):
                 node_dict[current_node].update({"yaw": [yaw]})
     return node_dict
 
+def give_perpendicular_park_pts(x,y,spot=1):
+    if spot==1:
+        pt0x,pt0y=x+0.01,y+0.01
+        pt1x,pt1y=x+0.5588,pt0y-0.5334
+        pt2x,pt2y=pt1x+0.508,pt1y+0.3302
+        pt3x,pt3y=pt2x-0.127,pt2y+0.66
+        pt4x,pt4y=pt3x+0,pt3y+0.2032
+        pt5x,pt5y=pt4x,pt4y+0.2032
+        park_x_n,park_y_n=[pt0x,pt1x,pt2x,pt3x,pt4x,pt5x],[pt0x,pt1y,pt2y,pt3y,pt4y,pt5y]
+        cx,cy,cyaw,rk,s=cubic_spline_planner.calc_spline_course(park_x_n,park_y_n,ds=0.15)
+       
+        return [i for i in zip(cx,cy)]
 
 class PathPlanning:
     def __init__(self, test: bool = False) -> None:
@@ -180,7 +194,7 @@ class PathPlanning:
 class Purest_Pursuit:
     def __init__(self, coord_list):
         self.k = 0.01  # look forward gain
-        self.Lfc = 0.125  # [m] look-ahead distance
+        self.Lfc = 0.2  # [m] look-ahead distance
         self.Kp = 1.0  # speed proportional gain
         self.WB = 0.3  # [m] wheel base of vehicle
         self.cx, self.cy = zip(*coord_list)
@@ -204,8 +218,9 @@ class Purest_Pursuit:
                     distance_next_index = state.calc_distance(
                         self.cx[ind + 1], self.cy[ind + 1]
                     )
-                except IndexError:
+                except IndexError as e:
                     distance_next_index = state.calc_distance(self.cx[-1], self.cy[-1])
+                    break
 
                 if distance_this_index < distance_next_index:
                     break
@@ -237,3 +252,8 @@ class Purest_Pursuit:
         delta = math.atan2(2.0 * self.WB * math.sin(alpha) / Lf, 1.0)
 
         return delta
+
+    def reset_coord_list(self, coord_list):
+        self.cx, self.cy = zip(*coord_list)
+        self.old_nearest_point_index = None
+        self.Lfc = 0.5
