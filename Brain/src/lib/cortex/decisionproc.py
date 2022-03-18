@@ -132,12 +132,6 @@ def controlsystem(vehicle: CarState, ind, Lf):
     return di
 
 
-# def check_goal(tx: float, ty: float, x: float, y: float) -> bool:
-#     """Check if we have reached the goal"""
-
-#     d = math.sqrt((tx - x) ** 2 + (ty - y) ** 2)
-#     print(tx, ty, x, y, d)
-
 
 class DecisionMakingProcess(WorkerProcess):
     # ===================================== Worker process =========================================
@@ -289,10 +283,14 @@ class DecisionMakingProcess(WorkerProcess):
                 # if p_type[ind - 1] == "int":
 
                 # --------- GOAL STATE -------------------------
-                # if check_goal(*coord_list[-1],self.state.x, self.state.y):
-                #     self.state.v = 0
-                #     self.state.steering_angle = 0
-                # else:
+
+                # d = abs(coord_list[-1][0] - x) + abs((coord_list[-1][1] - y))
+                # print(f"Goal distance {d}")
+                # if d < 0.3:
+                #     print("Goal Reached")
+                #     self.state.v = 0.0
+                #     self.state.steering_angle = 0.0
+                # # else:
                 # check_goal(coord_list[-1][0],coord_list[-1][1], self.state.x, self.state.y)
                 # --------- STOP STATE -------------------
                 if sign and sign_area > 2000:
