@@ -193,7 +193,7 @@ elif config["using_server"]:
 
 # -------IMU----------
 # IMU -> Decision Making (data fusion)
-if isPI:
+if isPI and not config["enableSIM"]:
     print("IMU process started")
     imuFzzR, imuFzzS = Pipe(duplex=False)
     imuProc = IMUProcess([], [imuFzzS])

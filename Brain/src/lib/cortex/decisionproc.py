@@ -9,7 +9,6 @@ from src.config import config
 from src.lib.cortex.pathplanning import PathPlanning, Purest_Pursuit
 from src.templates.workerprocess import WorkerProcess
 from time import time
-import joblib
 
 import math
 
@@ -314,5 +313,4 @@ class DecisionMakingProcess(WorkerProcess):
             except Exception as e:
                 print("Decision Process error:")
                 raise e
-            joblib.dump(states_l, 'dump.shakal')
                 
