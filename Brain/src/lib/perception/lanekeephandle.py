@@ -57,7 +57,7 @@ class LaneKeep:
     def __init__(
         self,
         use_perspective: bool = True,
-        hls_lower: List[int] = [90, 90, 90],
+        hls_lower: List[int] = [180, 180, 180],
         computation_method: str = "hough",
         blur_size: Tuple[int, int] = (7, 7),
         adpt_Th_blk_size: int = 21,
@@ -189,7 +189,7 @@ class LaneKeep:
 
         # change here if it fails to detect
         white_lower = np.array(
-            [np.round(0 / 2), np.round(0.25 * 255), np.round(0.00 * 255)]
+            [np.round(0 / 2), np.round(0.75 * 255), np.round(0.45 * 255)]
         )
 
         white_upper = np.array(
@@ -203,10 +203,10 @@ class LaneKeep:
         # L value can be arbitrary (we want everything between bright and dark yellow), e.g. within [0.0 ... 1.0]
         # S value must be above some threshold (we want at least some saturation), e.g. within [0.35 ... 1.0]
         yellow_lower = np.array(
-            [np.round(30 / 2), np.round(0.15 * 255), np.round(0.45 * 255)]
+            [np.round(30 / 2), np.round(0.75 * 255), np.round(0.45 * 255)]
         )
         yellow_upper = np.array(
-            [np.round(60 / 2), np.round(0.80 * 255), np.round(1.00 * 255)]
+            [np.round(60 / 2), np.round(1.0 * 255), np.round(1.00 * 255)]
         )
         yellow_mask = cv2.inRange(hls, yellow_lower, yellow_upper)
 
@@ -233,7 +233,7 @@ class LaneKeep:
         # )
         # ret, thresh = cv2.threshold(gray, 160, 255, cv2.THRESH_BINARY)
         blur = cv2.GaussianBlur(gray, self.blur_size, 0)
-        _, th1 = cv2.threshold(blur, 80, 255, cv2.THRESH_BINARY)
+        _, th1 = cv2.threshold(blur, 120, 255, cv2.THRESH_BINARY)
         _, th2 = cv2.threshold(blur, 220, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
         #         clean = cv2.fastNlMeansDenoising(blur)
         th3 = np.array(0.7 * th1 + 0.3 * th2).astype(np.uint8)

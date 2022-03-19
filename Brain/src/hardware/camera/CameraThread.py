@@ -89,14 +89,14 @@ class CameraThread(ThreadWithStop):
         self.camera = PiCamera()
 
         # camera settings
-        self.camera.resolution = (1640, 1232)
-        self.camera.framerate = 15
-
-        self.camera.brightness = 60
-        self.camera.shutter_speed = 1200
-        self.camera.contrast = 50
-        self.camera.iso = 0  # auto
-        self.camera.exposure_mode = "auto"
+        self.camera.resolution = (640, 480)
+        self.camera.framerate = 30
+#         self.camera.drc_strength="high"
+#         self.camera.brightness = 60
+#         self.camera.shutter_speed = 5000
+#         self.camera.contrast = 60
+#         self.camera.iso = 0  # auto
+#         self.camera.exposure_mode = "auto"
         self.imgSize = (640, 480)  # the actual image size
 
     # ===================================== GET STAMP ====================================

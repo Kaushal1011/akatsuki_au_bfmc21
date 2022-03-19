@@ -37,7 +37,8 @@ def intersection_det(img, area_threshold=9_500) -> np.ndarray:
 
     # # Convert image to grayscale, apply threshold, blur & extract edges
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    _, thresh = cv2.threshold(gray, 160, 255, cv2.THRESH_BINARY)
+    result = img.copy()
+    _, thresh = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY)
     blur = cv2.GaussianBlur(thresh, (7, 7), 0)
     roi = roi_func(blur)
 
@@ -56,9 +57,10 @@ def intersection_det(img, area_threshold=9_500) -> np.ndarray:
 
     for c in cnts:
         area = cv2.contourArea(c)
-        print("Intersection Area -> {area}")
+        print(f"Intersection Area -> {area}")
         if area > area_threshold:
             detected = True
-            final_contours.append(c)
-
-    return detected, final_contours
+            # final_contours.append(c)
+            cv2.drawContours(result, [c], -1, (255, 0, 0), 5)
+            
+    return detected, result

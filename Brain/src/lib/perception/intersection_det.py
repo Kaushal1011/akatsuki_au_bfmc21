@@ -53,9 +53,11 @@ class IntersectionDetProcess(WorkerProcess):
                     stamps, img = inP.recv()
                     # Apply image processing
                     a = time()
-                    detected, _ = intersection_det(img)
-                    for outP in outPs:
-                        outP.send(detected)
+                    detected, outimage = intersection_det(img)
+                    # for outP in outPs:
+                    outPs[0].send(detected)
+                    if len(outPs) > 1:
+                        outPs[1].send((1, outimage)) 
                         # print("Sending from Intersection Detection")
                 # print("Time taken by ID:", time() - a)
             except Exception as e:

@@ -13,12 +13,13 @@ from src.lib.cortex.pathplanning import (
 )
 from src.templates.workerprocess import WorkerProcess
 from time import time
+from src.utils.Timer import Timer
 
 import math
 
 
 class CarState:
-    def __init__(self, max_v=0.28, dt=0.1, car_len=0.365) -> None:
+    def __init__(self, max_v=0.14, dt=0.13, car_len=0.365) -> None:
         self.steering_angle = 0.0
         self.det_intersection = False
         # TODO: get initial position from config IDK
@@ -41,8 +42,8 @@ class CarState:
         self.slowed = False
         self.parking = False
         self.stop_slow_start_time = None
-        self.intersection = False
-
+        self.intersection_stop = False
+        
     def update_pos(self):
         dt = time() - self.last_update_time
         self.last_update_time = time()
@@ -180,6 +181,15 @@ class DecisionMakingProcess(WorkerProcess):
         self.locsys_first = True
         self.inPsnames = inPsnames
 
+    def restart(self):
+        print("Restarting")
+        self.state.v = self.state.max_v
+        Timer(6.0, self.reset_intersection_stop)
+
+    def reset_intersection_stop(self):
+        print("Released Intersection Lock")
+        self.state.intersection_stop = False
+
     def run(self):
         """Apply the initializing methods and start the threads."""
         super(DecisionMakingProcess, self).run()
@@ -208,7 +218,7 @@ class DecisionMakingProcess(WorkerProcess):
             Output pipe to send the steering angle value to other process.
         """
         sign, sign_area = None, 0
-        last_angle, last_velocity = self.state.steering_angle, self.state.v
+        last_angle, last_velocity = -23, -0.001
         while True:
             try:
                 c = time()
@@ -322,12 +332,15 @@ class DecisionMakingProcess(WorkerProcess):
                         self.state.change_speed(self.state.max_v * 0.5, 5, sign)
 
                 # --------- INTERSECTION ----------------------
-                # elif detected_intersection:
-                #     if self.state.intersection == True:
+                elif detected_intersection and self.state.intersection_stop == False:
+                    self.state.intersection_stop = True
+                    self.state.v = 0
+                    print("Stopping at Intersection")
+                    Timer(10.0, self.restart)
 
                 # --------- LANE KEEPING -------------------------
                 else:
-                    self.state.steering_angle = lk_angle
+                    self.state.steering_angle = 0
                     self.state.v = self.state.max_v
 
                 print(
@@ -335,14 +348,14 @@ class DecisionMakingProcess(WorkerProcess):
                 )
                 self.state.steering_angle = round(self.state.steering_angle)
 
-                if (
-                    last_angle != self.state.steering_angle
-                    or last_velocity != self.state.v
-                ):
-                    last_angle = self.state.steering_angle
-                    last_velocity = self.state.v
-                    for outP in outPs:
-                        outP.send((-self.state.steering_angle, self.state.v))
+                #if (
+                #    last_angle != self.state.steering_angle
+                #    or last_velocity != self.state.v
+                #):
+                #    last_angle = self.state.steering_angle
+                #    last_velocity = self.state.v
+                for outP in outPs:
+                    outP.send((self.state.steering_angle, self.state.v))
 
             except Exception as e:
                 print("Decision Process error:")
