@@ -13,16 +13,10 @@ def roi_func(img: np.ndarray) -> np.ndarray:
     """
     # create stencil just the first time and then save for later use
     roi = [
-        (
-            int(0.1 * ((img.shape[1] - 1))),
-            int(0.45 * (img.shape[0] - 1)),
-        ),
+        (int(0.1 * ((img.shape[1] - 1))), int(0.45 * (img.shape[0] - 1)),),
         (int(0 * ((img.shape[1] - 1))), int(img.shape[0] - 1)),
         (int(1 * ((img.shape[1] - 1))), int(img.shape[0] - 1)),
-        (
-            int(0.9 * ((img.shape[1] - 1))),
-            int(0.45 * (img.shape[0] - 1)),
-        ),
+        (int(0.9 * ((img.shape[1] - 1))), int(0.45 * (img.shape[0] - 1)),),
     ]
     stencil = np.zeros_like(img, dtype="uint8")
     # specify coordinates of the polygon
@@ -62,6 +56,7 @@ def intersection_det(img, area_threshold=9_500) -> np.ndarray:
 
     for c in cnts:
         area = cv2.contourArea(c)
+        print("Intersection Area -> {area}")
         if area > area_threshold:
             detected = True
             final_contours.append(c)

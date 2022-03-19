@@ -121,8 +121,9 @@ if config["enableIntersectionDet"]:
     dataFusionInputName.append("iD")
 
     if config["enableStream"]:
-        idStrR, idStrS = Pipe(duplex=False)
-        idProc = IntersectionDetProcess([camiDR], [iDFzzS, idStrS])
+        # TODO: add streaming utility
+        # idStrR, idStrS = Pipe(duplex=False)
+        idProc = IntersectionDetProcess([camiDR], [iDFzzS])
     else:
         idProc = IntersectionDetProcess([camiDR], [iDFzzS])
     allProcesses.append(idProc)
@@ -134,11 +135,11 @@ if config["enableSignDet"]:
     # Sign Detection -> Data Fusion (Decision Process)
     sDFzzR, sDFzzS = Pipe(duplex=False)
     if config["enableStream"]:
-        sDStR, sDStS = Pipe(duplex = False)
+        sDStR, sDStS = Pipe(duplex=False)
         sDProc = SignDetectionProcess([camsDR], [sDFzzS, sDStS])
     else:
         sDProc = SignDetectionProcess([camsDR], [sDFzzS])
-    
+
     camOutPs.append(camsDS)
     dataFusionInputPs.append(sDFzzR)
     dataFusionInputName.append("sD")
@@ -234,7 +235,7 @@ else:
 if config["enableSIM"] and isPI:
     shProc = SimulatorConnector([mcSSHR], [])
     allProcesses.append(shProc)
-    shProc = SerialHandlerProcess([ mcSHR], [])
+    shProc = SerialHandlerProcess([mcSHR], [])
     allProcesses.append(shProc)
 
 elif config["enableSIM"] and not isPI:

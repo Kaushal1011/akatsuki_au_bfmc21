@@ -48,7 +48,7 @@ class IntersectionDetProcess(WorkerProcess):
         """
         while True:
             try:
-                # Obtain image                
+                # Obtain image
                 if inP.poll(timeout=0.02):
                     stamps, img = inP.recv()
                     # Apply image processing
