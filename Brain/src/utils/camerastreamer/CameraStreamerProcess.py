@@ -116,6 +116,7 @@ class CameraStreamerProcess(WorkerProcess):
                 _, image = inP.recv()
                 # print(stamps, image)
                 result, image = cv2.imencode(".jpg", image, encode_param)
+                image = cv2.resize(image, [image.shape[0]*0.5, image.shape[1]*0.5])
                 data = image.tobytes()
                 size = len(data)
                 # print(f"Streaming | sending data size: {size}")
