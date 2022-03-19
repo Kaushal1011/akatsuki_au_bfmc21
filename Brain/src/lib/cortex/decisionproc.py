@@ -18,7 +18,7 @@ import math
 
 
 class CarState:
-    def __init__(self, max_v=0.14, dt=0.1, car_len=0.365) -> None:
+    def __init__(self, max_v=0.0, dt=0.1, car_len=0.365) -> None:
         self.steering_angle = 0.0
         self.det_intersection = False
         # TODO: get initial position from config IDK
@@ -332,7 +332,7 @@ class DecisionMakingProcess(WorkerProcess):
                 if config["park"] and check_reached(
                     park_x, park_y, self.state.x, self.state.y
                 ):
-                    pPC.reset_coord_list(park_coord)
+                    pPC.reset_coord_list(park_coord,0.5)
                     self.state.v = 0.5 * self.state.max_v
                     self.state.parking = True
 
@@ -365,6 +365,7 @@ class DecisionMakingProcess(WorkerProcess):
                         pPC.reset_coord_list(coord_list_test, 0.125)
                         self.state.v = self.state.max_v
                         self.state.should_park=False
+                        self.state.parked=False
                     else:
                         print("!!! Goal Reached !!!!")
                         self.state.v = 0.0

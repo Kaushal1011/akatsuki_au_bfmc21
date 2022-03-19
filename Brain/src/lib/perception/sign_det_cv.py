@@ -68,12 +68,16 @@ def check_priority(img, area_threshold: Tuple[int, int]):
 def check_cross(img, area_threshold: Tuple[int, int]):
     imgContour = img.copy()
     hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
-    blue1 = np.array([90,240,80])
+    blue1 = np.array([90,90,70])
     blue2 = np.array([140,255,255])
+    white1 = np.array([135,254,254])
+    white2 = np.array([140,255,255])
     black1 = np.array([0,0,0])
     black2 = np.array([180,20,20])
-    mask = cv2.inRange(hsv, blue1, blue2)
-    imgRes = cv2.bitwise_and(img, img, mask=mask)
+    mask1 = cv2.inRange(hsv, blue1, blue2)
+    mask2 = cv2.inRange(hsv, white1, white2)
+    maskf = cv2.bitwise_or(mask1, mask2)
+    imgRes = cv2.bitwise_and(img, img, mask=maskf)
     # cv2.imshow("ii", imgRes)
     blur = cv2.GaussianBlur(imgRes, (7,7), 1)
     gray = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)
@@ -93,17 +97,18 @@ def check_cross(img, area_threshold: Tuple[int, int]):
             x, y, w, h = cv2.boundingRect(approx)
 
             cropped_contour = img[y:y+h,x:x+w]
-            maskb = mask = cv2.inRange(cropped_contour, black1, black2)
-            crop_res = cv2.bitwise_and(cropped_contour, cropped_contour, mask=maskb)
-            croppedBlur = cv2.GaussianBlur(crop_res, (7,7), 1)
-            croppedGray = cv2.cvtColor(croppedBlur, cv2.COLOR_BGR2GRAY)
-            croppedCanny = cv2.Canny(croppedGray, 26, 0)
-            kernel = np.ones((7,7))
-            croppedDil = cv2.dilate(croppedCanny, kernel, iterations=1)
-            # cv2.imshow('ii', croppedDil)
-            contours_crop, hierarchy = cv2.findContours(croppedDil, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-            print(len(contours_crop))
-            if len(contours_crop) != 0:   
+            croppedGray = cv2.cvtColor(cropped_contour, cv2.COLOR_BGR2GRAY)
+            black_pix = np.sum(croppedGray == 0)
+            # maskb = cv2.inRange(cropped_contour, black1, black2)
+            # crop_res = cv2.bitwise_and(cropped_contour, cropped_contour, mask=maskb)
+            # croppedBlur = cv2.GaussianBlur(crop_res, (7,7), 1)
+            # croppedGray = cv2.cvtColor(croppedBlur, cv2.COLOR_BGR2GRAY)
+            # croppedCanny = cv2.Canny(croppedGray, 26, 0)
+            # kernel = np.ones((7,7))
+            # croppedDil = cv2.dilate(croppedCanny, kernel, iterations=1)
+            # contours_crop, hierarchy = cv2.findContours(croppedDil, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+            print("black pix: ",black_pix)
+            if black_pix > 20:   
                 return True, x, y, w, h
     return None,None,None,None,None
 
@@ -112,11 +117,15 @@ def check_park(img, area_threshold: Tuple[int, int]):
     hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
     blue1 = np.array([90,90,70])
     blue2 = np.array([140,255,255])
+    white1 = np.array([135,254,254])
+    white2 = np.array([140,255,255])
     black1 = np.array([0,0,0])
     black2 = np.array([180,20,20])
-    mask = cv2.inRange(hsv, blue1, blue2)
-    imgRes = cv2.bitwise_and(img, img, mask=mask)
-    # cv2.imshow("ii", imgRes)
+    mask1 = cv2.inRange(hsv, blue1, blue2)
+    mask2 = cv2.inRange(hsv, white1, white2)
+    maskf = cv2.bitwise_or(mask1, mask2)
+    imgRes = cv2.bitwise_and(img, img, mask=maskf)
+    cv2.imshow("ii", imgRes)
     blur = cv2.GaussianBlur(imgRes, (7,7), 1)
     gray = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)
     canny = cv2.Canny(gray, 55, 30)
@@ -135,15 +144,18 @@ def check_park(img, area_threshold: Tuple[int, int]):
             x, y, w, h = cv2.boundingRect(approx)
 
             cropped_contour = img[y:y+h,x:x+w]
-            maskb = mask = cv2.inRange(cropped_contour, black1, black2)
-            crop_res = cv2.bitwise_and(cropped_contour, cropped_contour, mask=maskb)
-            croppedBlur = cv2.GaussianBlur(crop_res, (7,7), 1)
-            croppedGray = cv2.cvtColor(croppedBlur, cv2.COLOR_BGR2GRAY)
-            croppedCanny = cv2.Canny(croppedGray, 55, 30)
-            kernel = np.ones((7,7))
-            croppedDil = cv2.dilate(croppedCanny, kernel, iterations=1)
-            contours_crop, hierarchy = cv2.findContours(croppedDil, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-            if len(contours_crop) == 0:   
+            croppedGray = cv2.cvtColor(cropped_contour, cv2.COLOR_BGR2GRAY)
+            black_pix = np.sum(croppedGray == 0)
+            # maskb = cv2.inRange(cropped_contour, black1, black2)
+            # crop_res = cv2.bitwise_and(cropped_contour, cropped_contour, mask=maskb)
+            # croppedBlur = cv2.GaussianBlur(crop_res, (7,7), 1)
+            # croppedGray = cv2.cvtColor(croppedBlur, cv2.COLOR_BGR2GRAY)
+            # croppedCanny = cv2.Canny(croppedGray, 26, 0)
+            # kernel = np.ones((7,7))
+            # croppedDil = cv2.dilate(croppedCanny, kernel, iterations=1)
+            # contours_crop, hierarchy = cv2.findContours(croppedDil, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+            print(black_pix)
+            if black_pix <= 15:   
                 return True, x, y, w, h
     return None,None,None,None,None
 
@@ -153,7 +165,7 @@ def check_park(img, area_threshold: Tuple[int, int]):
 def detections(img, label):
     text = "not detected"
     cs,csx,csy,csw,csh=check_stop(img,(700,25000))
-    cp,cpx,cpy,cpw,cph=check_priority(img,(700,25000))
+    cp,cpx,cpy,cpw,cph=check_priority(img,(400,25000))
     cpa,cpax,cpay,cpaw,cpah=check_park(img,(700,25000))
     cc,ccx,ccy,ccw,cch=check_cross(img,(700,25000))
     box,text,location=None,None,None

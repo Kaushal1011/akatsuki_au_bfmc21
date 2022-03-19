@@ -80,17 +80,39 @@ def add_yaw(G):
     return node_dict
 
 def give_perpendicular_park_pts(x,y,spot=1):
-    if spot==1:
-        pt0x,pt0y=x+0.01,y+0.01
-        pt1x,pt1y=x+0.5588,pt0y-0.5334
-        pt2x,pt2y=pt1x+0.508,pt1y+0.3302
-        pt3x,pt3y=pt2x-0.127,pt2y+0.66
-        pt4x,pt4y=pt3x+0,pt3y+0.2032
-        pt5x,pt5y=pt4x,pt4y+0.2032
-        park_x_n,park_y_n=[pt0x,pt1x,pt2x,pt3x,pt4x,pt5x],[pt0x,pt1y,pt2y,pt3y,pt4y,pt5y]
-        cx,cy,cyaw,rk,s=cubic_spline_planner.calc_spline_course(park_x_n,park_y_n,ds=0.15)
+    # if spot==1:
+    #     pt0x,pt0y=x+0.01,y+0.01
+    #     pt1x,pt1y=x+0.5588,pt0y-0.5334
+    #     pt2x,pt2y=pt1x+0.508,pt1y+0.3302
+    #     pt3x,pt3y=pt2x-0.127,pt2y+0.66
+    #     pt4x,pt4y=pt3x+0,pt3y+0.2032
+    #     pt5x,pt5y=pt4x,pt4y+0.2032
+    #     park_x_n,park_y_n=[pt0x,pt1x,pt2x,pt3x,pt4x,pt5x],[pt0x,pt1y,pt2y,pt3y,pt4y,pt5y]
+    #     cx,cy,cyaw,rk,s=cubic_spline_planner.calc_spline_course(park_x_n,park_y_n,ds=0.15)
        
-        return [i for i in zip(cx,cy)]
+    #     return [i for i in zip(cx,cy)]
+    #temporary:
+    coord_list = [
+        (2.1199999999999997, 2.1199999999999997),
+        (2.2072555826316647, 1.9642686239127372),
+        (2.2987501548820624, 1.8198978465696687),
+        (2.398722706369926, 1.6982482667149883),
+        (2.511412226713987, 1.6106804830928898),
+        (2.6410577055329796, 1.5685550944475672),
+        (2.7895393410766838, 1.581190302937868),
+        (2.9415339509365492, 1.6430084931545883),
+        (3.0740966676307324, 1.7418326938602926),
+        (3.1642485373345357, 1.8654564196217684),
+        (3.192618769936659, 2.002381602029436),
+        (3.1697268696723078, 2.146978751551605),
+        (3.1208636337525117, 2.2965185340365264),
+        (3.171424620664199, 2.348292183875666),
+        (3.1565564782777963, 2.499609817049711),
+        (3.1594334941971126, 2.6494483048050387),
+        (3.1507302101554803, 2.753755087166564),
+    ]
+
+    return coord_list
 
 class PathPlanning:
     def __init__(self, test: bool = False) -> None:
