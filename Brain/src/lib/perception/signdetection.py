@@ -9,7 +9,7 @@ device = platform.uname().processor
 
 if device == "x86_64":
     print("Using x86 model")
-    from src.lib.perception.detectts_x86 import setup, detect_signs, draw_box
+    from src.lib.perception.sign_det_cv import setup, detect_signs, draw_box
 else:
     from src.lib.perception.sign_det_cv import setup, detect_signs, draw_box
 
@@ -72,7 +72,7 @@ class SignDetectionProcess(WorkerProcess):
 
                 a = time.time()
                 # print(self.model)
-                out = detect_signs(img, model, labels)
+                out = detect_signs(img, labels)
                 # print("Time taken by model ", time.time() - a, "s")
                 if out is not None:
                     # print("Model prediction {label}")
