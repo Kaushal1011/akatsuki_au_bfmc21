@@ -18,7 +18,7 @@ import math
 
 
 class CarState:
-    def __init__(self, max_v=0.28, dt=0.1, car_len=0.365) -> None:
+    def __init__(self, max_v=0.0, dt=0.1, car_len=0.365) -> None:
         self.steering_angle = 0.0
         self.det_intersection = False
         # TODO: get initial position from config IDK
@@ -245,7 +245,7 @@ class DecisionMakingProcess(WorkerProcess):
                         sign, sign_area = inPs[idx].recv()
                         if sign is None:
                             self.state.stop_slow_start_time = None
-                            if(time() - self.state.last_release) > 4:
+                            if self.state.last_release and ((time() - self.state.last_release) > 4):
                                 self.state.release = False
                         # print(f"Time taken sD {(time() - t_sD):.2f}s {label}")
                         print(f"{sign} {sign_area}")
@@ -338,7 +338,7 @@ class DecisionMakingProcess(WorkerProcess):
                     self.state.steering_angle = 0.0
                 # --------- STOP STATE -------------------
                 elif sign or self.state.slowed or self.state.stopped:
-                    print(self.state.stopped,self.state.slowed, self.state.release )
+                    # print(self.state.stopped,self.state.slowed, self.state.release )
                     if (sign == "stop" and sign_area > 2000) or self.state.stopped:
                         self.state.change_speed(0, 5, sign)
                         self.state.stopped = True

@@ -6,6 +6,7 @@ import platform
 import cv2
 
 device = platform.uname().processor
+device= "!x86"
 
 if device == "x86_64":
     print("Using x86 model")
@@ -98,4 +99,4 @@ class SignDetectionProcess(WorkerProcess):
                         
             except Exception as e:
                 print("Sign Detection error:")
-                print(e)
+                raise e
