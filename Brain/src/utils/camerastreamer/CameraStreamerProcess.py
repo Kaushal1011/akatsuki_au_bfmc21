@@ -118,7 +118,7 @@ class CameraStreamerProcess(WorkerProcess):
                 result, image = cv2.imencode(".jpg", image, encode_param)
                 data = image.tobytes()
                 size = len(data)
-                print(f"Streaming | sending data size: {size}")
+                # print(f"Streaming | sending data size: {size}")
                 self.connection.write(struct.pack("<L", size))
                 self.connection.write(data)
             except Exception as e:

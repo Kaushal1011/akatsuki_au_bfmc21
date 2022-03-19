@@ -182,18 +182,19 @@ class LaneKeep:
     def preprocess(self, img: np.ndarray) -> np.ndarray:
         """Preprocess image for edge detection"""
         # Apply HLS color filtering to filter out white lane lines
-        img = cv2.convertScaleAbs(img, alpha=2.0, beta=30)
-        blur1 = cv2.GaussianBlur(img, (7, 7), 0)
+#         img = cv2.convertScaleAbs(img, alpha=2.0, beta=30)
+#         blur1 = cv2.GaussianBlur(img, (7, 7), 0)
 
-        hls = cv2.cvtColor(blur1, cv2.COLOR_BGR2HLS)
+        hls = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
 
         # change here if it fails to detect
         white_lower = np.array(
-            [np.round(0 / 2), np.round(0.75 * 255), np.round(0.45 * 255)]
+#             [np.round(0 / 2), np.round(0.75 * 255), np.round(0.45 * 255)]
+            [70,0,220] # 70,0,220
         )
 
         white_upper = np.array(
-            [np.round(360 / 2), np.round(1.00 * 255), np.round(1 * 255)]
+            [100,25,255] # 100,25,255
         )
 
         white_mask = cv2.inRange(hls, white_lower, white_upper)
@@ -202,17 +203,19 @@ class LaneKeep:
         # H value must be appropriate (see HSL color space), e.g. within [40 ... 60]
         # L value can be arbitrary (we want everything between bright and dark yellow), e.g. within [0.0 ... 1.0]
         # S value must be above some threshold (we want at least some saturation), e.g. within [0.35 ... 1.0]
-        yellow_lower = np.array(
-            [np.round(30 / 2), np.round(0.75 * 255), np.round(0.45 * 255)]
-        )
-        yellow_upper = np.array(
-            [np.round(60 / 2), np.round(1.0 * 255), np.round(1.00 * 255)]
-        )
-        yellow_mask = cv2.inRange(hls, yellow_lower, yellow_upper)
+#         yellow_lower = np.array(
+#             [np.round(30 / 2), np.round(0.75 * 255), np.round(0.45 * 255)]
+#         )
+#         yellow_upper = np.array(
+#             [np.round(60 / 2), np.round(1.0 * 255), np.round(1.00 * 255)]
+#         )
+#         yellow_mask = cv2.inRange(hls, yellow_lower, yellow_upper)
 
         # Calculate combined mask, and masked image
-        mask = cv2.bitwise_or(yellow_mask, white_mask)
-        hls_result = cv2.bitwise_and(img, img, mask=mask)
+#         mask = cv2.bitwise_or(yellow_mask, white_mask)
+        hls_result = cv2.bitwise_and(img, img, mask=white_mask)
+#         cv2.imshow("i",img)
+#         cv2.waitKey(1)
 
         # lower_white = np.array(self.hls_lower)
         # upper_white = np.array([255, 255, 255])
@@ -240,7 +243,11 @@ class LaneKeep:
         blur = cv2.GaussianBlur(th3, (21, 21), 0)
         canny = cv2.Canny(blur, self.canny_thres1, self.canny_thres2)
         #         denoised=cv2.fastNlMeansDenoisingColored(canny,None,10,10,7,21)
-        return canny
+        
+        kernel = np.ones((5,5), np.uint8)
+        final = cv2.dilate(canny, kernel, iterations=1)
+        
+        return final
         # return hls_result, gray, thres, blur, canny
 
     def persepective_wrap(self, img: np.ndarray) -> np.ndarray:
@@ -349,7 +356,9 @@ def processImage(inpImage):
     # ret, thresh = cv2.threshold(gray, 160, 255, cv2.THRESH_BINARY)
     blur = cv2.GaussianBlur(thresh, (7, 7), 0)
     canny = cv2.Canny(blur, 40, 60)
-    return hls_result, gray, thresh, blur, canny
+    kernel = np.ones((5,5), np.uint8)
+    final = cv2.dilate(img, kernel, iterations=1)
+    return hls_result, gray, thresh, blur, final
 
 
 # roi = [[90, 500],       [800, 500],       [200, 1200],       [1600, 1200]]

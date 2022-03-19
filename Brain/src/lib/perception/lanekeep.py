@@ -77,3 +77,4 @@ class LaneKeepingProcess(WorkerProcess):
             except Exception as e:
                 print("Lane keeping error:")
                 print(e)
+                raise e

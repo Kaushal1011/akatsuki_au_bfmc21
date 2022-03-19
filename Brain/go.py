@@ -103,7 +103,7 @@ if config["enableLaneKeeping"]:
 
     if config["enableStream"]:
         lkStrR, lkStrS = Pipe(duplex=False)
-        lkProc = LaneKeeping([lkR], [lkFzzS])
+        lkProc = LaneKeeping([lkR], [lkFzzS, lkStrS])
     else:
         lkProc = LaneKeeping([lkR], [lkFzzS])
 
@@ -122,8 +122,8 @@ if config["enableIntersectionDet"]:
 
     if config["enableStream"]:
         # TODO: add streaming utility
-        idStrR, idStrS = Pipe(duplex=False)
-        idProc = IntersectionDetProcess([camiDR], [iDFzzS, idStrS])
+        # idStrR, idStrS = Pipe(duplex=False)
+        idProc = IntersectionDetProcess([camiDR], [iDFzzS])
     else:
         idProc = IntersectionDetProcess([camiDR], [iDFzzS])
     allProcesses.append(idProc)
@@ -255,7 +255,7 @@ if config["enableStream"]:
     #     # shouldnt idstr go here also ?
     #     streamProc = CameraStreamerProcess([lkStrR], [])
     if config["enableLaneKeeping"]:
-        streamProc = CameraStreamerProcess([idStrR], [], STREAM_PORT1)
+        streamProc = CameraStreamerProcess([lkStrR], [], STREAM_PORT1)
         allProcesses.append(streamProc)
     else:
         camStR, camStS = Pipe(duplex=False)  # camera  ->  streamer

@@ -4,7 +4,7 @@
   "enableRc": false,
   "enableLaneKeeping": true,
   "enableIntersectionDet": true,
-  "enableSignDet": false,
+  "enableSignDet": true,
   "enableSIM": false,
   "using_server": false,
   "test_track": false,

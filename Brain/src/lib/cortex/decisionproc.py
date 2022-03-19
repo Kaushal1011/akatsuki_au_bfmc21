@@ -13,13 +13,14 @@ from src.lib.cortex.pathplanning import (
 )
 from src.templates.workerprocess import WorkerProcess
 from time import time
-from src.utils.Timer import Timer
+from src.lib.cortex.actions import Action
 
 import math
-
+stop_a = Action("stop", 4)
+turn_a = Action("turn", 0)
 
 class CarState:
-    def __init__(self, max_v=0.14, dt=0.13, car_len=0.365) -> None:
+    def __init__(self, max_v=0.14, dt=0.1, car_len=0.365) -> None:
         self.steering_angle = 0.0
         self.det_intersection = False
         # TODO: get initial position from config IDK
@@ -219,6 +220,7 @@ class DecisionMakingProcess(WorkerProcess):
         """
         sign, sign_area = None, 0
         last_angle, last_velocity = -23, -0.001
+        
         while True:
             try:
                 c = time()
@@ -332,30 +334,40 @@ class DecisionMakingProcess(WorkerProcess):
                         self.state.change_speed(self.state.max_v * 0.5, 5, sign)
 
                 # --------- INTERSECTION ----------------------
-                elif detected_intersection and self.state.intersection_stop == False:
-                    self.state.intersection_stop = True
-                    self.state.v = 0
-                    print("Stopping at Intersection")
-                    Timer(10.0, self.restart)
+                elif detected_intersection:
+                    print("SET",stop_a.set(10))
 
                 # --------- LANE KEEPING -------------------------
                 else:
                     self.state.steering_angle = 0
                     self.state.v = self.state.max_v
 
+                check_stop, turn = stop_a.state_check()
+                if check_stop:
+                    print("stop_astatecheck true")
+                    self.state.v = 0.0
+                elif turn:
+                    print("stop_astatecheck false")
+                    self.state.v = self.state.max_v
+                    turn_a.set(7)
+                
+                if turn_a.state_check()[0]:
+                    self.state.steering_angle = -16
+                else:
+                    self.state.steering_angle = lk_angle
+                    print("Lane Keeping")
+                    
                 print(
                     f"({self.state.x:.3f}, {self.state.y:.3f}) {-self.state.steering_angle:.2f}, {self.state.v} {(time() - c):.2f}s"
                 )
+                
                 self.state.steering_angle = round(self.state.steering_angle)
 
-                #if (
-                #    last_angle != self.state.steering_angle
-                #    or last_velocity != self.state.v
-                #):
-                #    last_angle = self.state.steering_angle
+                if last_angle != self.state.steering_angle:
+                    last_angle = self.state.steering_angle
                 #    last_velocity = self.state.v
-                for outP in outPs:
-                    outP.send((self.state.steering_angle, self.state.v))
+                    for outP in outPs:
+                        outP.send((self.state.steering_angle, self.state.v))
 
             except Exception as e:
                 print("Decision Process error:")
