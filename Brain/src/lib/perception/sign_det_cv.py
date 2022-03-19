@@ -99,16 +99,10 @@ def check_cross(img, area_threshold: Tuple[int, int]):
             cropped_contour = img[y:y+h,x:x+w]
             croppedGray = cv2.cvtColor(cropped_contour, cv2.COLOR_BGR2GRAY)
             black_pix = np.sum(croppedGray == 0)
-            # maskb = cv2.inRange(cropped_contour, black1, black2)
-            # crop_res = cv2.bitwise_and(cropped_contour, cropped_contour, mask=maskb)
-            # croppedBlur = cv2.GaussianBlur(crop_res, (7,7), 1)
-            # croppedGray = cv2.cvtColor(croppedBlur, cv2.COLOR_BGR2GRAY)
-            # croppedCanny = cv2.Canny(croppedGray, 26, 0)
-            # kernel = np.ones((7,7))
-            # croppedDil = cv2.dilate(croppedCanny, kernel, iterations=1)
-            # contours_crop, hierarchy = cv2.findContours(croppedDil, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+            gray_pix = np.sum(croppedGray >= 128)
             print("black pix: ",black_pix)
-            if black_pix > 20:   
+            print("white pix: ",gray_pix)
+            if black_pix >= 20 and gray_pix == 0:   
                 return True, x, y, w, h
     return None,None,None,None,None
 
@@ -146,16 +140,10 @@ def check_park(img, area_threshold: Tuple[int, int]):
             cropped_contour = img[y:y+h,x:x+w]
             croppedGray = cv2.cvtColor(cropped_contour, cv2.COLOR_BGR2GRAY)
             black_pix = np.sum(croppedGray == 0)
-            # maskb = cv2.inRange(cropped_contour, black1, black2)
-            # crop_res = cv2.bitwise_and(cropped_contour, cropped_contour, mask=maskb)
-            # croppedBlur = cv2.GaussianBlur(crop_res, (7,7), 1)
-            # croppedGray = cv2.cvtColor(croppedBlur, cv2.COLOR_BGR2GRAY)
-            # croppedCanny = cv2.Canny(croppedGray, 26, 0)
-            # kernel = np.ones((7,7))
-            # croppedDil = cv2.dilate(croppedCanny, kernel, iterations=1)
-            # contours_crop, hierarchy = cv2.findContours(croppedDil, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-            print(black_pix)
-            if black_pix <= 15:   
+            gray_pix = np.sum(croppedGray >= 128)
+            print("black_pix:", black_pix)
+            print("white pix: ",gray_pix)
+            if black_pix < 15 and gray_pix > 0:   
                 return True, x, y, w, h
     return None,None,None,None,None
 
