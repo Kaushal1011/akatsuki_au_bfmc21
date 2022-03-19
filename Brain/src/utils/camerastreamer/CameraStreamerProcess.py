@@ -36,12 +36,9 @@ import cv2
 from src.config import config
 from src.templates.workerprocess import WorkerProcess
 
-CAM_STREAM_PORT = 2244
-
-
 class CameraStreamerProcess(WorkerProcess):
     # ===================================== INIT =========================================
-    def __init__(self, inPs, outPs):
+    def __init__(self, inPs, outPs, port=2244):
         """Process used for sending images over the network to a targeted IP via UDP protocol
         (no feedback required). The image is compressed before sending it.
 
@@ -55,6 +52,7 @@ class CameraStreamerProcess(WorkerProcess):
             List of output pipes (not used at the moment)
         """
         super(CameraStreamerProcess, self).__init__(inPs, outPs)
+        self.port = port
 
     # ===================================== RUN ==========================================
     def run(self):
@@ -78,7 +76,7 @@ class CameraStreamerProcess(WorkerProcess):
     def _init_socket(self):
         """Initialize the socket client."""
         self.serverIp = config["pc_ip"]  # PC ip
-        self.port = CAM_STREAM_PORT  # port
+        self.port = self.port  # port
 
         self.client_socket = socket.socket()
         self.connection = None
@@ -113,7 +111,6 @@ class CameraStreamerProcess(WorkerProcess):
         count = 1
         while True:
             try:
-
                 _, image = inP.recv()
                 # print(stamps, image)
                 result, image = cv2.imencode(".jpg", image, encode_param)
@@ -127,4 +124,4 @@ class CameraStreamerProcess(WorkerProcess):
                 # Reinitialize the socket for reconnecting to client.
                 self.connection = None
                 self._init_socket()
-                pass
+                raise e
