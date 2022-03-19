@@ -32,7 +32,7 @@ from src.utils.camerastreamer.CameraReceiverProcess import CameraReceiverProcess
 
 # ===================================== MAIN =============================================
 if __name__ == "__main__":
-    a = CameraReceiverProcess([], [])
+    a = CameraReceiverProcess([], [], 2244)
     a.start()
     blocker = Event()
     try:

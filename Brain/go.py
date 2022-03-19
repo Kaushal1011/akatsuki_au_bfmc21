@@ -64,6 +64,9 @@ sys.path.append(".")
 TRAFFIC_SIM_PORT = 7777
 LOCSYS_SIM_PORT = 8888
 LOCSYS_HOME_PORT = 8888
+
+STREAM_PORT1 = 2244
+STREAM_PORT2 = 4422
 # =============================== INITIALIZING PROCESSES =================================
 # Pipe collections
 allProcesses = []
@@ -100,7 +103,7 @@ if config["enableLaneKeeping"]:
 
     if config["enableStream"]:
         lkStrR, lkStrS = Pipe(duplex=False)
-        lkProc = LaneKeeping([lkR], [lkFzzS])
+        lkProc = LaneKeeping([lkR], [lkFzzS, lkStrS])
     else:
         lkProc = LaneKeeping([lkR], [lkFzzS])
 
@@ -250,18 +253,18 @@ if config["enableStream"]:
     # if config["enableLaneKeeping"] and config["enableIntersectionDet"]:
     #     # shouldnt idstr go here also ?
     #     streamProc = CameraStreamerProcess([lkStrR], [])
-    # elif config["enableLaneKeeping"]:
-    #     streamProc = CameraStreamerProcess([lkStrR], [])
-    # else:
-    if config["enableSignDet"]:
-        streamProc = CameraStreamerProcess([sDStR], [])
+    if config["enableLaneKeeping"]:
+        streamProc = CameraStreamerProcess([lkStrR], [], STREAM_PORT1)
+        allProcesses.append(streamProc)
     else:
         camStR, camStS = Pipe(duplex=False)  # camera  ->  streamer
         camOutPs.append(camStS)
-        streamProc = CameraStreamerProcess([camStR], [])
+        streamProc = CameraStreamerProcess([camStR], [], STREAM_PORT1)
+        allProcesses.append(streamProc)
 
-    allProcesses.append(streamProc)
-
+    if config["enableSignDet"]:
+        streamProc2 = CameraStreamerProcess([sDStR], [], STREAM_PORT2)
+        allProcesses.append(streamProc2)
 # ========================== Camera process ==============================================
 if config["enableCameraSpoof"]:
     camSpoofer = CameraSpooferProcess([], camOutPs, "vid")

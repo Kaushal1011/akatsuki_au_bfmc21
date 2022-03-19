@@ -35,7 +35,10 @@ class CarState:
         self.rear_y = self.y - ((car_len / 2) * math.sin(self.yaw))
         self.closest_pt = None
         self.last_update_time = time()
+        self.release = False
+        self.last_release = None
         self.stopped = False
+        self.slowed = False
         self.parking = False
         self.stop_slow_start_time = None
 
@@ -62,8 +65,12 @@ class CarState:
         # after wait secs start moving
         elif (time() - self.stop_slow_start_time) > timeout:
             print(f"RELEASE {sign}")
-            self.stopped = True
             self.v = self.max_v
+            self.slowed = False
+            self.stopped = False
+            if self.release == False:
+                self.last_release = time()
+                self.release = True
 
     def update(
         self,
@@ -237,8 +244,9 @@ class DecisionMakingProcess(WorkerProcess):
                     if inPs[idx].poll(timeout=0.1):
                         sign, sign_area = inPs[idx].recv()
                         if sign is None:
-                            self.state.stopped = False
                             self.state.stop_slow_start_time = None
+                            if(time() - self.state.last_release) > 4:
+                                self.state.release = False
                         # print(f"Time taken sD {(time() - t_sD):.2f}s {label}")
                         print(f"{sign} {sign_area}")
 
@@ -329,11 +337,13 @@ class DecisionMakingProcess(WorkerProcess):
                     self.state.v = 0.0
                     self.state.steering_angle = 0.0
                 # --------- STOP STATE -------------------
-
-                elif sign:
-                    if sign == "stop" and sign_area > 2000:
+                elif sign or self.state.slowed or self.state.stopped:
+                    print(self.state.stopped,self.state.slowed, self.state.release )
+                    if (sign == "stop" and sign_area > 2000) or self.state.stopped:
                         self.state.change_speed(0, 5, sign)
-                    if (sign == "crosswalk" or sign == "priority") and sign_area > 2000:
+                        self.state.stopped = True
+                    if ((sign == "crosswalk" or sign == "priority") and sign_area > 2000) or self.state.slowed:
+                        self.state.slowed = True
                         self.state.change_speed(self.state.max_v * 0.5, 5, sign)
                 else:
                     # --------- CONTROL SYS -------------------

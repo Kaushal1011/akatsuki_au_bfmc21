@@ -5,8 +5,7 @@ from time import time
 from src.lib.perception.lanekeephandle import LaneKeep as LaneKeepMethod
 from src.templates.workerprocess import WorkerProcess
 
-MAX_STEER = 17
-
+MAX_STEER = 23
 
 class LaneKeepingProcess(WorkerProcess):
     # ===================================== Worker process =========================================
@@ -60,16 +59,18 @@ class LaneKeepingProcess(WorkerProcess):
             try:
                 # Obtain image
                 i = time()
-                stamps, img = inP.recv()
-                # print("Time taken to recieve image", time()- i)
-                a = time()
-                # Apply image processing
-                val, outimage = self.lk(img)
-                angle = self.computeSteeringAnglePID(val)
+                if inP.poll(timeout=0.02):
+                    stamps, img = inP.recv()
+                    # print("Time taken to recieve image", time()- i)
+                    a = time()
+                    # Apply image processing
+                    val, outimage = self.lk(img)
+                    angle = self.computeSteeringAnglePID(val)
+                    self.outPs[0].send((angle, None))
+                    if len(outPs) > 1:
+                        self.outPs[1].send((angle, outimage))
 
-                for outP in outPs:
-                    outP.send((angle, outimage))
-                    # print("Sending from Lane Keeping")
+                        # print("Sending from Lane Keeping")
 
                 # print("Timetaken by LK: ", time() - a)
 

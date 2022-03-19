@@ -113,7 +113,7 @@ class CameraThread(ThreadWithStop):
         """Stream function that actually published the frames into the pipes. Certain
         processing(reshape) is done to the image format.
         """
-
+        
         while self._running:
 
             yield self._stream
