@@ -18,7 +18,7 @@ import math
 
 
 class CarState:
-    def __init__(self, max_v=0.0, dt=0.1, car_len=0.365) -> None:
+    def __init__(self, max_v=0.14, dt=0.1, car_len=0.365) -> None:
         self.steering_angle = 0.0
         self.det_intersection = False
         # TODO: get initial position from config IDK
@@ -40,7 +40,9 @@ class CarState:
         self.stopped = False
         self.slowed = False
         self.parking = False
+        self.parked = False
         self.stop_slow_start_time = None
+        self.should_park=True
 
     def update_pos(self):
         dt = time() - self.last_update_time
@@ -108,6 +110,7 @@ plan = PathPlanning()
 a = time()
 if config["preplan"] == False:
     coord_list, p_type, etype = plan.get_path(config["start_idx"], config["end_idx"])
+    pPC = Purest_Pursuit(coord_list)
 
 else:
     # preplanpath = joblib.load("../nbs/preplan.z")
@@ -131,22 +134,22 @@ else:
         (3.192618769936659, 2.002381602029436),
         (3.1697268696723078, 2.146978751551605),
         (3.1208636337525117, 2.2965185340365264),
-        (3.071424620664199, 2.448292183875666),
-        (3.0465564782777963, 2.599609817049711),
-        (3.0494334941971126, 2.7494483048050387),
-        (3.0507302101554803, 2.8993755087166564),
+        (3.171424620664199, 2.348292183875666),
+        (3.1565564782777963, 2.499609817049711),
+        (3.1594334941971126, 2.6494483048050387),
+        (3.1507302101554803, 2.753755087166564),
     ]
     p_type = ["int" for i in range(len(coord_list))]
     etype = [False for i in range(len(coord_list))]
     print("no. of points", len(coord_list))
     print("Using PREPLAN path")
+    pPC = Purest_Pursuit(coord_list, Lfc=0.5)
 
 if config["park"]:
     park_x = 2.119
     park_y = 2.09
     park_coord = give_perpendicular_park_pts(park_x, park_y)
 
-pPC = Purest_Pursuit(coord_list)
 # print("Time taken by Path Planning:", time() - a)
 
 
@@ -162,10 +165,13 @@ def controlsystem(vehicle: CarState, ind, Lf):
     return di
 
 
-def check_reached(tx, ty, x, y):
+def check_reached(tx, ty, x, y,parking=False):
     # d = math.sqrt((tx - x) ** 2 + (ty - y) ** 2)
     if math.sqrt((tx - x) ** 2 + (ty - y) ** 2) < 0.1:
         return True
+    if math.sqrt((tx - x) ** 2 + (ty - y) ** 2) < 0.235 and parking:
+        return True
+    print("Goal dist:",math.sqrt((tx - x) ** 2 + (ty - y) ** 2))
     return False
 
 
@@ -218,6 +224,7 @@ class DecisionMakingProcess(WorkerProcess):
         """
         use_self_loc = False
         sign, sign_area = None, 0
+        # last_angle, last_v = self.state.steering_angle, self.state.v
         while True:
             try:
                 c = time()
@@ -245,7 +252,9 @@ class DecisionMakingProcess(WorkerProcess):
                         sign, sign_area = inPs[idx].recv()
                         if sign is None:
                             self.state.stop_slow_start_time = None
-                            if self.state.last_release and ((time() - self.state.last_release) > 4):
+                            if self.state.last_release and (
+                                (time() - self.state.last_release) > 4
+                            ):
                                 self.state.release = False
                         # print(f"Time taken sD {(time() - t_sD):.2f}s {label}")
                         print(f"{sign} {sign_area}")
@@ -329,22 +338,47 @@ class DecisionMakingProcess(WorkerProcess):
 
                 # --------- GOAL STATE -------------------------
 
-                if (
-                    check_reached(pPC.cx[-1], pPC.cy[-1], self.state.x, self.state.y)
-                ):
+                if check_reached(pPC.cx[-1], pPC.cy[-1], self.state.x, self.state.y,self.state.parked):
                     # and not self.state.parking
-                    print("!!! Goal Reached !!!!")
-                    self.state.v = 0.0
-                    self.state.steering_angle = 0.0
+                    print("!!! Parked !!!!")
+                    if self.state.parked == False and self.state.should_park==True:
+                        self.state.parked = True
+                        self.state.v = -self.state.v
+                        rev = [
+                            (3.22, 2.60985613417526),
+                            (3.195056598310364, 2.5057786365701986),
+                            (3.163438268463328, 2.4081703605553306),
+                            (3.118470082301495, 2.323500527720851),
+                            (3.054092921646811, 2.257641527583271),
+                            (2.9711398784535596, 2.209785942245324),
+                            (2.8747672371145274, 2.174936392629301),
+                            (2.77019798888053, 2.1480308485577373),
+                        ]
+                        # new_coords = [i for i in zip(pPC.cx[::-1], pPC.cy[::-1])]
+                        pPC.reset_coord_list(rev, 0.5)
+                        # print(new_coords[:(int(len(new_coords)/2))])
+                    elif self.state.parked:
+                        print("OUT OF PARKING")
+                        self.state.v = 0.0
+                        self.state.steering_angle = 0.0
+                        coord_list_test, p_type, etype = plan.get_path(config["start_idx"], config["end_idx"])
+                        pPC.reset_coord_list(coord_list_test, 0.125)
+                        self.state.v = self.state.max_v
+                        self.state.should_park=False
+                    else:
+                        print("!!! Goal Reached !!!!")
+                        self.state.v = 0.0
+                        self.state.steering_angle = 0.0
+
                 # --------- STOP STATE -------------------
-                elif sign or self.state.slowed or self.state.stopped:
-                    # print(self.state.stopped,self.state.slowed, self.state.release )
-                    if (sign == "stop" and sign_area > 2000) or self.state.stopped:
-                        self.state.change_speed(0, 5, sign)
-                        self.state.stopped = True
-                    if ((sign == "crosswalk" or sign == "priority") and sign_area > 2000) or self.state.slowed:
-                        self.state.slowed = True
-                        self.state.change_speed(self.state.max_v * 0.5, 5, sign)
+                # elif sign or self.state.slowed or self.state.stopped:
+                #     # print(self.state.stopped,self.state.slowed, self.state.release )
+                #     if (sign == "stop" and sign_area > 2000) or self.state.stopped:
+                #         self.state.change_speed(0, 5, sign)
+                #         self.state.stopped = True
+                #     if ((sign == "crosswalk" or sign == "priority") and sign_area > 2000) or self.state.slowed:
+                #         self.state.slowed = True
+                #         self.state.change_speed(self.state.max_v * 0.5, 5, sign)
                 else:
                     # --------- CONTROL SYS -------------------
                     ind, Lf = pPC.search_target_index(self.state)
@@ -359,14 +393,18 @@ class DecisionMakingProcess(WorkerProcess):
                 # print(f"Current Behaviour : {p_type[ind-1]}")
                 # if no locsys use self localization
                 if len(inPs) < 3 or use_self_loc:
-                # print("Using self localization")
+                    # print("Using self localization")
                     self.state.update_pos()
-
-                print(
-                    f"({self.state.x:.3f}, {self.state.y:.3f}) {-self.state.steering_angle:.2f}, {self.state.v} {(time() - c):.2f}s"
-                )
+                try:
+                    print(
+                        f"({self.state.x:.3f}, {self.state.y:.3f}, {self.state.yaw:.2f}) -> {ind} {(pPC.cx[ind], pPC.cy[ind])} {-self.state.steering_angle:.2f}, {self.state.v} {(time() - c):.2f}s"
+                    )
+                except:
+                    print("index reset required")
+                # if self.state.steering_angle != last_angle or self.state.v != last_v:
                 for outP in outPs:
                     outP.send((-self.state.steering_angle, self.state.v))
+                    # last_angle, last_v = self.state.steering_angle, self.state.v
 
             except Exception as e:
                 print("Decision Process error:")

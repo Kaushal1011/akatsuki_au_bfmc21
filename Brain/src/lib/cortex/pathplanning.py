@@ -192,9 +192,9 @@ class PathPlanning:
 
 
 class Purest_Pursuit:
-    def __init__(self, coord_list):
+    def __init__(self, coord_list:List[Tuple[float, float]], Lfc=0.125):
         self.k = 0.01  # look forward gain
-        self.Lfc = 0.125  # [m] look-ahead distance
+        self.Lfc = Lfc  # [m] look-ahead distance
         self.Kp = 1.0  # speed proportional gain
         self.WB = 0.3  # [m] wheel base of vehicle
         self.cx, self.cy = zip(*coord_list)
@@ -228,7 +228,7 @@ class Purest_Pursuit:
                 distance_this_index = distance_next_index
             self.old_nearest_point_index = ind
 
-        Lf = self.k * state.v + self.Lfc  # update look ahead distance
+        Lf = self.k * abs(state.v) + self.Lfc  # update look ahead distance
 
         # search look ahead target point index
         while Lf > state.calc_distance(self.cx[ind], self.cy[ind]):
@@ -251,7 +251,11 @@ class Purest_Pursuit:
 
         delta = math.atan2(2.0 * self.WB * math.sin(alpha) / Lf, 1.0)
 
+        if state.v < 0:
+            return delta
+
         return delta
+
 
     def reset_coord_list(self, coord_list, Lfc):
         self.cx, self.cy = zip(*coord_list)
