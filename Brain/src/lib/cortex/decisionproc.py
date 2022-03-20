@@ -245,7 +245,7 @@ class DecisionMakingProcess(WorkerProcess):
                         sign, sign_area = inPs[idx].recv()
                         
                         # print(f"Time taken sD {(time() - t_sD):.2f}s {label}")
-                        print(f"{sign} :  {sign_area}")
+                        print(f"Detected: {sign} Area:  {sign_area}")
 
                 # locsys
                 t_loc = time()
@@ -331,23 +331,23 @@ class DecisionMakingProcess(WorkerProcess):
                 elif sign == "priority":
                     print("PRIORITY", priority_a.set(5))
                 elif sign == "crosswalk":
-                    print("CROSSWALK", crosswalk_a.set(10))
+                    print("CROSSWALK", crosswalk_a.set(40))
 
                 check_stop, _ = stop_a.state_check()
                 check_priority, _ = priority_a.state_check()
                 check_crosswalk, _ = crosswalk_a.state_check()
 
                 if check_stop:
-                    print("stop_astatecheck true")
+                    # print("stop_astatecheck true")
                     self.state.v = 0.0
                 elif check_priority:
-                    print("priority_astatecheck true")
+                    # print("priority_astatecheck true")
                     self.state.v = 0.5*self.state.max_v
                 elif check_crosswalk:
-                    print("crosswalk_astatecheck true")
+                    # print("crosswalk_astatecheck true")
                     self.state.v = 0
                 else:
-                    print("In Control Sys")
+                    # print("In Control Sys")
                     
                     self.state.v = self.state.max_v
                     # --------- CONTROL SYS -------------------
@@ -377,7 +377,7 @@ class DecisionMakingProcess(WorkerProcess):
                             (3.163438268463328, 2.4081703605553306),
                             (3.118470082301495, 2.323500527720851),
                             (3.054092921646811, 2.257641527583271),
-                            (2.9711398784535596, 1.869785942245324),
+                            (2.7711398784535596, 1.869785942245324),
                             # (2.8747672371145274, 2.174936392629301),
                             # (2.77019798888053, 2.1280308485577373),
                         ]

@@ -104,7 +104,7 @@ def check_cross(img, area_threshold: Tuple[int, int]):
             black_pix = abs(black_pix2 - black_pix1)
             b_pix = np.sum(croppedGray==0)
             print("black pix: ",b_pix)
-            if black_pix > 2450 and b_pix > 30:   
+            if black_pix > 2050 and b_pix > 30:   
                 return True, x, y, w, h
     return None,None,None,None,None
 
@@ -146,7 +146,7 @@ def check_park(img, area_threshold: Tuple[int, int]):
             black_pix = abs(black_pix2 - black_pix1)
             b_pix = np.sum(croppedGray==0)
             print("black_pix:", b_pix)
-            if black_pix <= 2300 and b_pix < 7:   
+            if black_pix <= 2000 and b_pix < 7:   
                 return True, x, y, w, h
     return None,None,None,None,None
 
@@ -155,10 +155,10 @@ def check_park(img, area_threshold: Tuple[int, int]):
 
 def detections(img, label):
     text = "not detected"
-    cs,csx,csy,csw,csh=check_stop(img,(2000,25000))
+    cs,csx,csy,csw,csh=check_stop(img,(1600,25000))
     cp,cpx,cpy,cpw,cph=check_priority(img,(600,25000))
-    cpa,cpax,cpay,cpaw,cpah=check_park(img,(1800,25000))
-    cc,ccx,ccy,ccw,cch=check_cross(img,(1800,25000))
+    cpa,cpax,cpay,cpaw,cpah=check_park(img,(1500,25000))
+    cc,ccx,ccy,ccw,cch=check_cross(img,(1500,25000))
     box,text,location=None,None,None
     if cs:
         box = [(csx, csy), (csx + csw, csy + csh)]
