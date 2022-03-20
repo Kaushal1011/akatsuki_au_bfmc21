@@ -20,7 +20,8 @@ stop_a = Action("stop", 4)
 turn_a = Action("turn", 0)
 
 class CarState:
-    def __init__(self, max_v=0.14, dt=0.1, car_len=0.365) -> None:
+    
+    def __init__(self, max_v=0.125, dt=0.1, car_len=0.365) -> None:
         self.steering_angle = 0.0
         self.det_intersection = False
         # TODO: get initial position from config IDK
@@ -220,7 +221,7 @@ class DecisionMakingProcess(WorkerProcess):
         """
         sign, sign_area = None, 0
         last_angle, last_velocity = -23, -0.001
-        
+        detected_intersection = False
         while True:
             try:
                 c = time()
@@ -232,7 +233,8 @@ class DecisionMakingProcess(WorkerProcess):
 
                 t_id = time()
                 idx = self.inPsnames.index("iD")
-                detected_intersection = inPs[idx].recv()
+                if inPs[idx].poll(timeout=0.05):
+                    detected_intersection = inPs[idx].recv()
                 # print(f"Detected {detected_intersection}")
 
                 x = self.state.x
@@ -244,14 +246,10 @@ class DecisionMakingProcess(WorkerProcess):
                 t_sD = time()
                 if "sD" in self.inPsnames:
                     idx = self.inPsnames.index("sD")
-                    if inPs[idx].poll(timeout=0.1):
+                    if inPs[idx].poll(timeout=0.05):
                         sign, sign_area = inPs[idx].recv()
-                        if sign is None:
-                            self.state.stop_slow_start_time = None
-                            if (time() - self.state.last_release) > 4:
-                                self.state.release = False
                         # print(f"Time taken sD {(time() - t_sD):.2f}s {label}")
-                        print(f"{sign} {sign_area}")
+                        print(f"Detected {sign} sign | Area:{sign_area}")
 
                 # # locsys
                 # t_loc = time()
@@ -293,7 +291,7 @@ class DecisionMakingProcess(WorkerProcess):
                 # imu
                 if "imu" in self.inPsnames:
                     idx = self.inPsnames.index("imu")
-                    if inPs[idx].poll(timeout=0.1):
+                    if inPs[idx].poll(timeout=0.05):
                         imu_data = inPs[idx].recv()
                         yaw_imu = imu_data["yaw"]
                         # print("IMU:", imu_data)
@@ -323,20 +321,11 @@ class DecisionMakingProcess(WorkerProcess):
                 # if p_type[ind - 1] == "int":
 
                 # --------- SIGN -----------------------------
-                if sign or self.state.slowed or self.state.stopped:
-                    print(self.state.stopped, self.state.slowed, self.state.release)
-                    if sign == "stop" or self.state.stopped:
-                        self.state.change_speed(0, 5, sign)
-                        self.state.stopped = True
-
-                    if sign == "priority" or self.state.slowed:
-                        self.state.slowed = True
-                        self.state.change_speed(self.state.max_v * 0.5, 5, sign)
 
                 # --------- INTERSECTION ----------------------
-                elif detected_intersection:
-                    print("SET",stop_a.set(10))
-
+                if detected_intersection:
+                    stop_a.set(4)
+                
                 # --------- LANE KEEPING -------------------------
                 else:
                     self.state.steering_angle = 0
@@ -344,30 +333,32 @@ class DecisionMakingProcess(WorkerProcess):
 
                 check_stop, turn = stop_a.state_check()
                 if check_stop:
-                    print("stop_astatecheck true")
+                    # print("stop_astatecheck true")
                     self.state.v = 0.0
                 elif turn:
-                    print("stop_astatecheck false")
+                    # print("stop_astatecheck false")
                     self.state.v = self.state.max_v
-                    turn_a.set(7)
+                    turn_a.set(11)
                 
                 if turn_a.state_check()[0]:
-                    self.state.steering_angle = -16
+                    # print("Taking turn")
+                    self.state.steering_angle = -15
                 else:
                     self.state.steering_angle = lk_angle
-                    print("Lane Keeping")
+                    # print("Lane Keeping")
                     
                 print(
-                    f"({self.state.x:.3f}, {self.state.y:.3f}) {-self.state.steering_angle:.2f}, {self.state.v} {(time() - c):.2f}s"
+                    f"({self.state.x:.3f}, {self.state.y:.3f}) Angle:{self.state.steering_angle:.2f}, Speed:{self.state.v} Time taken:{(time() - c):.2f}s"
                 )
                 
                 self.state.steering_angle = round(self.state.steering_angle)
 
-                if last_angle != self.state.steering_angle:
-                    last_angle = self.state.steering_angle
+                #if last_angle != self.state.steering_angle or last_velocity != self.state.v:
+                #    last_angle = self.state.steering_angle
                 #    last_velocity = self.state.v
-                    for outP in outPs:
-                        outP.send((self.state.steering_angle, self.state.v))
+                #    last_velocity = self.state.v
+                for outP in outPs:
+                    outP.send((self.state.steering_angle, self.state.v))
 
             except Exception as e:
                 print("Decision Process error:")

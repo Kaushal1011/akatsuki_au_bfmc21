@@ -64,11 +64,11 @@ class LaneKeep:
         adpt_Th_C: int = 4,
         canny_thres1: int = 50,
         canny_thres2: int = 150,
-        luroi: float = 0.15,
-        ruroi: float = 0.85,
+        luroi: float = 0.10,
+        ruroi: float = 0.90,
         lbroi: float = 0,
         rbroi: float = 1,
-        hroi: float = 0.45,
+        hroi: float = 0.30,
         broi: float = 0,
     ):
         """Define LaneKeeping pipeline and parameters
@@ -194,7 +194,7 @@ class LaneKeep:
         )
 
         white_upper = np.array(
-            [100,25,255] # 100,25,255
+            [90,25,255] # 100,25,255
         )
 
         white_mask = cv2.inRange(hls, white_lower, white_upper)
@@ -427,7 +427,7 @@ def perspectiveWarp(
     return birdseye, birdseyeLeft, birdseyeRight, minv
 
 
-def slide_window_search(inpimage, histogram, margin=150):
+def slide_window_search(inpimage, histogram, margin=60):
     """
     returns left and right lane line slope and intercept by employing a sliding window search and Lin Reg
     requires histogram of white pixels
@@ -567,6 +567,7 @@ def compute_steering_angle_lanelinecoord(frame, lane_lines):
         # print("Only detected one lane line, just follow it. %s" % lane_lines[0])
         x1, _, x2, _ = lane_lines[0][0]
         x_offset = x2 - x1
+        x_offset=1.2*x_offset
     else:
         _, _, left_x2, _ = lane_lines[0][0]
         _, _, right_x2, _ = lane_lines[1][0]
