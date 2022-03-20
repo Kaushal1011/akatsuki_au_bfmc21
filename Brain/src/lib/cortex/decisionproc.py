@@ -13,19 +13,24 @@ from src.lib.cortex.pathplanning import (
 )
 from src.templates.workerprocess import WorkerProcess
 from time import time
-
+import joblib
+from src.lib.cortex.actions import Action
 import math
 
 
+stop_a = Action("stop", 4)
+priority_a = Action("priority", 4)
+crosswalk_a = Action("crosswalk", 4)
+
 class CarState:
-    def __init__(self, max_v=0.0, dt=0.1, car_len=0.365) -> None:
+    def __init__(self, max_v=0.28, dt=0.1, car_len=0.365) -> None:
         self.steering_angle = 0.0
         self.det_intersection = False
         # TODO: get initial position from config IDK
-        self.x = 0.75
+        self.x = 1.6
         self.max_v = max_v
         # 0.75, 4.8
-        self.y = 4.8
+        self.y = 2.5
         self.yaw = 0
         self.tl = {}
         self.v = max_v
@@ -120,30 +125,15 @@ else:
     # p_type = p_type[::20][:10]
     # etype = preplanpath["etype"]
     # etype = etype[::20][:10]
-    coord_list = [
-        (2.1199999999999997, 2.1199999999999997),
-        (2.2072555826316647, 1.9642686239127372),
-        (2.2987501548820624, 1.8198978465696687),
-        (2.398722706369926, 1.6982482667149883),
-        (2.511412226713987, 1.6106804830928898),
-        (2.6410577055329796, 1.5685550944475672),
-        (2.7895393410766838, 1.581190302937868),
-        (2.9415339509365492, 1.6430084931545883),
-        (3.0740966676307324, 1.7418326938602926),
-        (3.1642485373345357, 1.8654564196217684),
-        (3.192618769936659, 2.002381602029436),
-        (3.1697268696723078, 2.146978751551605),
-        (3.1208636337525117, 2.2965185340365264),
-        (3.171424620664199, 2.348292183875666),
-        (3.1565564782777963, 2.499609817049711),
-        (3.1594334941971126, 2.6494483048050387),
-        (3.1507302101554803, 2.753755087166564),
-    ]
-    p_type = ["int" for i in range(len(coord_list))]
-    etype = [False for i in range(len(coord_list))]
+    path=joblib.load("./src/data/mid_course.z")
+    coord_list=path[0]
+    p_type=path[1]
+    etype=path[2]
+    # print(coord_list)
+   
     print("no. of points", len(coord_list))
     print("Using PREPLAN path")
-    pPC = Purest_Pursuit(coord_list, Lfc=0.5)
+    pPC = Purest_Pursuit(coord_list, Lfc=0.125)
 
 if config["park"]:
     park_x = 2.119
@@ -169,7 +159,7 @@ def check_reached(tx, ty, x, y,parking=False):
     # d = math.sqrt((tx - x) ** 2 + (ty - y) ** 2)
     if math.sqrt((tx - x) ** 2 + (ty - y) ** 2) < 0.1:
         return True
-    if math.sqrt((tx - x) ** 2 + (ty - y) ** 2) < 0.235 and parking:
+    if math.sqrt((tx - x) ** 2 + (ty - y) ** 2) < 0.20 and parking:
         return True
     print("Goal dist:",math.sqrt((tx - x) ** 2 + (ty - y) ** 2))
     return False
@@ -225,6 +215,9 @@ class DecisionMakingProcess(WorkerProcess):
         use_self_loc = False
         sign, sign_area = None, 0
         # last_angle, last_v = self.state.steering_angle, self.state.v
+        # what is this hard coding initial loc
+        self.state.x=pPC.cx[0]
+        self.state.y=pPC.cy[0]
         while True:
             try:
                 c = time()
@@ -250,14 +243,9 @@ class DecisionMakingProcess(WorkerProcess):
                     idx = self.inPsnames.index("sD")
                     if inPs[idx].poll(timeout=0.1):
                         sign, sign_area = inPs[idx].recv()
-                        if sign is None:
-                            self.state.stop_slow_start_time = None
-                            if self.state.last_release and (
-                                (time() - self.state.last_release) > 4
-                            ):
-                                self.state.release = False
+                        
                         # print(f"Time taken sD {(time() - t_sD):.2f}s {label}")
-                        print(f"{sign} {sign_area}")
+                        print(f"{sign} :  {sign_area}")
 
                 # locsys
                 t_loc = time()
@@ -287,7 +275,7 @@ class DecisionMakingProcess(WorkerProcess):
                         elif "radA" in loc.keys():
                             yaw = 2 * math.pi - (loc["radA"] + math.pi)
                     else:
-                        use_self_loc = True
+                        use_self_loc = False
                     # print(f"Time taken loc {(time() - t_loc):.2f}s {loc}")
 
                 # TODO: add back
@@ -325,16 +313,56 @@ class DecisionMakingProcess(WorkerProcess):
                 # print(states_l)
                 # print(self.state)
                 # print("searched")
-                # print(f"({x}, {y}) -> {ind}, {coord_list[ind]}")
+                
                 # if p_type[ind - 1] == "int":
 
                 # ------- SWITCH PARKING STATE ---------------
                 if config["park"] and check_reached(
                     park_x, park_y, self.state.x, self.state.y
                 ):
+                    print("Switched to Parking")
                     pPC.reset_coord_list(park_coord,0.5)
-                    self.state.v = 0.5 * self.state.max_v
+                    # self.state.max_v = 0.5 * self.state.max_v
+                    self.state.v = self.state.max_v
                     self.state.parking = True
+
+                # --------- SET STATE FOR SIGN -------------------
+                if sign == "stop":
+                    print("STOPPING",stop_a.set(5))
+                elif sign == "priority":
+                    print("PRIORITY", priority_a.set(5))
+                elif sign == "crosswalk":
+                    print("CROSSWALK", crosswalk_a.set(10))
+
+                check_stop, _ = stop_a.state_check()
+                check_priority, _ = priority_a.state_check()
+                check_crosswalk, _ = crosswalk_a.state_check()
+
+                if check_stop:
+                    print("stop_astatecheck true")
+                    self.state.v = 0.0
+                elif check_priority:
+                    print("priority_astatecheck true")
+                    self.state.v = 0.5*self.state.max_v
+                elif check_crosswalk:
+                    print("crosswalk_astatecheck true")
+                    self.state.v = 0
+                else:
+                    print("In Control Sys")
+                    
+                    self.state.v = self.state.max_v
+                    # --------- CONTROL SYS -------------------
+                    ind, Lf = pPC.search_target_index(self.state)
+                    self.state.steering_angle = controlsystem(self.state, ind, Lf)
+                    print(f"({self.state.x}, {self.state.y}) -> {ind}, {coord_list[ind]}")
+                
+                    # --------- LANE KEEPING ------------------
+                    if p_type[ind - 1] == "lk":
+                        if abs(self.state.steering_angle - lk_angle) < 30:
+                            self.state.steering_angle = lk_angle
+                        # else:
+                        #     print("lane keeping failed")
+
 
                 # --------- GOAL STATE -------------------------
 
@@ -343,7 +371,7 @@ class DecisionMakingProcess(WorkerProcess):
                     print("!!! Parked !!!!")
                     if self.state.parked == False and self.state.should_park==True:
                         self.state.parked = True
-                        self.state.v = -self.state.v
+                        self.state.max_v = - self.state.max_v
                         rev = [
                             (3.22, 2.60985613417526),
                             (3.195056598310364, 2.5057786365701986),
@@ -352,7 +380,7 @@ class DecisionMakingProcess(WorkerProcess):
                             (3.054092921646811, 2.257641527583271),
                             (2.9711398784535596, 2.209785942245324),
                             (2.8747672371145274, 2.174936392629301),
-                            (2.77019798888053, 2.1480308485577373),
+                            (2.77019798888053, 2.1280308485577373),
                         ]
                         # new_coords = [i for i in zip(pPC.cx[::-1], pPC.cy[::-1])]
                         pPC.reset_coord_list(rev, 0.5)
@@ -361,8 +389,9 @@ class DecisionMakingProcess(WorkerProcess):
                         print("OUT OF PARKING")
                         self.state.v = 0.0
                         self.state.steering_angle = 0.0
-                        coord_list_test, p_type, etype = plan.get_path(config["start_idx"], config["end_idx"])
-                        pPC.reset_coord_list(coord_list_test, 0.125)
+                        #coord_list_test, p_type, etype = plan.get_path(config["start_idx"], config["end_idx"])
+                        pPC.reset_coord_list(coord_list, 0.125)
+                        self.state.max_v =  - self.state.max_v
                         self.state.v = self.state.max_v
                         self.state.should_park=False
                         self.state.parked=False
@@ -370,35 +399,17 @@ class DecisionMakingProcess(WorkerProcess):
                         print("!!! Goal Reached !!!!")
                         self.state.v = 0.0
                         self.state.steering_angle = 0.0
-
-                # --------- STOP STATE -------------------
-                # elif sign or self.state.slowed or self.state.stopped:
-                #     # print(self.state.stopped,self.state.slowed, self.state.release )
-                #     if (sign == "stop" and sign_area > 2000) or self.state.stopped:
-                #         self.state.change_speed(0, 5, sign)
-                #         self.state.stopped = True
-                #     if ((sign == "crosswalk" or sign == "priority") and sign_area > 2000) or self.state.slowed:
-                #         self.state.slowed = True
-                #         self.state.change_speed(self.state.max_v * 0.5, 5, sign)
-                else:
-                    # --------- CONTROL SYS -------------------
-                    ind, Lf = pPC.search_target_index(self.state)
-                    self.state.steering_angle = controlsystem(self.state, ind, Lf)
-                    # --------- LANE KEEPING ------------------
-                    # if p_type[ind - 1] == "lk":
-                    #     if abs(self.state.steering_angle - lk_angle) < 30:
-                    #         self.state.steering_angle = lk_angle
-                    #     else:
-                    #         print("lane keeping failed")
-
+                
                 # print(f"Current Behaviour : {p_type[ind-1]}")
                 # if no locsys use self localization
                 if len(inPs) < 3 or use_self_loc:
                     # print("Using self localization")
                     self.state.update_pos()
+                
+                
                 try:
                     print(
-                        f"({self.state.x:.3f}, {self.state.y:.3f}, {self.state.yaw:.2f}) -> {ind} {(pPC.cx[ind], pPC.cy[ind])} {-self.state.steering_angle:.2f}, {self.state.v} {(time() - c):.2f}s"
+                        f"({self.state.x:.3f}, {self.state.y:.3f}, {self.state.yaw:.2f}) {-self.state.steering_angle:.2f}, {self.state.v} {(time() - c):.2f}s"
                     )
                 except:
                     print("index reset required")

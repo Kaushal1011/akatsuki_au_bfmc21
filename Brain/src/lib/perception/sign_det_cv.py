@@ -41,8 +41,8 @@ def check_stop(img, area_threshold: Tuple[int, int]):
 def check_priority(img, area_threshold: Tuple[int, int]):
     imgContour = img.copy()
     hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
-    yellow1 = np.array([18,235,75])
-    yellow2 = np.array([28,255,85])
+    yellow1 = np.array([18,170,75])
+    yellow2 = np.array([28,255,255])
     mask = cv2.inRange(hsv, yellow1, yellow2)
     imgRes = cv2.bitwise_and(img, img, mask=mask)
     blur = cv2.GaussianBlur(imgRes, (7,7), 1)
@@ -98,11 +98,12 @@ def check_cross(img, area_threshold: Tuple[int, int]):
 
             cropped_contour = img[y:y+h,x:x+w]
             croppedGray = cv2.cvtColor(cropped_contour, cv2.COLOR_BGR2GRAY)
-            black_pix = np.sum(croppedGray == 0)
-            gray_pix = np.sum(croppedGray >= 128)
+
+            black_pix1 = np.sum(croppedGray>=10)
+            black_pix2 = np.sum(croppedGray<=12)
+            black_pix = abs(black_pix2 - black_pix1)
             print("black pix: ",black_pix)
-            print("white pix: ",gray_pix)
-            if black_pix >= 20 and gray_pix == 0:   
+            if black_pix <= 1300:   
                 return True, x, y, w, h
     return None,None,None,None,None
 
@@ -139,11 +140,11 @@ def check_park(img, area_threshold: Tuple[int, int]):
 
             cropped_contour = img[y:y+h,x:x+w]
             croppedGray = cv2.cvtColor(cropped_contour, cv2.COLOR_BGR2GRAY)
-            black_pix = np.sum(croppedGray == 0)
-            gray_pix = np.sum(croppedGray >= 128)
+            black_pix1 = np.sum(croppedGray>=10)
+            black_pix2 = np.sum(croppedGray<=12)
+            black_pix = abs(black_pix2 - black_pix1)
             print("black_pix:", black_pix)
-            print("white pix: ",gray_pix)
-            if black_pix < 15 and gray_pix > 0:   
+            if black_pix >= 1500:   
                 return True, x, y, w, h
     return None,None,None,None,None
 
@@ -152,10 +153,10 @@ def check_park(img, area_threshold: Tuple[int, int]):
 
 def detections(img, label):
     text = "not detected"
-    cs,csx,csy,csw,csh=check_stop(img,(700,25000))
-    cp,cpx,cpy,cpw,cph=check_priority(img,(400,25000))
-    cpa,cpax,cpay,cpaw,cpah=check_park(img,(700,25000))
-    cc,ccx,ccy,ccw,cch=check_cross(img,(700,25000))
+    cs,csx,csy,csw,csh=check_stop(img,(1300,25000))
+    cp,cpx,cpy,cpw,cph=check_priority(img,(600,25000))
+    cpa,cpax,cpay,cpaw,cpah=check_park(img,(1400,25000))
+    cc,ccx,ccy,ccw,cch=check_cross(img,(1200,25000))
     box,text,location=None,None,None
     if cs:
         box = [(csx, csy), (csx + csw, csy + csh)]
@@ -214,7 +215,7 @@ if __name__ == "__main__":
     cap.set(3, frameWidth)
     cap.set(4, frameHeight)
     interpreter, labels = setup()
-    frame = cv2.imread("/home/b0nzo/akatsuki_au_bfmc21/nbs/stop.png")
+    frame = cv2.imread("/home/b0nzo/akatsuki_au_bfmc21/nbs/crosswalk.jpeg")
     frame = frame[0:np.int32(frame.shape[0]/2), np.int32(frame.shape[1]/2):np.int32(frame.shape[1])]
     while True:
         out = detect_signs(frame, interpreter, labels)

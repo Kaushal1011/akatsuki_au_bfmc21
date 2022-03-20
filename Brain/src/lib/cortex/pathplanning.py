@@ -2,7 +2,7 @@ import heapq
 import math
 from typing import List, Tuple
 
-from scipy.interpolate import interp1d
+# from scipy.interpolate import interp1d
 from src.lib.cortex import cubic_spline_planner
 import networkx as nx
 import numpy as np
@@ -185,14 +185,17 @@ class PathPlanning:
                 
                 i = np.arange(len(x))
 
-                # 5x the original number of points
-                interp_i = np.linspace(0, i.max(), 5 * i.max())
+                cx,cy=cubic_spline_planner.calc_spline_course(x,y,0.15)
 
-                xi = interp1d(i, x, kind='quadratic')(interp_i)
-                yi = interp1d(i, y, kind='quadratic')(interp_i)
+
+                # # 5x the original number of points
+                # interp_i = np.linspace(0, i.max(), 5 * i.max())
+
+                # xi = interp1d(i, x, kind='quadratic')(interp_i)
+                # yi = interp1d(i, y, kind='quadratic')(interp_i)
                 
-                for i in range(len(xi)):
-                    coordlist_new.append((xi[i],yi[i]))
+                for i in range(len(cx)):
+                    coordlist_new.append((cx[i],cy[i]))
                     ptype_new.insert(count+sizeincrease,"int")
                     etype_new.insert(count+sizeincrease,False)
                     sizeincrease+=1
