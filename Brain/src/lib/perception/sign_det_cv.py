@@ -102,8 +102,9 @@ def check_cross(img, area_threshold: Tuple[int, int]):
             black_pix1 = np.sum(croppedGray>=10)
             black_pix2 = np.sum(croppedGray<=12)
             black_pix = abs(black_pix2 - black_pix1)
-            print("black pix: ",black_pix)
-            if black_pix <= 1300:   
+            b_pix = np.sum(croppedGray==0)
+            print("black pix: ",b_pix)
+            if black_pix > 2450 and b_pix > 30:   
                 return True, x, y, w, h
     return None,None,None,None,None
 
@@ -143,8 +144,9 @@ def check_park(img, area_threshold: Tuple[int, int]):
             black_pix1 = np.sum(croppedGray>=10)
             black_pix2 = np.sum(croppedGray<=12)
             black_pix = abs(black_pix2 - black_pix1)
-            print("black_pix:", black_pix)
-            if black_pix >= 1500:   
+            b_pix = np.sum(croppedGray==0)
+            print("black_pix:", b_pix)
+            if black_pix <= 2300 and b_pix < 7:   
                 return True, x, y, w, h
     return None,None,None,None,None
 
@@ -153,10 +155,10 @@ def check_park(img, area_threshold: Tuple[int, int]):
 
 def detections(img, label):
     text = "not detected"
-    cs,csx,csy,csw,csh=check_stop(img,(1300,25000))
+    cs,csx,csy,csw,csh=check_stop(img,(2000,25000))
     cp,cpx,cpy,cpw,cph=check_priority(img,(600,25000))
-    cpa,cpax,cpay,cpaw,cpah=check_park(img,(1400,25000))
-    cc,ccx,ccy,ccw,cch=check_cross(img,(1200,25000))
+    cpa,cpax,cpay,cpaw,cpah=check_park(img,(1800,25000))
+    cc,ccx,ccy,ccw,cch=check_cross(img,(1800,25000))
     box,text,location=None,None,None
     if cs:
         box = [(csx, csy), (csx + csw, csy + csh)]
@@ -166,14 +168,14 @@ def detections(img, label):
         box = [(cpx, cpy), (cpx + cpw, cpy + cph)]
         location = cpx, cpy
         text = "priority"
-    elif cc:
-        box = [(ccx, ccy), (ccx + ccw, ccy + cch)]
-        location = ccx, ccy
-        text = "crosswalk"
     elif cpa:
         box = [(cpax, cpay), (cpax + cpaw, cpay + cpah)]
         location = cpax, cpay
         text = "parking"
+    elif cc:
+        box = [(ccx, ccy), (ccx + ccw, ccy + cch)]
+        location = ccx, ccy
+        text = "crosswalk"
     else:
         box = [(0,0), (0, 0)]
         location = 0, 0

@@ -133,7 +133,7 @@ else:
    
     print("no. of points", len(coord_list))
     print("Using PREPLAN path")
-    pPC = Purest_Pursuit(coord_list, Lfc=0.125)
+    pPC = Purest_Pursuit(coord_list, Lfc=0.2)
 
 if config["park"]:
     park_x = 2.119
@@ -157,9 +157,9 @@ def controlsystem(vehicle: CarState, ind, Lf):
 
 def check_reached(tx, ty, x, y,parking=False):
     # d = math.sqrt((tx - x) ** 2 + (ty - y) ** 2)
-    if math.sqrt((tx - x) ** 2 + (ty - y) ** 2) < 0.1:
+    if math.sqrt((tx - x) ** 2 + (ty - y) ** 2) < 0.15:
         return True
-    if math.sqrt((tx - x) ** 2 + (ty - y) ** 2) < 0.20 and parking:
+    if math.sqrt((tx - x) ** 2 + (ty - y) ** 2) < 0.15 and parking:
         return True
     print("Goal dist:",math.sqrt((tx - x) ** 2 + (ty - y) ** 2))
     return False
@@ -216,8 +216,8 @@ class DecisionMakingProcess(WorkerProcess):
         sign, sign_area = None, 0
         # last_angle, last_v = self.state.steering_angle, self.state.v
         # what is this hard coding initial loc
-        self.state.x=pPC.cx[0]
-        self.state.y=pPC.cy[0]
+        self.state.x=None
+        self.state.y=None
         while True:
             try:
                 c = time()
@@ -252,17 +252,16 @@ class DecisionMakingProcess(WorkerProcess):
                 if "loc" in self.inPsnames:
                     idx = self.inPsnames.index("loc")
                     if self.locsys_first:
-                        if inPs[idx].poll(timeout=0.3):
-                            loc = inPs[idx].recv()
+                        loc = inPs[idx].recv()
 
-                            x = loc["posA"]
-                            y = loc["posB"]
-                            if "rotA" in loc.keys():
-                                yaw = 2 * math.pi - (loc["rotA"] + math.pi)
-                            elif "radA" in loc.keys():
-                                yaw = 2 * math.pi - (loc["radA"] + math.pi)
+                        x = loc["posA"]
+                        y = loc["posB"]
+                        if "rotA" in loc.keys():
+                            yaw = 2 * math.pi - (loc["rotA"] + math.pi)
+                        elif "radA" in loc.keys():
+                            yaw = 2 * math.pi - (loc["radA"] + math.pi)
 
-                            self.locsys_first = False
+                        self.locsys_first = False
                         use_self_loc = False
 
                     if inPs[idx].poll(timeout=0.1):
@@ -358,7 +357,7 @@ class DecisionMakingProcess(WorkerProcess):
                 
                     # --------- LANE KEEPING ------------------
                     if p_type[ind - 1] == "lk":
-                        if abs(self.state.steering_angle - lk_angle) < 30:
+                        if abs(self.state.steering_angle - lk_angle) < 23:
                             self.state.steering_angle = lk_angle
                         # else:
                         #     print("lane keeping failed")
@@ -371,16 +370,16 @@ class DecisionMakingProcess(WorkerProcess):
                     print("!!! Parked !!!!")
                     if self.state.parked == False and self.state.should_park==True:
                         self.state.parked = True
-                        self.state.max_v = - self.state.max_v
+                        self.state.max_v = - self.state.max_v / 2
                         rev = [
                             (3.22, 2.60985613417526),
                             (3.195056598310364, 2.5057786365701986),
                             (3.163438268463328, 2.4081703605553306),
                             (3.118470082301495, 2.323500527720851),
                             (3.054092921646811, 2.257641527583271),
-                            (2.9711398784535596, 2.209785942245324),
-                            (2.8747672371145274, 2.174936392629301),
-                            (2.77019798888053, 2.1280308485577373),
+                            (2.9711398784535596, 1.869785942245324),
+                            # (2.8747672371145274, 2.174936392629301),
+                            # (2.77019798888053, 2.1280308485577373),
                         ]
                         # new_coords = [i for i in zip(pPC.cx[::-1], pPC.cy[::-1])]
                         pPC.reset_coord_list(rev, 0.5)
@@ -390,8 +389,8 @@ class DecisionMakingProcess(WorkerProcess):
                         self.state.v = 0.0
                         self.state.steering_angle = 0.0
                         #coord_list_test, p_type, etype = plan.get_path(config["start_idx"], config["end_idx"])
-                        pPC.reset_coord_list(coord_list, 0.125)
-                        self.state.max_v =  - self.state.max_v
+                        pPC.reset_coord_list(coord_list, 0.2)
+                        self.state.max_v =  -self.state.max_v*2
                         self.state.v = self.state.max_v
                         self.state.should_park=False
                         self.state.parked=False
