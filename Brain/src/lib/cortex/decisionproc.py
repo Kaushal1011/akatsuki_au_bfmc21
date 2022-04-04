@@ -23,7 +23,7 @@ priority_a = Action("priority", 4)
 crosswalk_a = Action("crosswalk", 4)
 
 class CarState:
-    def __init__(self, max_v=0.28, dt=0.1, car_len=0.365) -> None:
+    def __init__(self, max_v=0.0, dt=0.1, car_len=0.365) -> None:
         self.steering_angle = 0.0
         self.det_intersection = False
         # TODO: get initial position from config IDK
