@@ -31,58 +31,60 @@ import numpy as np
 import time
 
 from src.templates.threadwithstop import ThreadWithStop
+from multiprocessing import shared_memory
 
-#================================ CAMERA PROCESS =========================================
+shm = shared_memory.SharedMemory(name="shared_frame", create=True, size=921600)
+
+
+# ================================ CAMERA PROCESS =========================================
 class CameraThread(ThreadWithStop):
-    
-    #================================ CAMERA =============================================
+
+    # ================================ CAMERA =============================================
     def __init__(self, outPs):
-        """The purpose of this thread is to setup the camera parameters and send the result to the CameraProcess. 
+        """The purpose of this thread is to setup the camera parameters and send the result to the CameraProcess.
         It is able also to record videos and save them locally. You can do so by setting the self.RecordMode = True.
-        
+
         Parameters
         ----------
         outPs : list(Pipes)
             the list of pipes were the images will be sent
         """
-        super(CameraThread,self).__init__()
+        super(CameraThread, self).__init__()
         self.daemon = True
 
-
         # streaming options
-        self._stream      =   io.BytesIO()
+        self._stream = io.BytesIO()
 
-        self.recordMode   =   False
-        
-        #output 
-        self.outPs        =   outPs
+        self.recordMode = False
+        self.shm = shm
+        self.shared_frame = np.ndarray((480, 640, 3), dtype=np.uint8, buffer=shm.buf)
 
-    #================================ RUN ================================================
+        # output
+        self.outPs = outPs
+
+    # ================================ RUN ================================================
     def run(self):
-        """Apply the initializing methods and start the thread. 
-        """
+        """Apply the initializing methods and start the thread."""
         self._init_camera()
-        
+
         # record mode
         if self.recordMode:
-            self.camera.start_recording('picam'+ self._get_timestamp()+'.h264',format='h264')
+            self.camera.start_recording(
+                "picam" + self._get_timestamp() + ".h264", format="h264"
+            )
 
         # Sets a callback function for every unpacked frame
         self.camera.capture_sequence(
-                                    self._streams(), 
-                                    use_video_port  =   True, 
-                                    format          =   'rgb',
-                                    resize          =   self.imgSize)
+            self._streams(), use_video_port=True, format="rgb", resize=self.imgSize
+        )
         # record mode
         if self.recordMode:
             self.camera.stop_recording()
-     
 
-    #================================ INIT CAMERA ========================================
+    # ================================ INIT CAMERA ========================================
     def _init_camera(self):
-        """Init the PiCamera and its parameters
-        """
-        
+        """Init the PiCamera and its parameters"""
+
         # this how the firmware works.
         # the camera has to be imported here
         from picamera import PiCamera
@@ -91,50 +93,47 @@ class CameraThread(ThreadWithStop):
         self.camera = PiCamera()
 
         # camera settings
-        self.camera.resolution      =   (1640,1232)
-        self.camera.framerate       =   15
+        self.camera.resolution = (1640, 1232)
+        self.camera.framerate = 15
 
-        self.camera.brightness      =   50
-        self.camera.shutter_speed   =   1200
-        self.camera.contrast        =   0
-        self.camera.iso             =   0 # auto
-        
+        self.camera.brightness = 50
+        self.camera.shutter_speed = 1200
+        self.camera.contrast = 0
+        self.camera.iso = 0  # auto
 
-        self.imgSize                =   (640, 480)    # the actual image size
+        self.imgSize = (640, 480)  # the actual image size
 
     # ===================================== GET STAMP ====================================
     def _get_timestamp(self):
         stamp = time.gmtime()
         res = str(stamp[0])
         for data in stamp[1:6]:
-            res += '_' + str(data)  
+            res += "_" + str(data)
 
         return res
 
-    #================================ STREAMS ============================================
+    # ================================ STREAMS ============================================
     def _streams(self):
-        """Stream function that actually published the frames into the pipes. Certain 
-        processing(reshape) is done to the image format. 
+        """Stream function that actually published the frames into the pipes. Certain
+        processing(reshape) is done to the image format.
         """
 
         while self._running:
-            
+
             yield self._stream
             self._stream.seek(0)
             data = self._stream.read()
 
             # read and reshape from bytes to np.array
-            data  = np.frombuffer(data, dtype=np.uint8)
-            data  = np.reshape(data, (480, 640, 3))
+            data = np.frombuffer(data, dtype=np.uint8)
+            frame = np.reshape(data, (480, 640, 3))
+            self.shared_frame = frame.copy()
             stamp = time.time()
 
             # output image and time stamp
             # Note: The sending process can be blocked, when doesn't exist any consumer process and it reaches the limit size.
             for outP in self.outPs:
-                outP.send([[stamp], data])
+                outP.send((stamp, None))
 
-            
             self._stream.seek(0)
             self._stream.truncate()
-
-
