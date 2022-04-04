@@ -1,3 +1,9 @@
 RTIMULib
 picamera
 pyserial
+numpy
+opencv-python
+networkx
+matplotlib
+scipy
+joblib

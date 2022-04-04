@@ -26,21 +26,27 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-import cv2
 import glob
 import time
+from threading import Thread
+from typing import Tuple
 
-from threading       import Thread
+import cv2
+import numpy as np
 
 from src.templates.workerprocess import WorkerProcess
+from multiprocessing import shared_memory
+
+shm = shared_memory.SharedMemory(name="shared_frame", create=True, size=921600)
+
 
 class CameraSpooferProcess(WorkerProcess):
 
-    #================================ INIT ===============================================
-    def __init__(self, inPs,outPs, videoDir, ext = '.h264'):
-        """Processed used for spoofing a camera/ publishing a video stream from a folder 
+    # ================================ INIT ===============================================
+    def __init__(self, inPs, outPs, videoDir, ext=".avi"):
+        """Processed used for spoofing a camera/ publishing a video stream from a folder
         with videos
-        
+
         Parameters
         ----------
         inPs : list(Pipe)
@@ -52,68 +58,69 @@ class CameraSpooferProcess(WorkerProcess):
         ext : str, optional
             the extension of the file, by default '.h264'
         """
-        super(CameraSpooferProcess,self).__init__(inPs,outPs)
+        super(CameraSpooferProcess, self).__init__(inPs, outPs)
 
+        self.shm = shm
         # params
-        self.videoSize = (640,480)
-        
+        self.videoSize = (640, 480)
+        self.shared_frame = np.ndarray((480, 640, 3), dtype=np.uint8, buffer=shm.buf)
         self.videoDir = videoDir
-        self.videos = self.open_files(self.videoDir, ext = ext)
+        self.videos = self.open_files(self.videoDir, ext=ext)
 
-    
     # ===================================== INIT VIDEOS ==================================
     def open_files(self, inputDir, ext):
         """Open all files with the given path and extension
-        
+
         Parameters
         ----------
         inputDir : string
             the input directory absolute path
         ext : string
             the extention of the files
-        
+
         Returns
         -------
         list
-            A list of the files in the folder with the specified file extension. 
+            A list of the files in the folder with the specified file extension.
         """
-        
-        files =  glob.glob(inputDir + '/*' + ext)  
+
+        files = glob.glob(inputDir + "/*" + ext)
         return files
 
     # ===================================== INIT THREADS =================================
     def _init_threads(self):
-        """Initialize the thread of the process. 
-        """
+        """Initialize the thread of the process."""
 
-        thPlay = Thread(name='VideoPlayerThread',target= self.play_video, args=(self.videos, ))
+        thPlay = Thread(
+            name="VideoPlayerThread", target=self.play_video, args=(self.videos,)
+        )
         self.threads.append(thPlay)
-
 
     # ===================================== PLAY VIDEO ===================================
     def play_video(self, videos):
         """Iterate through each video in the folder, open a cap and publish the frames.
-        
+
         Parameters
         ----------
         videos : list(string)
-            The list of files with the videos. 
+            The list of files with the videos.
         """
         while True:
             for video in videos:
-                cap         =   cv2.VideoCapture(video)
-                
+                cap = cv2.VideoCapture(video)
+
                 while True:
                     ret, frame = cap.read()
                     stamp = time.time()
-                    if ret: 
-                        frame = cv2.resize(frame, self.videoSize)
-                        
+                    if ret:
+                        frame: np.ndarray = cv2.resize(frame, self.videoSize)
+                        self.shared_frame = frame.copy()
+                        # print(type(frame), frame.nbytes, frame.dtype)
+                        send_start_time = time.time()
                         for p in self.outPs:
-                            p.send([[stamp], frame])
-                               
+                            p.send((stamp, frame))
+                        # print(f"Send time {time.time() - send_start_time}")
+                        # print("Cam Spoofer ----> ")
                     else:
                         break
-
                 cap.release()
-
