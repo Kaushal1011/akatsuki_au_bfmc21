@@ -40,7 +40,10 @@ from src.templates.workerprocess import WorkerProcess
 import SharedArray as sa
 
 # shm = shared_memory.SharedMemory(name="shared_frame", create=True, size=921600)
-sa.delete("shared_frame1")
+try:
+    sa.delete("shared_frame1")
+except FileNotFoundError as e:
+    print(e)
 shared_frame = sa.create("shm://shared_frame1", (480, 640, 3), dtype=np.uint8)
 
 

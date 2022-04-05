@@ -36,7 +36,10 @@ import SharedArray as sa
 # from multiprocessing import shared_memory
 
 # shm = shared_memory.SharedMemory(name="shared_frame", create=True, size=921600)
-sa.delete("shared_frame1")
+try:
+    sa.delete("shared_frame1")
+except FileNotFoundError as e:
+    print(e)
 shared_frame = sa.create("shm://shared_frame1", (480, 640, 3), dtype=np.uint8)
 
 
@@ -98,10 +101,10 @@ class CameraThread(ThreadWithStop):
         self.camera.resolution = (1640, 1232)
         self.camera.framerate = 15
 
-        self.camera.brightness = 50
-        self.camera.shutter_speed = 1200
-        self.camera.contrast = 0
-        self.camera.iso = 0  # auto
+        #self.camera.brightness = 50
+        #self.camera.shutter_speed = 1200
+        #self.camera.contrast = 0
+        #self.camera.iso = 0  # auto
 
         self.imgSize = (640, 480)  # the actual image size
 
@@ -135,7 +138,7 @@ class CameraThread(ThreadWithStop):
             # output image and time stamp
             # Note: The sending process can be blocked, when doesn't exist any consumer process and it reaches the limit size.
             for outP in self.outPs:
-                outP.send((stamp, None))
+                outP.send(stamp)
 
             self._stream.seek(0)
             self._stream.truncate()

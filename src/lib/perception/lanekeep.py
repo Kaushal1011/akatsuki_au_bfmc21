@@ -68,9 +68,9 @@ class LaneKeepingProcess(WorkerProcess):
             while True:
                 # Obtain image
                 image_recv_start = time()
-                stamps, img_ = inP.recv()
-                img = np.array(self.frame_shm)
-                # print(f"lk: Time taken to recv image {time() - image_recv_start}")
+                stamps = inP.recv()
+                img = self.frame_shm
+                print(f"lk: Time taken to recv image {time() - image_recv_start}")
                 # print("Time taken to recieve image", time()- i)
                 compute_time = time()
                 # Apply image processing
