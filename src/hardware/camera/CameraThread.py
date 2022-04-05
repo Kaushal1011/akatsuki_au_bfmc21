@@ -31,9 +31,13 @@ import numpy as np
 import time
 
 from src.templates.threadwithstop import ThreadWithStop
-from multiprocessing import shared_memory
+import SharedArray as sa
 
-shm = shared_memory.SharedMemory(name="shared_frame", create=True, size=921600)
+# from multiprocessing import shared_memory
+
+# shm = shared_memory.SharedMemory(name="shared_frame", create=True, size=921600)
+sa.delete("shared_frame1")
+shared_frame = sa.create("shm://shared_frame1", (480, 640, 3), dtype=np.uint8)
 
 
 # ================================ CAMERA PROCESS =========================================
@@ -56,8 +60,6 @@ class CameraThread(ThreadWithStop):
         self._stream = io.BytesIO()
 
         self.recordMode = False
-        self.shm = shm
-        self.shared_frame = np.ndarray((480, 640, 3), dtype=np.uint8, buffer=shm.buf)
 
         # output
         self.outPs = outPs
@@ -127,7 +129,7 @@ class CameraThread(ThreadWithStop):
             # read and reshape from bytes to np.array
             data = np.frombuffer(data, dtype=np.uint8)
             frame = np.reshape(data, (480, 640, 3))
-            self.shared_frame = frame.copy()
+            shared_frame = frame
             stamp = time.time()
 
             # output image and time stamp

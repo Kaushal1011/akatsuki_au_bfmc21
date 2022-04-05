@@ -35,9 +35,13 @@ import cv2
 import numpy as np
 
 from src.templates.workerprocess import WorkerProcess
-from multiprocessing import shared_memory
 
-shm = shared_memory.SharedMemory(name="shared_frame", create=True, size=921600)
+# from multiprocessing import shared_memory
+import SharedArray as sa
+
+# shm = shared_memory.SharedMemory(name="shared_frame", create=True, size=921600)
+sa.delete("shared_frame1")
+shared_frame = sa.create("shm://shared_frame1", (480, 640, 3), dtype=np.uint8)
 
 
 class CameraSpooferProcess(WorkerProcess):
@@ -60,10 +64,8 @@ class CameraSpooferProcess(WorkerProcess):
         """
         super(CameraSpooferProcess, self).__init__(inPs, outPs)
 
-        self.shm = shm
         # params
         self.videoSize = (640, 480)
-        self.shared_frame = np.ndarray((480, 640, 3), dtype=np.uint8, buffer=shm.buf)
         self.videoDir = videoDir
         self.videos = self.open_files(self.videoDir, ext=ext)
 
@@ -114,13 +116,14 @@ class CameraSpooferProcess(WorkerProcess):
                     stamp = time.time()
                     if ret:
                         frame: np.ndarray = cv2.resize(frame, self.videoSize)
-                        self.shared_frame = frame.copy()
+                        shared_frame = frame
                         # print(type(frame), frame.nbytes, frame.dtype)
                         send_start_time = time.time()
                         for p in self.outPs:
-                            p.send((stamp, frame))
+                            p.send((stamp, None))
                         # print(f"Send time {time.time() - send_start_time}")
                         # print("Cam Spoofer ----> ")
                     else:
                         break
                 cap.release()
+                sa.delete("shared_frame1")

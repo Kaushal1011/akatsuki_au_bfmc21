@@ -1,8 +1,9 @@
-from multiprocessing import shared_memory
+# from multiprocessing import shared_memory
 from threading import Thread
 from time import time
 
 import numpy as np
+import SharedArray as sa
 
 # from simple_pid import PID
 from src.lib.perception.lanekeephandle import LaneKeep as LaneKeepMethod
@@ -25,7 +26,7 @@ class LaneKeepingProcess(WorkerProcess):
         """
         super(LaneKeepingProcess, self).__init__(inPs, outPs)
         self.lk = LaneKeepMethod(use_perspective=True, computation_method="hough")
-        self.frame_shm = shared_memory.SharedMemory(name="shared_frame")
+        self.frame_shm = sa.attach("shm://shared_frame1")
 
     def run(self):
         """Apply the initializing methods and start the threads."""
@@ -68,9 +69,7 @@ class LaneKeepingProcess(WorkerProcess):
                 # Obtain image
                 image_recv_start = time()
                 stamps, img_ = inP.recv()
-                img = np.ndarray(
-                    (480, 640, 3), dtype=np.uint8, buffer=self.frame_shm.buf
-                ).copy()
+                img = np.array(self.frame_shm)
                 # print(f"lk: Time taken to recv image {time() - image_recv_start}")
                 # print("Time taken to recieve image", time()- i)
                 compute_time = time()
