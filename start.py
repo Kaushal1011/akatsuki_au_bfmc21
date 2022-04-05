@@ -18,11 +18,11 @@ config = config_module.get_config()
 
 
 from src.hardware.camera.CameraSpooferProcess import CameraSpooferProcess
-# from src.data.localisationssystem.locsysProc import LocalisationSystemProcess
-# from src.data.server_sim import ServerSIM as LocSysSIM
-# from src.data.server_sim import ServerSIM as TrafficSIM
-# from src.data.localisationssystem.home_locProc import LocalisationProcess
-# from src.data.trafficlights.trafficProc import TrafficProcess
+from src.data.localisationssystem.locsysProc import LocalisationSystemProcess
+from src.data.server_sim import ServerSIM as LocSysSIM
+from src.data.server_sim import ServerSIM as TrafficSIM
+from src.data.localisationssystem.home_locProc import LocalisationProcess
+from src.data.trafficlights.trafficProc import TrafficProcess
 from src.hardware.camera.cameraprocess import CameraProcess
 from src.hardware.camera.SIMCameraProcess import SIMCameraProcess
 from src.hardware.serialhandler.SerialHandlerProcess import SerialHandlerProcess
@@ -288,9 +288,9 @@ except KeyboardInterrupt:
             print("Process witouth stop", proc)
             proc.terminate()
             proc.join()
-    #camSpoofer.shm.unlink()
-    #camSpoofer.shm.close()
-    #lkProc.frame_shm.unlink()
-    #lkProc.frame_shm.close()
-    #idProc.frame_shm.unlink()
-    #idProc.frame_shm.close()
+    # camSpoofer.shm.unlink()
+    # camSpoofer.shm.close()
+    # lkProc.frame_shm.unlink()
+    # lkProc.frame_shm.close()
+    # idProc.frame_shm.unlink()
+    # idProc.frame_shm.close()
