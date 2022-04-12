@@ -6,7 +6,7 @@ import numpy as np
 import SharedArray as sa
 
 # from simple_pid import PID
-from src.lib.perception.lanekeephandle import LaneKeep as LaneKeepMethod
+from src.lib.perception.lanekeepfunctions import LaneKeep as LaneKeepMethod
 from src.templates.workerprocess import WorkerProcess
 
 MAX_STEER = 23
@@ -68,19 +68,19 @@ class LaneKeepingProcess(WorkerProcess):
             while True:
                 # Obtain image
                 image_recv_start = time()
-                stamps = inP.recv()
-                img = self.frame_shm
+                stamps, img = inP.recv()
+                # img = self.frame_shm
                 print(f"lk: Time taken to recv image {time() - image_recv_start}")
                 # print("Time taken to recieve image", time()- i)
                 compute_time = time()
                 # Apply image processing
-
                 val, outimage = self.lk(img)
                 angle = self.computeSteeringAnglePID(val)
 
                 self.outPs[0].send((angle, None))
                 print(f"LK compute time {(time() - compute_time):.4f}s")
                 if len(outPs) > 1:
+                    print(outimage.shape)
                     self.outPs[1].send((angle, outimage))
 
                     # print("Sending from Lane Keeping")

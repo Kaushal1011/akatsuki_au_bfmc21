@@ -119,11 +119,11 @@ class CameraSpooferProcess(WorkerProcess):
                     stamp = time.time()
                     if ret:
                         frame: np.ndarray = cv2.resize(frame, self.videoSize)
-                        shared_frame = frame
+                        # shared_frame = frame
                         # print(type(frame), frame.nbytes, frame.dtype)
                         send_start_time = time.time()
                         for p in self.outPs:
-                            p.send((stamp, None))
+                            p.send((stamp, frame))
                         # print(f"Send time {time.time() - send_start_time}")
                         # print("Cam Spoofer ----> ")
                     else:

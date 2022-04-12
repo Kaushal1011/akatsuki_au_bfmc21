@@ -27,19 +27,15 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 import sys
-sys.path.append('.')
 
-import time
+sys.path.append(".")
+
 import socket
 import struct
-import numpy as np
-
-
-import cv2
 from threading import Thread
 
-import multiprocessing
-from multiprocessing import Process,Event
+import cv2
+import numpy as np
 
 from src.templates.workerprocess import WorkerProcess
 
@@ -52,65 +48,66 @@ class CameraReceiverProcess(WorkerProcess):
 
         Parameters
         ----------
-        inPs : list(Pipe)  
+        inPs : list(Pipe)
             List of input pipes
-        outPs : list(Pipe) 
+        outPs : list(Pipe)
             List of output pipes
         """
-        super(CameraReceiverProcess,self).__init__(inPs, outPs)
+        super(CameraReceiverProcess, self).__init__(inPs, outPs)
+        self.imgSize = (480, 640, 3)
 
-        
-
-        self.imgSize    = (480,640,3)
     # ===================================== RUN ==========================================
     def run(self):
-        """Apply the initializers and start the threads. 
-        """
+        """Apply the initializers and start the threads."""
         self._init_socket()
-        super(CameraReceiverProcess,self).run()
+        super(CameraReceiverProcess, self).run()
 
     # ===================================== INIT SOCKET ==================================
     def _init_socket(self):
-        """Initialize the socket server. 
-        """
-        self.port       =   2244
-        self.serverIp   =   '0.0.0.0'
-        
+        """Initialize the socket server."""
+
+        self.port = 2244
+        self.serverIp = "0.0.0.0"
+
         self.server_socket = socket.socket()
-        self.server_socket.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
+        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.server_socket.bind((self.serverIp, self.port))
 
         self.server_socket.listen(0)
-        self.connection = self.server_socket.accept()[0].makefile('rb')
+        print("socket init start")
+        self.connection = self.server_socket.accept()[0].makefile("rb")
+        print("socket init")
 
     # ===================================== INIT THREADS =================================
     def _init_threads(self):
-        """Initialize the read thread to receive and display the frames.
-        """
-        readTh = Thread(name = 'StreamReceivingThread',target = self._read_stream)
+        """Initialize the read thread to receive and display the frames."""
+        readTh = Thread(name="StreamReceivingThread", target=self._read_stream)
         self.threads.append(readTh)
 
     # ===================================== READ STREAM ==================================
     def _read_stream(self):
-        """Read the image from input stream, decode it and display it with the CV2 library.
-        """
+        """Read the image from input stream, decode it and display it with the CV2 library."""
         try:
             while True:
+                print("here in read_stream")
 
                 # decode image
-                image_len = struct.unpack('<L', self.connection.read(struct.calcsize('<L')))[0]
-                bts = self.connection.read(image_len)
+                image_len = struct.unpack(
+                    "<L", self.connection.read(struct.calcsize("<L"))
+                )[0]
 
+                bts = self.connection.read(image_len)
                 # ----------------------- read image -----------------------
                 image = np.frombuffer(bts, np.uint8)
                 image = cv2.imdecode(image, cv2.IMREAD_COLOR)
                 image = np.reshape(image, self.imgSize)
                 image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-
                 # ----------------------- show images -------------------
-                cv2.imshow('Image', image) 
+                cv2.imshow("Image", image)
                 cv2.waitKey(1)
-        except:
+        except Exception as e:
+            print(e)
+            raise e
             pass
         finally:
             self.connection.close()

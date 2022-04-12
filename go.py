@@ -1,7 +1,6 @@
 import sys
 from multiprocessing import Event, Pipe
 
-
 import argparse
 
 import numpy as np
@@ -51,7 +50,6 @@ sys.path.append(".")
 TRAFFIC_SIM_PORT = 7777
 LOCSYS_SIM_PORT = 8888
 LOCSYS_HOME_PORT = 8888
-
 STREAM_PORT1 = 2244
 STREAM_PORT2 = 4422
 # =============================== INITIALIZING PROCESSES =================================
@@ -59,6 +57,8 @@ STREAM_PORT2 = 4422
 allProcesses = []
 movementControlR = []
 camOutPs = []
+# Note: ensure the sequence in which pipes are added to dataFusionInputPs
+# [LaneKeep, IntersectionDet, SignDetection, LocSys, TrafficLight]
 dataFusionInputPs = []
 dataFusionInputName = []
 # =============================== RC CONTROL =================================================
@@ -88,8 +88,7 @@ if config["enableLaneKeeping"]:
 
     if config["enableStream"]:
         lkStrR, lkStrS = Pipe(duplex=False)
-        print("======= >>>> Starting LaneKeeping Stream <<<< ================")
-        lkProc = LaneKeeping([lkR], [lkFzzS, lkStrS])
+        lkProc = LaneKeeping([lkR], [lkFzzS])
     else:
         lkProc = LaneKeeping([lkR], [lkFzzS])
 
@@ -107,8 +106,7 @@ if config["enableIntersectionDet"]:
     dataFusionInputName.append("iD")
 
     if config["enableStream"]:
-        # TODO: add streaming utility
-        # idStrR, idStrS = Pipe(duplex=False)
+        idStrR, idStrS = Pipe(duplex=False)
         idProc = IntersectionDetProcess([camiDR], [iDFzzS])
     else:
         idProc = IntersectionDetProcess([camiDR], [iDFzzS])
@@ -219,9 +217,8 @@ else:
 
 # Serial handler or Simulator Connector
 if config["enableSIM"] and isPI:
-    # shProc = SimulatorConnector([mcSSHR], [])
-    # allProcesses.append(shProc)
-
+    shProc = SimulatorConnector([mcSSHR], [])
+    allProcesses.append(shProc)
     shProc = SerialHandlerProcess([mcSHR], [])
     allProcesses.append(shProc)
 
@@ -241,7 +238,7 @@ if config["enableStream"]:
     # if config["enableLaneKeeping"] and config["enableIntersectionDet"]:
     #     # shouldnt idstr go here also ?
     #     streamProc = CameraStreamerProcess([lkStrR], [])
-    if config["enableLaneKeeping"]:
+    if config["enableLaneKeeping"] and False:
         streamProc = CameraStreamerProcess([lkStrR], [])
         allProcesses.append(streamProc)
     else:
@@ -290,9 +287,3 @@ except KeyboardInterrupt:
             print("Process witouth stop", proc)
             proc.terminate()
             proc.join()
-    # camSpoofer.shm.unlink()
-    # camSpoofer.shm.close()
-    # lkProc.frame_shm.unlink()
-    # lkProc.frame_shm.close()
-    # idProc.frame_shm.unlink()
-    # idProc.frame_shm.close()
