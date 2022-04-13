@@ -30,7 +30,9 @@ import socket
 import struct
 import time
 from threading import Thread
+import numpy as np
 
+# import SharedArray as sa
 import cv2
 
 from src.templates.workerprocess import WorkerProcess
@@ -53,6 +55,8 @@ class CameraStreamerProcess(WorkerProcess):
         """
         super(CameraStreamerProcess, self).__init__(inPs, outPs)
 
+    #         self.frame_shm = sa.attach("shm://shared_frame1")
+
     # ===================================== RUN ==========================================
     def run(self):
         """Apply the initializing methods and start the threads."""
@@ -74,7 +78,9 @@ class CameraStreamerProcess(WorkerProcess):
     # ===================================== INIT SOCKET ==================================
     def _init_socket(self):
         """Initialize the socket client."""
-        self.serverIp = "192.168.43.61"  # PC ip
+        # self.serverIp = "192.168.43.61"  # PC ip
+        self.serverIp = "0.0.0.0"  # PC ip
+
         self.port = 2244  # port
 
         self.client_socket = socket.socket()
@@ -111,6 +117,7 @@ class CameraStreamerProcess(WorkerProcess):
         while True:
             try:
                 _, image = inP.recv()
+                # image = np.array(self.frame_shm).copy()
                 # print(stamps, image)
                 result, image = cv2.imencode(".jpg", image, encode_param)
                 data = image.tobytes()

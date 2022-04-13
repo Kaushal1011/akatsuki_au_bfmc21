@@ -79,7 +79,7 @@ if config["enableLaneKeeping"]:
     # Lane keeping -> Data Fusion
     lkFzzR, lkFzzS = Pipe(duplex=False)
 
-    # Lane keeping -> Movement control
+    # Decision Process -> Movement control
     FzzMcR, FzzMcS = Pipe(duplex=False)
 
     camOutPs.append(lkS)
@@ -88,7 +88,6 @@ if config["enableLaneKeeping"]:
 
     if config["enableStream"]:
         lkStrR, lkStrS = Pipe(duplex=False)
-        print("======= >>>> Starting LaneKeeping Stream <<<< ================")
         lkProc = LaneKeeping([lkR], [lkFzzS, lkStrS])
     else:
         lkProc = LaneKeeping([lkR], [lkFzzS])
@@ -290,9 +289,3 @@ except KeyboardInterrupt:
             print("Process witouth stop", proc)
             proc.terminate()
             proc.join()
-    # camSpoofer.shm.unlink()
-    # camSpoofer.shm.close()
-    # lkProc.frame_shm.unlink()
-    # lkProc.frame_shm.close()
-    # idProc.frame_shm.unlink()
-    # idProc.frame_shm.close()

@@ -3,13 +3,23 @@ from threading import Thread
 from time import time
 
 import numpy as np
-import SharedArray as sa
+
+# import SharedArray as sa
 
 # from simple_pid import PID
 from src.lib.perception.lanekeepfunctions import LaneKeep as LaneKeepMethod
 from src.templates.workerprocess import WorkerProcess
+from multiprocessing import Pipe
 
 MAX_STEER = 23
+
+
+def get_last(inP: Pipe, delta_time: float = 1e-2):
+    timestamp, data = inP.recv()
+
+    while (time() - timestamp) > delta_time:
+        timestamp, data = inP.recv()
+    return timestamp, data
 
 
 class LaneKeepingProcess(WorkerProcess):
@@ -26,7 +36,7 @@ class LaneKeepingProcess(WorkerProcess):
         """
         super(LaneKeepingProcess, self).__init__(inPs, outPs)
         self.lk = LaneKeepMethod(use_perspective=True, computation_method="hough")
-        self.frame_shm = sa.attach("shm://shared_frame1")
+        # self.frame_shm = sa.attach("shm://shared_frame1")
 
     def run(self):
         """Apply the initializing methods and start the threads."""
@@ -68,8 +78,8 @@ class LaneKeepingProcess(WorkerProcess):
             while True:
                 # Obtain image
                 image_recv_start = time()
-                stamps = inP.recv()
-                img = self.frame_shm
+                stamps, img = get_last(inP)
+                # img = self.frame_shm
                 print(f"lk: Time taken to recv image {time() - image_recv_start}")
                 # print("Time taken to recieve image", time()- i)
                 compute_time = time()

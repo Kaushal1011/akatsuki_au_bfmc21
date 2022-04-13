@@ -6,7 +6,15 @@ import numpy as np
 
 from src.lib.perception.intersectiondethandle import intersection_det
 from src.templates.workerprocess import WorkerProcess
-import SharedArray as sa
+from multiprocessing import Pipe
+
+# import SharedArray as sa
+def get_last(inP: Pipe, delta_time: float = 1e-2):
+    timestamp, data = inP.recv()
+
+    while (time() - timestamp) > delta_time:
+        timestamp, data = inP.recv()
+    return timestamp, data
 
 
 class IntersectionDetProcess(WorkerProcess):
@@ -22,7 +30,7 @@ class IntersectionDetProcess(WorkerProcess):
             List of output pipes (0 - send steering data to the movvement control process)
         """
         super(IntersectionDetProcess, self).__init__(inPs, outPs)
-        self.frame_shm = sa.attach("shm://shared_frame1")
+        # self.frame_shm = sa.attach("shm://shared_frame1")
 
     def run(self):
         """Apply the initializing methods and start the threads."""
@@ -58,8 +66,8 @@ class IntersectionDetProcess(WorkerProcess):
             while True:
                 # Obtain image
                 img_rec_time = time()
-                stamps = inP.recv()
-                img = self.frame_shm
+                stamps, img = get_last(inP)
+                # img = self.frame_shm
                 # Apply image processing
                 print(f"iD: time taken to recv img {time() - img_rec_time}")
                 detected, outimage = intersection_det(img)
