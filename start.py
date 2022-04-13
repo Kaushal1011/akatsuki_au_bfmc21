@@ -88,7 +88,7 @@ if config["enableLaneKeeping"]:
 
     if config["enableStream"]:
         lkStrR, lkStrS = Pipe(duplex=False)
-        lkProc = LaneKeeping([lkR], [lkFzzS, lkStrS])
+        lkProc = LaneKeeping([lkR], [lkFzzS,lkStrS])
     else:
         lkProc = LaneKeeping([lkR], [lkFzzS])
 

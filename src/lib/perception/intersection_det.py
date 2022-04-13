@@ -9,7 +9,7 @@ from src.templates.workerprocess import WorkerProcess
 from multiprocessing import Pipe
 
 # import SharedArray as sa
-def get_last(inP: Pipe, delta_time: float = 1e-2):
+def get_last(inP: Pipe, delta_time: float = 0.1):
     timestamp, data = inP.recv()
 
     while (time() - timestamp) > delta_time:

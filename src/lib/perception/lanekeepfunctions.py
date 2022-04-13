@@ -64,11 +64,11 @@ class LaneKeep:
         adpt_Th_C: int = 4,
         canny_thres1: int = 50,
         canny_thres2: int = 150,
-        luroi: float = 0.15,
-        ruroi: float = 0.85,
+        luroi: float = 0.2,
+        ruroi: float = 0.8,
         lbroi: float = 0,
         rbroi: float = 1,
-        hroi: float = 0.45,
+        hroi: float = 0.6,
         broi: float = 0,
     ):
         """Define LaneKeeping pipeline and parameters
@@ -140,7 +140,7 @@ class LaneKeep:
             angle, outimg = self.houghlines_angle(preprocess_img)
             angle_roadarea = self.graph_road_search(preprocess_img)
             print(angle, " ", angle_roadarea)
-            angle = (angle + angle_roadarea) / 2
+#             angle = (angle*2 + angle_roadarea) / 3
             return angle, outimg
 
     def roi_func(self, img: np.ndarray) -> np.ndarray:
@@ -186,11 +186,11 @@ class LaneKeep:
         """Preprocess image for edge detection"""
         # Apply HLS color filtering to filter out white lane lines
         imgn = img.copy()
-        imgn = cv2.GaussianBlur(imgn, (7, 7), 0)
+        imgn = cv2.GaussianBlur(imgn, (17, 17), 0)
         imgn = cv2.cvtColor(imgn, cv2.COLOR_RGB2HSV)
 
         lower = np.array([0, 0, 249], np.uint8)
-        upper = np.array([120, 90, 255], np.uint8)
+        upper = np.array([90, 90, 255], np.uint8)
 
         mask = cv2.inRange(imgn, lower, upper)
         return mask
@@ -286,7 +286,7 @@ def get_road_ratio_angle(mask_img):
     print(img_new.shape[1] // 2)
     left = len(visited) - right
     print("Len of Halfs: ", right, " ", left)
-    return (right - left) / len(visited) * 36 + 90, visited
+    return (right - left) / len(visited) * 50 + 90, visited
 
 
 def make_points(frame, line):
