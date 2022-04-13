@@ -74,7 +74,7 @@ class CameraStreamerProcess(WorkerProcess):
     # ===================================== INIT SOCKET ==================================
     def _init_socket(self):
         """Initialize the socket client."""
-        self.serverIp = "0.0.0.0"  # PC ip
+        self.serverIp = "192.168.43.61"  # PC ip
         self.port = 2244  # port
 
         self.client_socket = socket.socket()

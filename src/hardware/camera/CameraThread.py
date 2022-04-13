@@ -40,6 +40,7 @@ try:
     sa.delete("shared_frame1")
 except FileNotFoundError as e:
     print(e)
+
 shared_frame = sa.create("shm://shared_frame1", (480, 640, 3), dtype=np.uint8)
 
 
