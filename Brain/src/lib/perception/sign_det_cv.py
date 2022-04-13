@@ -7,7 +7,6 @@ from typing import Tuple
 
 
 def check_priority(img, area_threshold: Tuple[int, int]):
-    imgContour = img.copy()
     hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
     yellow1 = np.array([18,200,70])
     yellow2 = np.array([28,255,100])
@@ -19,7 +18,7 @@ def check_priority(img, area_threshold: Tuple[int, int]):
     kernel = np.ones((7,7))
     dilate = cv2.dilate(canny, kernel, iterations=1)
     hull = []
-    contours, hierarchy = cv2.findContours(
+    contours, _ = cv2.findContours(
         dilate, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
     for cnt in contours:
         hull.append(cv2.convexHull(cnt, False))
@@ -48,7 +47,7 @@ def check_stop(img, area_threshold: Tuple[int, int]):
     kernel = np.ones((7,7))
     dilate = cv2.dilate(canny, kernel, iterations=1)
     hull = []
-    contours, hierarchy = cv2.findContours(
+    contours, _ = cv2.findContours(
         dilate, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
     for cnt in contours:
         hull.append(cv2.convexHull(cnt, False))
@@ -102,16 +101,14 @@ def check_no_entry(img, area_threshold: Tuple[int, int]):
                 cropped_dilate, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
             for cnt1 in contors:
                 area1 = cv2.contourArea(cnt1)
-                if area1>1000:
-                    if area1/area >=0.1:
-                        return True, x, y, w, h
+                if area1>1000 and area1/area>=0.1:
+                    return True, x, y, w, h
     return False,0,0,0,0
 
 def check_Highway(img, area_threshold: Tuple[int, int]):
-    imgContour = img.copy()
     hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV_FULL)
-    green1 = np.array([100,30,35])
-    green2 = np.array([170,255,255])
+    green1 = np.array([135,30,35])
+    green2 = np.array([165,255,255])
     mask = cv2.inRange(hsv, green1, green2)
     imgRes = cv2.bitwise_and(img, img, mask=mask)
     blur = cv2.GaussianBlur(imgRes, (7,7), 1)
@@ -119,16 +116,16 @@ def check_Highway(img, area_threshold: Tuple[int, int]):
     canny = cv2.Canny(gray, 55, 30)
     kernel = np.ones((7,7))
     dilate = cv2.dilate(canny, kernel, iterations=1)
-    hull = []
-    contours, hierarchy = cv2.findContours(
+    # hull = []
+    contours, _ = cv2.findContours(
         dilate, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
     for cnt in contours:
-        hull.append(cv2.convexHull(cnt, False))
+        # hull.append(cv2.convexHull(cnt, False))
         area = cv2.contourArea(cnt)
         if area > area_threshold[0] and area < area_threshold[1]:
             peri = cv2.arcLength(cnt, True)
             approx = cv2.approxPolyDP(cnt, 0.1 * peri, True)
-            cv2.drawContours(imgContour, hull, -1, (255, 0, 255), 8)
+            # cv2.drawContours(imgContour, hull, -1, (255, 0, 255), 8)
             x, y, w, h = cv2.boundingRect(approx)
             
             return True, x, y, w, h
@@ -171,7 +168,7 @@ def check_highway_no(img, area_threshold: Tuple[int, int]):
                 cropped_gray, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
             for cnt1 in contors:
                 area1 = cv2.contourArea(cnt1)
-                if area1 > 5:
+                if area1 > 7:
                     return True, x, y, w, h
     return False,0,0,0,0
 
@@ -205,11 +202,11 @@ def check_oneway(img, area_threshold: Tuple[int, int]):
             mask = cv2.inRange(cropped_hsv, white1, white2)
             croppedRes = cv2.bitwise_and(cropped_image, cropped_image, mask=mask)
             cropped_gray = cv2.cvtColor(croppedRes, cv2.COLOR_RGB2GRAY)
-            contors, hierarchy = cv2.findContours(
+            contors, _ = cv2.findContours(
                 cropped_gray, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
             for cnt in contors:
                 area1 = cv2.contourArea(cnt)
-                if area1 > 250:
+                if area1 > 800:
                     return True, x, y, w, h
     return False,0,0,0,0
 
@@ -232,7 +229,7 @@ def check_cross(img, area_threshold: Tuple[int, int]):
     kernel = np.ones((7,7))
     dilate = cv2.dilate(canny, kernel, iterations=1)
     hull = []
-    contours, hierarchy = cv2.findContours(
+    contours, _ = cv2.findContours(
         dilate, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
     for cnt in contours:
         hull.append(cv2.convexHull(cnt, False))
@@ -243,9 +240,9 @@ def check_cross(img, area_threshold: Tuple[int, int]):
             x, y, w, h = cv2.boundingRect(approx)
             cropped_image = img[y:y+h,x:x+w]
             cropped_image = cv2.cvtColor(cropped_image, cv2.COLOR_RGB2GRAY)
-            kp1, des1 = sift.detectAndCompute(img1, None)
-            kp2, des2 = sift.detectAndCompute(cropped_image, None)
-            bf = cv2.BFMatcher(cv2.NORM_L1, crossCheck=True)
+            _, des1 = sift.detectAndCompute(img1, None)
+            _, des2 = sift.detectAndCompute(cropped_image, None)
+            # bf = cv2.BFMatcher(cv2.NORM_L1, crossCheck=True)
             matches = flann.knnMatch(des1, des2, k=2)
             good_matches = []
             for m, n in matches:
@@ -287,8 +284,8 @@ def check_park(img, area_threshold: Tuple[int, int]):
             x, y, w, h = cv2.boundingRect(approx)
             cropped_image = img[y:y+h,x:x+w]
             cropped_image = cv2.cvtColor(cropped_image, cv2.COLOR_RGB2GRAY)
-            kp1, des1 = sift.detectAndCompute(img1, None)
-            kp2, des2 = sift.detectAndCompute(cropped_image, None)
+            _, des1 = sift.detectAndCompute(img1, None)
+            _, des2 = sift.detectAndCompute(cropped_image, None)
             # bf = cv2.BFMatcher(cv2.NORM_L1, crossCheck=True)
             # matches = bf.match(des1, des2)
             matches = flann.knnMatch(des1, des2, k=2)
@@ -307,41 +304,41 @@ def detections(img, label):
     cne,cnex,cney,cnew,cneh=check_no_entry(img,(1000,20000))
     cp,cpx,cpy,cpw,cph=check_priority(img,(700,25000))
     chn,chnx,chny,chnw,chnh=check_highway_no(img,(700,25000))
-    ch,chx,chy,chw,chh=check_Highway(img,(1000,25000))
-    cow,cowx,cowy,coww,cowh=check_oneway(img,(700,25000))
-    cpa,cpax,cpay,cpaw,cpah=check_park(img,(1200,25000))
-    cc,ccx,ccy,ccw,cch=check_cross(img,(1200,25000))
+    ch,chx,chy,chw,chh=check_Highway(img,(1500,25000))
+    cow,cowx,cowy,coww,cowh=check_oneway(img,(2000,25000))
+    cpa,cpax,cpay,cpaw,cpah=check_park(img,(2000,25000))
+    cc,ccx,ccy,ccw,cch=check_cross(img,(2000,25000))
     box,text,location=None,None,None
     
-    if chn:
+    if False:
         box = [(chnx, chny), (chnx + chnw, chny + chnh)]
         location = chnx, chny
         text = label[3]
-    elif cne:
+    elif False:
         box = [(cnex, cney), (cnex + cnew, cney + cneh)]
         location = cnex, cney
         text = label[0]   
-    elif cs:
+    elif False:
         box = [(csx, csy), (csx + csw, csy + csh)]
         location = csx, csy
         text = label[1] 
-    elif ch:
+    elif False:
         box = [(chx, chy), (chx + chw, chy + chh)]
         location = chx, chy
         text = label[4]
-    elif cow:
-        box = [(cowx, cowy), (cowx + coww, cowy + cowh)]
-        location = cowx, cowy
-        text = label[5]
-    elif cpa:
+    elif False:
         box = [(cpax, cpay), (cpax + cpaw, cpay + cpah)]
         location = cpax, cpay
         text = label[6]
-    elif cc:
+    elif False:
         box = [(ccx, ccy), (ccx + ccw, ccy + cch)]
         location = ccx, ccy
         text = label[7]
-    elif cp:
+    elif False:
+        box = [(cowx, cowy), (cowx + coww, cowy + cowh)]
+        location = cowx, cowy
+        text = label[5]
+    elif False:
         box = [(cpx, cpy), (cpx + cpw, cpy + cph)]
         location = cpx, cpy
         text = label[2]
