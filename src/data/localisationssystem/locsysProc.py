@@ -1,11 +1,12 @@
 import math
+import os
+import pathlib
 import time
 from threading import Thread
 
 from src.data.localisationssystem.locsys import LocalisationSystem
 from src.templates.workerprocess import WorkerProcess
-
-CARID = 4
+from multiprocessing import Pipe
 
 
 class LocalisationSystemProcess(WorkerProcess):
@@ -40,13 +41,20 @@ class LocalisationSystemProcess(WorkerProcess):
     def runListener(self, outPs):
         # Get time stamp when starting tester
         # Create listener object
-        locsys = LocalisationSystem(CARID)
+        beacon = 12345
+        id = 4
+        serverpublickey = pathlib.Path(
+            pathlib.Path(__file__).parent.resolve(), "publickey_server_test.pem"
+        )
+        gpsStR, gpsStS = Pipe(duplex=False)
+        locsys = LocalisationSystem(id, beacon, serverpublickey, gpsStS)
+
         # Start the listener
         locsys.start()
         # Wait until 60 seconds passed
         while True:
             try:
-                coora = locsys.coor()
+                coora = gpsStR.recv()
                 if coora:
                     data = {
                         "timestamp": coora["timestamp"],

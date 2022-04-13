@@ -28,10 +28,19 @@
 
 from multiprocessing import Pipe
 from threading import Thread
-from src.data.localisationssystem.server_data import ServerData
-from src.data.localisationssystem.server_listener import ServerListener
-from src.data.localisationssystem.server_subscriber import ServerSubscriber
-from src.data.localisationssystem.position_listener import PositionListener
+
+try:
+    from src.data.localisationssystem.server_data import ServerData
+    from src.data.localisationssystem.server_listener import ServerListener
+    from src.data.localisationssystem.server_subscriber import ServerSubscriber
+    from src.data.localisationssystem.position_listener import PositionListener
+
+except ModuleNotFoundError:
+    from server_data import ServerData
+    from server_listener import ServerListener
+    from server_subscriber import ServerSubscriber
+    from position_listener import PositionListener
+
 
 import time
 

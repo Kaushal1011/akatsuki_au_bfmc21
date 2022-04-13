@@ -3,8 +3,11 @@ from time import time
 
 
 from src.lib.perception.lanekeepfunctions import LaneKeep as LaneKeepMethod
+from src.lib.cortex.posfushandle import Localize
 from src.templates.workerprocess import WorkerProcess
 from multiprocessing import Pipe
+from multiprocessing.connection import Connection
+from typing import List
 
 
 def get_last(inP: Pipe, delta_time: float = 0.1):
@@ -30,6 +33,8 @@ class PositionFusionProcess(WorkerProcess):
         """
         super(PositionFusionProcess, self).__init__(inPs, outPs)
         self.inPsnames = inPsnames
+        # update gx gy based on initial values
+        self.localize = Localize()
 
     def run(self):
         """Apply the initializing methods and start the threads."""
@@ -52,7 +57,7 @@ class PositionFusionProcess(WorkerProcess):
         self.threads.append(thr)
 
     # ===================================== Custom methods =========================================
-    def _the_thread(self, inPs, outPs):
+    def _the_thread(self, inPs: List[Connection], outPs: List[Connection]):
         """Obtains image, applies the required image processing and computes the steering angle value.
 
         Parameters
@@ -62,24 +67,36 @@ class PositionFusionProcess(WorkerProcess):
         outP : Pipe
             Output pipe to send the steering angle value to other process.
         """
+        print("Position Fusion ", self.inPsnames, self.inPs)
         try:
             while True:
+                iyaw = None
+                ipitch = None
+                iroll = None
+                ax = None
+                ay = None
+                az = None
+                gx = None
+                gy = None
+                gyaw = None
+
+                pos = list()
                 if "loc" in self.inPsnames:
                     idx = self.inPsnames.index("loc")
                     loc = inPs[idx].recv()
+                    pos.append(loc)
                     print("PosFzz: LOC", loc)
 
                 if "imu" in self.inPsnames:
                     idx = self.inPsnames.index("imu")
                     imu = inPs[idx].recv()
+                    pos.append(imu)
                     print("PosFzz: IMU", imu)
 
-                if loc and imu:
-                    self.outPs[0].send((loc, imu))
-                elif loc:
-                    self.outPs[0].send(loc)
-                elif imu:
-                    self.outPs.send(imu)
+                pos_data = self.localize.update(
+                    iyaw, ipitch, iroll, ax, ay, az, gx, gy, gyaw
+                )
+                self.outPs[0].send(pos_data)
 
         except Exception as e:
             raise e

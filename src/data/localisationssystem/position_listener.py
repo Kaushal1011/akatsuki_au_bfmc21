@@ -32,7 +32,11 @@ sys.path.insert(0, ".")
 
 import socket
 import json
-from src.data.localisationssystem.complexDealer import ComplexDecoder
+
+try:
+    from src.data.localisationssystem.complexDealer import ComplexDecoder
+except ModuleNotFoundError:
+    from complexDealer import ComplexDecoder
 
 
 class PositionListener:

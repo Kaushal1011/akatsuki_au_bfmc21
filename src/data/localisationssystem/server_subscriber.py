@@ -33,7 +33,10 @@ sys.path.insert(0, ".")
 
 import socket
 
-from src.data.localisationssystem.utils import load_public_key, verify_data
+try:
+    from src.data.localisationssystem.utils import load_public_key, verify_data
+except ModuleNotFoundError:
+    from utils import load_public_key, verify_data
 
 
 class ServerSubscriber:
@@ -70,7 +73,6 @@ class ServerSubscriber:
             msg = "{}".format(self.__carId).encode("utf-8")
 
             sock.sendall(msg)
-
             # receiving response from the server
             msg = sock.recv(4096)
             # receiving signature from the server

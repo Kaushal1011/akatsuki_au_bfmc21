@@ -193,13 +193,17 @@ if isPI and not config["enableSIM"]:
     posFusionInputPs.append(imuPosR)
     posFusionInputName.append("imu")
 
+# ===================== Position Fusion ==========================================
+if len(posFusionInputPs) > 0:
+    posFzzR, posFzzS = Pipe(duplex=False)
+    posfzzProc = PositionFusionProcess(
+        posFusionInputPs, [posFzzS], inPsnames=posFusionInputName
+    )
+    allProcesses.append(posfzzProc)
+    dataFusionInputPs.append(posFzzR)
+    dataFusionInputName.append("pos")
 
 # ======================= Decision Making =========================================
-posFzzR, posFzzS = Pipe(duplex=False)
-posfzzProc = PositionFusionProcess(posFusionInputPs, [posFzzS])
-dataFusionInputPs.append(posFzzR)
-dataFusionInputName.append("pos")
-
 datafzzProc = DecisionMakingProcess(
     dataFusionInputPs, [FzzMcS], inPsnames=dataFusionInputName
 )
