@@ -29,6 +29,7 @@ from src.hardware.serialhandler.SerialHandlerProcess import SerialHandlerProcess
 from src.lib.actuator.momentcontrol import MovementControl
 from src.lib.actuator.sim_connect import SimulatorConnector
 from src.lib.cortex.decisionproc import DecisionMakingProcess
+from src.lib.cortex.posfusproc import PositionFusionProcess
 from src.lib.perception.intersection_det import IntersectionDetProcess
 from src.lib.perception.lanekeep import LaneKeepingProcess as LaneKeeping
 from src.lib.perception.signdetection import SignDetectionProcess
@@ -61,6 +62,9 @@ movementControlR = []
 camOutPs = []
 dataFusionInputPs = []
 dataFusionInputName = []
+
+posFusionInputPs = []
+posFusionInputName = []
 # =============================== RC CONTROL =================================================
 if config["enableRc"]:
     # rc      ->  serial handler
@@ -88,7 +92,7 @@ if config["enableLaneKeeping"]:
 
     if config["enableStream"]:
         lkStrR, lkStrS = Pipe(duplex=False)
-        lkProc = LaneKeeping([lkR], [lkFzzS,lkStrS])
+        lkProc = LaneKeeping([lkR], [lkFzzS, lkStrS])
     else:
         lkProc = LaneKeeping([lkR], [lkFzzS])
 
@@ -136,30 +140,29 @@ if config["enableSignDet"]:
 
 # -------LOCSYS----------
 if config["enableSIM"]:
-    # LocSys -> Decision Making (data fusion)
-    lsFzzR, lsFzzS = Pipe(duplex=False)
-    locsysProc = LocSysSIM([], [lsFzzS], LOCSYS_SIM_PORT)
+    # LocSys -> Position Fusion
+    lsPosR, lsPosS = Pipe(duplex=False)
+    locsysProc = LocSysSIM([], [lsPosS], LOCSYS_SIM_PORT)
     allProcesses.append(locsysProc)
-    dataFusionInputPs.append(lsFzzR)
-    dataFusionInputName.append("loc")
+    posFusionInputPs.append(lsPosR)
+    posFusionInputName.append("loc")
 
 elif config["home_loc"]:
-    # LocSys -> Decision Making (data fusion)
-    print("Starting Home Loc Sys")
-    lsFzzR, lsFzzS = Pipe(duplex=False)
-    locsysProc = LocalisationProcess([], [lsFzzS])
+    # LocSys -> Position Fusion
+    lsPosR, lsPosS = Pipe(duplex=False)
+    locsysProc = LocalisationProcess([], [lsPosS])
     allProcesses.append(locsysProc)
-    dataFusionInputPs.append(lsFzzR)
-    dataFusionInputName.append("loc")
+    posFusionInputPs.append(lsPosR)
+    posFusionInputName.append("loc")
 
 
 elif config["using_server"]:
-    # LocSys -> Decision Making (data fusion)
-    lsFzzR, lsFzzS = Pipe(duplex=False)
-    locsysProc = LocalisationSystemProcess([], [lsFzzS])
+    # LocSys -> Position Fusion
+    lsPosR, lsPosS = Pipe(duplex=False)
+    locsysProc = LocalisationSystemProcess([], [lsPosS])
     allProcesses.append(locsysProc)
-    dataFusionInputPs.append(lsFzzR)
-    dataFusionInputName.append("loc")
+    posFusionInputPs.append(lsPosR)
+    posFusionInputName.append("loc")
 
 
 # -------TrafficLightSemaphore----------
@@ -182,16 +185,20 @@ elif config["using_server"]:
 
 # -------IMU----------
 # IMU -> Decision Making (data fusion)
-if isPI and not config["enableSIM"] and False:
+if isPI and not config["enableSIM"]:
     print("IMU process started")
-    imuFzzR, imuFzzS = Pipe(duplex=False)
-    imuProc = IMUProcess([], [imuFzzS])
+    imuPosR, imuPosS = Pipe(duplex=False)
+    imuProc = IMUProcess([], [imuPosS])
     allProcesses.append(imuProc)
-    dataFusionInputPs.append(imuFzzR)
-    dataFusionInputName.append("imu")
+    posFusionInputPs.append(imuPosR)
+    posFusionInputName.append("imu")
 
 
 # ======================= Decision Making =========================================
+posFzzR, posFzzS = Pipe(duplex=False)
+posfzzProc = PositionFusionProcess(posFusionInputPs, [posFzzS])
+dataFusionInputPs.append(posFzzR)
+dataFusionInputName.append("pos")
 
 datafzzProc = DecisionMakingProcess(
     dataFusionInputPs, [FzzMcS], inPsnames=dataFusionInputName

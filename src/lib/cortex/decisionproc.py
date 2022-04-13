@@ -259,6 +259,11 @@ class DecisionMakingProcess(WorkerProcess):
                         # print(f"Time taken sD {(time() - t_sD):.2f}s {label}")
                         print(f"{sign} {sign_area}")
 
+                if "pos" in self.inPsnames:
+                    idx = self.inPsnames.index("pos")
+                    data = inPs[idx].recv()
+                    print("Pos", data)
+
                 # # locsys
                 t_loc = time()
                 if "loc" in self.inPsnames:
