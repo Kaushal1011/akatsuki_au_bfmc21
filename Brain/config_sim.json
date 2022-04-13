@@ -10,8 +10,8 @@
   "end_idx": "200",
   "using_server": false,
   "test_track": false,
-  "pc_ip": "0.0.0.0",
-  "pi_ip": "0.0.0.0",
+  "pc_ip": "192.168.43.13",
+  "pi_ip": "172.20.10.4",
   "home_loc": false,
   "preplan": true,
   "park":true
