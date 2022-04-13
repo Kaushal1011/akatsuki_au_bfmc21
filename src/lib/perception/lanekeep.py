@@ -14,11 +14,12 @@ from multiprocessing import Pipe
 MAX_STEER = 23
 
 
-def get_last(inP: Pipe, delta_time: float = 1e-2):
+def get_last(inP: Pipe, delta_time: float = 0.1):
     timestamp, data = inP.recv()
 
     while (time() - timestamp) > delta_time:
         timestamp, data = inP.recv()
+    
     return timestamp, data
 
 
@@ -35,7 +36,7 @@ class LaneKeepingProcess(WorkerProcess):
             List of output pipes (0 - send steering data to the movvement control process)
         """
         super(LaneKeepingProcess, self).__init__(inPs, outPs)
-        self.lk = LaneKeepMethod(use_perspective=True, computation_method="hough")
+        self.lk = LaneKeepMethod(use_perspective=False, computation_method="hough")
         # self.frame_shm = sa.attach("shm://shared_frame1")
 
     def run(self):
