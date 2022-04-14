@@ -16,7 +16,6 @@ MAX_STEER = 23
 
 def get_last(inP: Pipe, delta_time: float = 0.1):
     timestamp, data = inP.recv()
-
     while (time() - timestamp) > delta_time:
         timestamp, data = inP.recv()
     

@@ -108,7 +108,7 @@ class SIMCameraProcess(WorkerProcess):
                 image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
                 stamp = time.time()
                 for outP in outPs:
-                    outP.send([[stamp], image])
+                    outP.send((stamp, image))
         except Exception:
             pass
         finally:

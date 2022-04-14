@@ -44,6 +44,10 @@ class CarState:
         dy = self.y - point_y
         return math.hypot(dx, dy)
 
+    def control(steering,speed):
+        pass
+
+
     def update(
         self,
         x: float,
