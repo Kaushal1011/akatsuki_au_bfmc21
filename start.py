@@ -21,6 +21,9 @@ from src.hardware.camera.CameraSpooferProcess import CameraSpooferProcess
 from src.data.localisationssystem.locsysProc import LocalisationSystemProcess
 from src.data.server_sim import ServerSIM as LocSysSIM
 from src.data.server_sim import ServerSIM as TrafficSIM
+from src.data.server_sim import ServerSIM as IMUSIM
+from src.data.server_sim import ServerSIM as DistanceSIM
+
 from src.data.localisationssystem.home_locProc import LocalisationProcess
 from src.data.trafficlights.trafficProc import TrafficProcess
 from src.hardware.camera.cameraprocess import CameraProcess
@@ -30,6 +33,7 @@ from src.lib.actuator.momentcontrol import MovementControl
 from src.lib.actuator.sim_connect import SimulatorConnector
 from src.lib.cortex.decisionproc import DecisionMakingProcess
 from src.lib.cortex.posfusproc import PositionFusionProcess
+from src.lib.cortex.object_proc import ObjectProcess
 from src.lib.perception.intersection_det import IntersectionDetProcess
 from src.lib.perception.lanekeep import LaneKeepingProcess as LaneKeeping
 from src.lib.perception.signdetection import SignDetectionProcess
@@ -183,8 +187,8 @@ elif config["using_server"]:
 #     dataFusionInputPs.append(tlFzzR)
 #     dataFusionInputName.append("tl")
 
-# -------IMU----------
-# IMU -> Decision Making (data fusion)
+# ========================= IMU ===================================================
+# IMU -> Position Fusino
 if isPI and not config["enableSIM"]:
     print("IMU process started")
     imuPosR, imuPosS = Pipe(duplex=False)
@@ -192,6 +196,13 @@ if isPI and not config["enableSIM"]:
     allProcesses.append(imuProc)
     posFusionInputPs.append(imuPosR)
     posFusionInputName.append("imu")
+else:
+    imuPosR, imuPosS = Pipe(duplex=False)
+    imuProc = IMUSIM([], [imuPosS], 5555)
+    allProcesses.append(imuProc)
+    posFusionInputPs.append(imuPosR)
+    posFusionInputName.append("imu")
+
 
 # ===================== Position Fusion ==========================================
 if len(posFusionInputPs) > 0:
@@ -202,6 +213,29 @@ if len(posFusionInputPs) > 0:
     allProcesses.append(posfzzProc)
     dataFusionInputPs.append(posFzzR)
     dataFusionInputName.append("pos")
+
+# ===================== Distance Sensor ==========================================
+# Distance Sensor -> Decision Making (data fusion)
+# if isPI and not config["enableSIM"]:
+#     print("IMU process started")
+#     imuPosR, imuPosS = Pipe(duplex=False)
+#     imuProc = IMUProcess([], [imuPosS])
+#     allProcesses.append(imuProc)
+#     posFusionInputPs.append(imuPosR)
+#     posFusionInputName.append("imu")
+# else:
+disObjR, disObjS = Pipe(duplex=False)
+disProc = DistanceSIM([], [disObjS], 6666)
+allProcesses.append(disProc)
+
+# ===================== Object Classifier ==========================================
+# distance -> object (already created)
+# camera -> object
+camObjR, camObjS = Pipe(duplex=False)
+# object -> decision making
+objProc = ObjectProcess([camObjR, disObjR], [])
+camOutPs.append(camObjS)
+allProcesses.append(objProc)
 
 # ======================= Decision Making =========================================
 datafzzProc = DecisionMakingProcess(
