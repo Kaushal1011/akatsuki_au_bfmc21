@@ -237,6 +237,7 @@ objProc = ObjectProcess([camObjR, disObjR], [])
 camOutPs.append(camObjS)
 allProcesses.append(objProc)
 
+
 # ======================= Decision Making =========================================
 datafzzProc = DecisionMakingProcess(
     dataFusionInputPs, [FzzMcS], inPsnames=dataFusionInputName

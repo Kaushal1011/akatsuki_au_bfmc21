@@ -8,7 +8,7 @@ from src.templates.workerprocess import WorkerProcess
 from multiprocessing import Pipe
 from multiprocessing.connection import Connection
 from typing import List
-
+#import  config
 
 def get_last(inP: Pipe, delta_time: float = 0.1):
     timestamp, data = inP.recv()
@@ -34,7 +34,7 @@ class PositionFusionProcess(WorkerProcess):
         super(PositionFusionProcess, self).__init__(inPs, outPs)
         self.inPsnames = inPsnames
         # update gx gy based on initial values
-        self.localize = Localize()
+        self.localize = Localize(ix=0,iy=0,gx=0,gy=0)
 
     def run(self):
         """Apply the initializing methods and start the threads."""
@@ -84,19 +84,26 @@ class PositionFusionProcess(WorkerProcess):
                 if "loc" in self.inPsnames:
                     idx = self.inPsnames.index("loc")
                     loc = inPs[idx].recv()
-                    pos.append(loc)
-                    print("PosFzz: LOC", loc)
+                    gx = loc["posA"]
+                    gy = loc["posB"]
+                    gyaw = loc["rotA"] if "rotA" in loc.keys() else loc["radA"]
 
                 if "imu" in self.inPsnames:
                     idx = self.inPsnames.index("imu")
                     imu = inPs[idx].recv()
-                    pos.append(imu)
-                    print("PosFzz: IMU", imu)
+                    iroll = imu["roll"]
+                    ipitch = imu["pitch"]
+                    iyaw = imu["yaw"]
 
-                pos_data = self.localize.update(
-                    iyaw, ipitch, iroll, ax, ay, az, gx, gy, gyaw
-                )
-                self.outPs[0].send(pos_data)
+                    ax = imu["accelx"]
+                    ay = imu["accely"]
+                    az = imu["accelz"]
+
+                if iyaw or gx:
+                    pos_data = self.localize.update(
+                        iyaw, ipitch, iroll, ax, ay, az, gx, gy, gyaw
+                    )
+                    self.outPs[0].send(pos_data)
 
         except Exception as e:
             raise e
