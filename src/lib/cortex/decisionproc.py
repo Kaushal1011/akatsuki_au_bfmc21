@@ -61,6 +61,14 @@ def trigger_behaviour(carstate: CarState):
         # stop detected pedestrain or crosswalk
         pass
 
+    if carstate.pitch > 0.2:
+        # incline
+        pass
+
+    if carstate.pitch < -0.2:
+        # decline
+        pass
+
 
 class DecisionMakingProcess(WorkerProcess):
     # ===================================== Worker process =========================================
