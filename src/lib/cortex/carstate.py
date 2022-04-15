@@ -85,6 +85,9 @@ class CarState:
     def check_goal_reached(self) -> bool:
         return self.calc_distance(*self.goal) < 0.01
 
+    def calc_distance_target_node(self) -> float:
+        return self.calc_distance(*self.current_target)
+
     def update_pos(
         self, x: float, y: float, yaw: float, pitch: float, roll: float
     ) -> None:

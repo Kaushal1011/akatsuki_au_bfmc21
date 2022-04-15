@@ -26,6 +26,42 @@ def get_last(inP: Pipe, delta_time: float = 1e-2):
     return timestamp, data
 
 
+def trigger_behaviour(carstate: CarState):
+    if carstate.detected_intersection and carstate.current_ptype == "int":
+        # intersection
+        pass
+
+    if carstate.detected_sign.parking:
+        # Parking
+        pass
+
+    if carstate.detected_car and carstate.can_overtake:
+        # overtake
+        pass
+
+    if carstate.detected_car and not carstate.can_overtake:
+        # tailing or stop
+        pass
+
+    if (
+        carstate.detected_closed_road or carstate.calc_distance_target_node > 0.10
+    ):  # 10 cm
+        # replan closed road
+        pass
+
+    if carstate.detected_sign.stop:
+        # stop for t secs
+        pass
+
+    if carstate.detected_sign.priority:
+        # slowdown for t secs
+        pass
+
+    if carstate.detected_pedestrian or carstate.detected_sign.crosswalk:
+        # stop detected pedestrain or crosswalk
+        pass
+
+
 class DecisionMakingProcess(WorkerProcess):
     # ===================================== Worker process =========================================
     def __init__(self, inPs, outPs, inPsnames=[]):
