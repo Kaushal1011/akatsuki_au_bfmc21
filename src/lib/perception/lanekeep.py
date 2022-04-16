@@ -19,6 +19,7 @@ MAX_STEER = 23
 def get_last(inP: Pipe, delta_time: float = 0.1):
     timestamp, data = inP.recv()
     while (time() - timestamp) > delta_time:
+        print("lk: skipping frame")
         timestamp, data = inP.recv()
     
     return timestamp, data
@@ -80,7 +81,8 @@ class LaneKeepingProcess(WorkerProcess):
             while True:
                 # Obtain image
                 image_recv_start = time()
-                stamps, img = inP.recv()
+                stamps, img = get_last(inP, 0.01)
+                # print("LK", stamps)
                 # img = self.frame_shm
                 # print(f"lk: Time taken to recv image {time() - image_recv_start}")
                 # print("Time taken to recieve image", time()- i)
@@ -88,7 +90,6 @@ class LaneKeepingProcess(WorkerProcess):
                 # Apply image processing
                 val, outimage = self.lk(img)
                 angle = self.computeSteeringAnglePID(val)
-
                 self.outPs[0].send((angle, None))
                 # print(f"LK compute time {(time() - compute_time):.4f}s")
                 if len(outPs) > 1:

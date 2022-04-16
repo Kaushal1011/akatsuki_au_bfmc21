@@ -31,7 +31,7 @@ def get_last(inP: Pipe, delta_time: float = 1e-2):
 
 
 def trigger_behaviour(carstate: CarState,action_man:ActionManager):
-    print(carstate.detected_sign)
+    # print(carstate.detected_sign)
     if carstate.detected_intersection and carstate.current_ptype == "int":
         # intersection
         pass
@@ -39,9 +39,9 @@ def trigger_behaviour(carstate: CarState,action_man:ActionManager):
     if carstate.detected_intersection :
         pass
         # stop for t secs intersection
-        # stopobj=StopBehvaiour()
-        # stopaction=ActionBehaviour(name="stop",release_time=6.0,callback=stopobj)
-        # action_man.set_action(stopaction,action_time=3.0)
+        stopobj=StopBehvaiour()
+        stopaction=ActionBehaviour(name="stop",release_time=6.0,callback=stopobj)
+        action_man.set_action(stopaction,action_time=3.0)
 
 
     if carstate.detected_sign["parking"]:
@@ -57,7 +57,7 @@ def trigger_behaviour(carstate: CarState,action_man:ActionManager):
         pass
 
     if (
-        carstate.detected_closed_road or carstate.calc_distance_target_node() > 0.10
+        carstate.detected_closed_road or carstate.calc_distance_target_node() > 2
     ):  # 10 cm
         # replan closed road
         pass
@@ -65,7 +65,7 @@ def trigger_behaviour(carstate: CarState,action_man:ActionManager):
     if carstate.detected_sign["stop"]:
         # stop for t secs
         stopobj=StopBehvaiour()
-        stopaction=ActionBehaviour(name="stop",release_time=5.0,callback=stopobj)
+        stopaction=ActionBehaviour(name="stop",release_time=6.0,callback=stopobj)
         action_man.set_action(stopaction,action_time=3.0)
 
     if carstate.detected_sign["priority"]:
@@ -166,7 +166,7 @@ class DecisionMakingProcess(WorkerProcess):
                 idx = self.inPsnames.index("iD")
                 detected_intersection = inPs[idx].recv()
                 self.state.update_intersection(detected_intersection)
-                print("id")
+                print("id: ",detected_intersection)
                 # print(f"TIme taken iD {(time()- t_id):.4f}s")
 
                 # sign Detection
@@ -184,11 +184,13 @@ class DecisionMakingProcess(WorkerProcess):
                     if inPs[idx].poll():
                         pos=inPs[idx].recv()
                         # print("pos")
-                        print("Position: ",pos)
+                        # print("Position: ",pos)
                         if pos[0]==0 and pos[1]==0:
                             pass
                         else:
                             self.state.update_pos(*pos)
+                    else:
+                        self.state.update_pos_noloc()
 
                 # TODO: add back
                 # # if trafficlight process is connected
@@ -204,15 +206,14 @@ class DecisionMakingProcess(WorkerProcess):
                 self.state.v=speed
                 self.state.steering_angle=steer
 
-                print("speed: ", self.state.v)
-                print("steer: ", self.state.steering_angle)
+                # print("speed: ", self.state.v)
+                # print("steer: ", self.state.steering_angle)
 
                 # TODO
                 # speed, steer_angle = self.get_controls()
 
                 # print(f"Time taken {time() - start_time}s\n ========================")
                 for outP in outPs:
-                    print("send")
                     outP.send((self.state.steering_angle, self.state.v))
 
             except Exception as e:

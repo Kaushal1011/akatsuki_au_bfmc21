@@ -1,6 +1,7 @@
 import datetime
 import math
 
+from time import time
 
 class DetectedSign:
     def init(self):
@@ -29,7 +30,7 @@ class DetectedSign:
 
 
 class CarState:
-    def __init__(self, max_v=0.09, dt=0.13, car_len=0.365,**kwargs) -> None:
+    def __init__(self, max_v=0.15, dt=0.13, car_len=0.365,**kwargs) -> None:
 
         self.max_v = max_v
         # position data
@@ -39,8 +40,11 @@ class CarState:
         self.yaw = 0
         self.pitch = 0
         self.roll = 0
-        self.rear_x = self.x - ((car_len / 2) * math.cos(self.yaw))
-        self.rear_y = self.y - ((car_len / 2) * math.sin(self.yaw))
+        self.car_len=car_len
+        self.rear_x = self.x - ((car_len / 2) * math.cos(-self.yaw))
+        self.rear_y = self.y - ((car_len / 2) * math.sin(-self.yaw))
+
+        self.last_update_time=time()
 
         # lane keeping and cs
         self.lanekeeping_angle = 0.0
@@ -93,6 +97,7 @@ class CarState:
     def calc_distance(self, point_x: float, point_y: float) -> float:
         dx = self.x - point_x
         dy = self.y - point_y
+        # print(dx,dy)
         return math.hypot(dx, dy)
 
     def check_goal_reached(self) -> bool:
@@ -104,13 +109,24 @@ class CarState:
     def update_pos(
         self, x: float, y: float, yaw: float, pitch: float, roll: float
     ) -> None:
+        self.last_update_time = time()
         self.x = x
         self.y = y
         self.yaw = yaw
         self.pitch = pitch
         self.roll = roll
-        self.rear_x = self.x - ((self.car_len / 2) * math.cos(self.yaw))
-        self.rear_y = self.y - ((self.car_len / 2) * math.sin(self.yaw))
+        self.rear_x = self.x - ((self.car_len / 2) * math.cos(-self.yaw))
+        self.rear_y = self.y - ((self.car_len / 2) * math.sin(-self.yaw))
+
+    def update_pos_noloc(self):
+        dt = time() - self.last_update_time
+        self.last_update_time = time()
+        self.x = self.x + self.v * math.cos(-self.yaw) * dt
+        self.y = self.y + self.v * math.sin(-self.yaw) * dt
+        self.yaw = self.yaw - self.v / self.car_len * math.tan(self.steering_angle*math.pi/180) * dt 
+        self.rear_x = self.x - ((self.car_len / 2) * math.cos(-self.yaw))
+        self.rear_y = self.y - ((self.car_len / 2) * math.sin(-self.yaw))   
+    
 
     def update_intersection(self, detected_intersection: bool) -> None:
         self.detected_intersection = detected_intersection

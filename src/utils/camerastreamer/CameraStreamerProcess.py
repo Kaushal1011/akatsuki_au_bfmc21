@@ -26,6 +26,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
+from multiprocessing.connection import Connection
 import socket
 import struct
 import time
@@ -35,6 +36,10 @@ import numpy as np
 # import SharedArray as sa
 import cv2
 
+from src.config import get_config
+
+config = get_config()
+HOST = config["pc_ip"]
 from src.templates.workerprocess import WorkerProcess
 
 
@@ -78,7 +83,7 @@ class CameraStreamerProcess(WorkerProcess):
     # ===================================== INIT SOCKET ==================================
     def _init_socket(self):
         """Initialize the socket client."""
-        self.serverIp = "192.168.43.61"  # PC ip
+        self.serverIp = HOST  # PC ip
         # self.serverIp = "0.0.0.0"  # PC ip
 
         self.port = 2244  # port
@@ -104,7 +109,7 @@ class CameraStreamerProcess(WorkerProcess):
 
     # ===================================== SEND THREAD ==================================
 
-    def _send_thread(self, inP):
+    def _send_thread(self, inP:Connection):
         """Sending the frames received thought the input pipe to remote client by using the created socket connection.
 
         Parameters

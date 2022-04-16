@@ -1,6 +1,6 @@
 from threading import Thread
 from time import time
-
+import math
 
 from src.lib.perception.lanekeepfunctions import LaneKeep as LaneKeepMethod
 from src.lib.cortex.posfushandle import Localize
@@ -15,8 +15,8 @@ def get_last(inP: Pipe, delta_time: float = 0.1):
     timestamp = data["timestamp"]
     while (time() - timestamp) > delta_time:
         data = inP.recv()
-        print("skipping data")
-        print(time(), data)
+        # print("xxxxxxxxxxxxxx Pos: skipping data")
+        # print(time(), data)
         timestamp = data["timestamp"]
 
     return data
@@ -87,20 +87,22 @@ class PositionFusionProcess(WorkerProcess):
                 if "loc" in self.inPsnames:
                     idx = self.inPsnames.index("loc")
                     if inPs[idx].poll():
-                        loc = inPs[idx].recv()
-                        print("=============> loc")
+                        loc:dict = get_last(inPs[idx], 0.5)
+                        # print("LOC", time(), loc["timestamp"])
                         gx = loc["posA"]
                         gy = loc["posB"]
                         gyaw = loc["rotA"] if "rotA" in loc.keys() else loc["radA"]
+                        # gyaw = 2 * math.pi - (gyaw + math.pi)
 
                 if "imu" in self.inPsnames:
                     if inPs[idx].poll():
                         idx = self.inPsnames.index("imu")
-                        imu = inPs[idx].recv()
-                        print("imu")
+                        imu = get_last(inPs[idx])
+                        # print("IMU", time(), imu["timestamp"])
                         iroll = imu["roll"]
                         ipitch = imu["pitch"]
                         iyaw = imu["yaw"]
+                        # iyaw = 2 * math.pi - (iyaw + math.pi)
 
                         ax = imu["accelx"]
                         ay = imu["accely"]

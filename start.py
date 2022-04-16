@@ -113,10 +113,10 @@ if config["enableIntersectionDet"]:
     dataFusionInputPs.append(iDFzzR)
     dataFusionInputName.append("iD")
 
-    if config["enableStream"]:
+    if config["enableStream"] and False:
         # TODO: add streaming utility
-        # idStrR, idStrS = Pipe(duplex=False)
-        idProc = IntersectionDetProcess([camiDR], [iDFzzS])
+        idStrR, idStrS = Pipe(duplex=False)
+        idProc = IntersectionDetProcess([camiDR], [iDFzzS, idStrS])
     else:
         idProc = IntersectionDetProcess([camiDR], [iDFzzS])
     allProcesses.append(idProc)

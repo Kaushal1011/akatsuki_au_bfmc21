@@ -1,6 +1,8 @@
 # from multiprocessing import shared_memory
+from multiprocessing.connection import Connection
 from threading import Thread
 from time import time
+from typing import List
 
 import numpy as np
 
@@ -13,6 +15,7 @@ def get_last(inP: Pipe, delta_time: float = 0.1):
     timestamp, data = inP.recv()
 
     while (time() - timestamp) > delta_time:
+        print("iD: skipping frame")
         timestamp, data = inP.recv()
     return timestamp, data
 
@@ -52,7 +55,7 @@ class IntersectionDetProcess(WorkerProcess):
         thr.daemon = True
         self.threads.append(thr)
 
-    def _the_thread(self, inP, outPs):
+    def _the_thread(self, inP:Connection, outPs:List[Connection]):
         """Obtains image, applies the required image processing and computes the steering angle value.
 
         Parameters
@@ -66,7 +69,7 @@ class IntersectionDetProcess(WorkerProcess):
             while True:
                 # Obtain image
                 img_rec_time = time()
-                stamps, img = inP.recv()
+                stamps, img = get_last(inP, 0.01)
                 # img = self.frame_shm
                 # Apply image processing
                 # print(f"iD: time taken to recv img {time() - img_rec_time}")

@@ -35,7 +35,7 @@ def roi_func(img: np.ndarray) -> np.ndarray:
     return img
 
 
-def intersection_det(img, area_threshold=9_500) -> np.ndarray:
+def intersection_det(img, area_threshold=8_500) -> np.ndarray:
     # preprocess
     # lower_white = np.array([90, 90, 90])
     # upper_white = np.array([255, 255, 255])
@@ -60,10 +60,10 @@ def intersection_det(img, area_threshold=9_500) -> np.ndarray:
     cnts = cnts[0] if len(cnts) == 2 else cnts[1]
     detected = False
     final_contours = []
-
+    
     for c in cnts:
         area = cv2.contourArea(c)
-        # print(f"Intersection Area -> {area}")
+        print(f"Intersection Area -> {area}")
         if area > area_threshold:
             detected = True
             # final_contours.append(c)

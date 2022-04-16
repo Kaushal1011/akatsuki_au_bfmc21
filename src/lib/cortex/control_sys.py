@@ -3,9 +3,9 @@ import math
 class Pure_Pursuit:
     def __init__(self, coord_list):
         self.k = 0.01  # look forward gain
-        self.Lfc = 0.3  # [m] look-ahead distance
+        self.Lfc = 0.325  # [m] look-ahead distance
         self.Kp = 1.0  # speed proportional gain
-        self.WB = 0.26  # [m] wheel base of vehicle
+        self.WB = 0.3  # [m] wheel base of vehicle
         self.cx, self.cy = zip(*coord_list)
         self.old_nearest_point_index = None
 
@@ -14,7 +14,7 @@ class Pure_Pursuit:
         # To speed up nearest point search, doing it at only first time.
         if self.old_nearest_point_index is None:
             # search nearest point index
-            print("Init Location State : " ,state.rear_x,state.rear_y)
+            # print("Init Location State : " ,state.rear_x,state.rear_y)
             dx = [state.rear_x - icx for icx in self.cx]
             dy = [state.rear_y - icy for icy in self.cy]
             d = np.hypot(dx, dy)
@@ -57,16 +57,17 @@ class Pure_Pursuit:
             ty = self.cy[-1]
             ind = len(self.cx) - 1
 
-        alpha = math.atan2(ty - state.rear_y, tx - state.rear_x) - state.yaw
+        alpha = math.atan2(ty - state.rear_y, tx - state.rear_x) - (-state.yaw)
 
-        print("rear pts: ",state.rear_x,state.rear_y)
-        print("target and yaw :", tx,ty,state.yaw)
+        # print("rear pts: ",state.x,state.y)
+        # print("target and yaw :", tx,ty,state.yaw)
+        # print("alpha and pts angle", alpha,alpha+state.yaw)
 
         delta = math.atan2(2.0 * self.WB * math.sin(alpha) / Lf, 1.0)
 
-        print("computed delta:", delta)
+        # print("computed delta:", delta)
 
-        return -delta
+        return delta
 
     def reset_coord_list(self, coord_list, Lfc=0.125):
         self.cx, self.cy = zip(*coord_list)

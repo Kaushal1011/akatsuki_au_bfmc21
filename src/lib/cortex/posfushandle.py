@@ -98,6 +98,10 @@ class Localize:
         self.var_dt = now() - self.lupdate_i
         self.lupdate_i = now()
 
+        self.accelx=ax
+        self.accely=ay
+        self.accelz=az
+
         # v = u + at
         self.ux = self.ux + self.accelx * self.var_dt
         self.uy = self.uy + self.accely * self.var_dt
@@ -176,7 +180,7 @@ class Localize:
             self.i_state_means.append(imean)
             self.i_state_covariances.append(icov)
 
-            rix, riy = imean[0], icov[2]
+            rix, riy = imean[0], imean[2]
             if len(self.i_arr) < 10:
                 rix, riy = self.ix, self.iy
 
@@ -219,4 +223,4 @@ class Localize:
                 # self.kf2.observation_covariance=10*self.kf2.observation_covariance
                 pass
             
-        return self.gx, self.gy, self.iyaw, self.ipitch, self.iroll
+        return self.gx, self.gy, self.gyaw, self.ipitch, self.iroll
