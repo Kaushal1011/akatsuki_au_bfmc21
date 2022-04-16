@@ -1,6 +1,8 @@
 # from multiprocessing import shared_memory
+from multiprocessing.connection import Connection
 from threading import Thread
 from time import time
+from typing import List
 
 import numpy as np
 
@@ -64,7 +66,7 @@ class LaneKeepingProcess(WorkerProcess):
         val = max(-MAX_STEER, min(val - 90, MAX_STEER))
         return val
 
-    def _the_thread(self, inP, outPs):
+    def _the_thread(self, inP:Connection, outPs:List[Connection]):
         """Obtains image, applies the required image processing and computes the steering angle value.
 
         Parameters
@@ -78,7 +80,7 @@ class LaneKeepingProcess(WorkerProcess):
             while True:
                 # Obtain image
                 image_recv_start = time()
-                stamps, img = get_last(inP)
+                stamps, img = inP.recv()
                 # img = self.frame_shm
                 # print(f"lk: Time taken to recv image {time() - image_recv_start}")
                 # print("Time taken to recieve image", time()- i)

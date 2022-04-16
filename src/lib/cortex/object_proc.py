@@ -66,7 +66,7 @@ class ObjectProcess(WorkerProcess):
         """
         try:
             while True:
-                stamp, image = get_last(inPs[0], 0.1)
+                stamp, image = inPs[0].recv()
                 distance_data = inPs[1].recv()
                 # print("Distance Data ====> ", distance_data)
 

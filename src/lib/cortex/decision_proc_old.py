@@ -306,7 +306,7 @@ class DecisionMakingProcess(WorkerProcess):
                 if "imu" in self.inPsnames:
                     idx = self.inPsnames.index("imu")
                     if inPs[idx].poll():
-                        imu_timestamp, imu_data = get_last(inPs[idx])
+                        imu_timestamp, imu_data = inPs[idx].recv()
                         yaw_imu = imu_data["yaw"]
                         # print("IMU:", imu_data)
                         # yaw_imu = 360 - imu_data["yaw"]

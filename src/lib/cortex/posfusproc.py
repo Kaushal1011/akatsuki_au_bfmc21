@@ -96,7 +96,7 @@ class PositionFusionProcess(WorkerProcess):
                 if "imu" in self.inPsnames:
                     if inPs[idx].poll():
                         idx = self.inPsnames.index("imu")
-                        imu = get_last(inPs[idx], 1)
+                        imu = inPs[idx].recv()
                         print("imu")
                         iroll = imu["roll"]
                         ipitch = imu["pitch"]
