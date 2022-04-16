@@ -80,7 +80,7 @@ class LaneKeepingProcess(WorkerProcess):
                 image_recv_start = time()
                 stamps, img = get_last(inP)
                 # img = self.frame_shm
-                print(f"lk: Time taken to recv image {time() - image_recv_start}")
+                # print(f"lk: Time taken to recv image {time() - image_recv_start}")
                 # print("Time taken to recieve image", time()- i)
                 compute_time = time()
                 # Apply image processing
@@ -88,7 +88,7 @@ class LaneKeepingProcess(WorkerProcess):
                 angle = self.computeSteeringAnglePID(val)
 
                 self.outPs[0].send((angle, None))
-                print(f"LK compute time {(time() - compute_time):.4f}s")
+                # print(f"LK compute time {(time() - compute_time):.4f}s")
                 if len(outPs) > 1:
                     print(outimage.shape)
                     self.outPs[1].send((angle, outimage))

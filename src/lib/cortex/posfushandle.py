@@ -7,7 +7,7 @@ now = time.time
 
 
 class Localize:
-    def __init__(self, gx=0, gy=0,  ix=0, iy=0):
+    def __init__(self, gx=0.9, gy=14.8,  ix=0.9, iy=14.8):
 
         initial_state_mean = [0, ix, 0, iy]
 
@@ -218,5 +218,5 @@ class Localize:
                 # print("in here")
                 # self.kf2.observation_covariance=10*self.kf2.observation_covariance
                 pass
-
-        return rix, riy, self.iyaw, self.ipitch, self.iroll
+            
+        return self.gx, self.gy, self.iyaw, self.ipitch, self.iroll

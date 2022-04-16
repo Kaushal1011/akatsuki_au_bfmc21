@@ -29,25 +29,38 @@ class DetectedSign:
 
 
 class CarState:
-    def __init__(self, max_v=0.1, dt=0.13, car_len=0.365) -> None:
+    def __init__(self, max_v=0.09, dt=0.13, car_len=0.365,**kwargs) -> None:
 
         self.max_v = max_v
         # position data
         # 0.75, 4.8
-        self.x = 0
-        self.y = 0
+        self.x = 0.8
+        self.y = 14.8
         self.yaw = 0
         self.pitch = 0
         self.roll = 0
+        self.rear_x = self.x - ((car_len / 2) * math.cos(self.yaw))
+        self.rear_y = self.y - ((car_len / 2) * math.sin(self.yaw))
 
-        # lane keeping
+        # lane keeping and cs
         self.lanekeeping_angle = 0.0
+        self.cs_angle=0.0
 
         # intersection detected
         self.detected_intersection = False
 
         # sign detection
-        self.detected_sign = DetectedSign()
+        self.detected_sign = {
+            "priority": False,
+            "crosswalk": False,
+            "stop": False,
+            "roundabout": False,
+            "parking": False,
+            "highway_exit": False,
+            "oneway": False,
+            "noentry": False,
+            "highway_entry": False
+        }
 
         # distance sensor
         self.front_distance = float("inf")
@@ -96,6 +109,8 @@ class CarState:
         self.yaw = yaw
         self.pitch = pitch
         self.roll = roll
+        self.rear_x = self.x - ((self.car_len / 2) * math.cos(self.yaw))
+        self.rear_y = self.y - ((self.car_len / 2) * math.sin(self.yaw))
 
     def update_intersection(self, detected_intersection: bool) -> None:
         self.detected_intersection = detected_intersection
@@ -129,15 +144,15 @@ class CarState:
         noentry: bool,
         highway_entry: bool,
     ):
-        self.detected_sign.priority = priority
-        self.detected_sign.crosswalk = crosswalk
-        self.detected_sign.stop = stop
-        self.detected_sign.roundabout = roundabout
-        self.detected_sign.parking = parking
-        self.detected_sign.highway_exit = highway_exit
-        self.detected_sign.oneway = oneway
-        self.detected_sign.noentry = noentry
-        self.detected_sign.highway_entry = highway_entry
+        self.detected_sign["priority"] = priority
+        self.detected_sign["crosswalk"] = crosswalk
+        self.detected_sign["stop"] = stop
+        self.detected_sign["roundabout"] = roundabout
+        self.detected_sign["parking"] = parking
+        self.detected_sign["highway_exit"] = highway_exit
+        self.detected_sign["oneway"] = oneway
+        self.detected_sign["noentry"] = noentry
+        self.detected_sign["highway_entry"] = highway_entry
 
     def update_tl(self, tl):
         self.tl = tl

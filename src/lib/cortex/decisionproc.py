@@ -1,9 +1,11 @@
 import datetime
 import math
 from multiprocessing import Pipe
+from multiprocessing.connection import Connection
+import pathlib
 from threading import Thread
 from time import time
-from typing import Optional
+from typing import List, Optional
 
 from src.lib.cortex.pathplanning import (
     PathPlanning,
@@ -14,6 +16,8 @@ from src.lib.cortex.pathplanning import (
 from src.lib.cortex.carstate import CarState
 from src.templates.workerprocess import WorkerProcess
 from time import time
+from src.lib.cortex.action import ActionBehaviour,ActionManager,LaneKeepBehaviour,ControlSystemBehaviour, ObjectStopBehaviour,StopBehvaiour,PriorityBehaviour
+import joblib
 
 import math
 
@@ -26,12 +30,21 @@ def get_last(inP: Pipe, delta_time: float = 1e-2):
     return timestamp, data
 
 
-def trigger_behaviour(carstate: CarState):
+def trigger_behaviour(carstate: CarState,action_man:ActionManager):
+    print(carstate.detected_sign)
     if carstate.detected_intersection and carstate.current_ptype == "int":
         # intersection
         pass
+    
+    if carstate.detected_intersection :
+        pass
+        # stop for t secs intersection
+        # stopobj=StopBehvaiour()
+        # stopaction=ActionBehaviour(name="stop",release_time=6.0,callback=stopobj)
+        # action_man.set_action(stopaction,action_time=3.0)
 
-    if carstate.detected_sign.parking:
+
+    if carstate.detected_sign["parking"]:
         # Parking
         pass
 
@@ -44,20 +57,22 @@ def trigger_behaviour(carstate: CarState):
         pass
 
     if (
-        carstate.detected_closed_road or carstate.calc_distance_target_node > 0.10
+        carstate.detected_closed_road or carstate.calc_distance_target_node() > 0.10
     ):  # 10 cm
         # replan closed road
         pass
 
-    if carstate.detected_sign.stop:
+    if carstate.detected_sign["stop"]:
         # stop for t secs
-        pass
+        stopobj=StopBehvaiour()
+        stopaction=ActionBehaviour(name="stop",release_time=5.0,callback=stopobj)
+        action_man.set_action(stopaction,action_time=3.0)
 
-    if carstate.detected_sign.priority:
+    if carstate.detected_sign["priority"]:
         # slowdown for t secs
         pass
 
-    if carstate.detected_pedestrian or carstate.detected_sign.crosswalk:
+    if carstate.detected_pedestrian or carstate.detected_sign["crosswalk"]:
         # stop detected pedestrain or crosswalk
         pass
 
@@ -83,8 +98,28 @@ class DecisionMakingProcess(WorkerProcess):
             List of output pipes (0 - send steering data to the movvement control process)
         """
         super(DecisionMakingProcess, self).__init__(inPs, outPs)
-        self.state = CarState()
+        # pass navigator config
+        self.state = CarState(navigator_config=None)
         self.inPsnames = inPsnames
+
+        self.actman=ActionManager()
+
+        lkobj=LaneKeepBehaviour()
+        lkaction=ActionBehaviour(name="lk",callback=lkobj)
+        self.actman.set_action(lkaction)
+        data_path = pathlib.Path(pathlib.Path(__file__).parent.parent.parent.resolve(), "data", "mid_course.z")
+        data=joblib.load(data_path)
+        # pass coordlist here from navigator config 
+        csobj=ControlSystemBehaviour(coord_list=data[0])
+        csaction=ActionBehaviour(name="cs",callback=csobj)
+        self.actman.set_action(csaction)
+
+        # pass coordlist here from navigator config 
+        stopobj=ObjectStopBehaviour()
+        stopobjaction=ActionBehaviour(name="objstop",callback=stopobj)
+        self.actman.set_action(stopobjaction)
+
+
 
     def run(self):
         """Apply the initializing methods and start the threads."""
@@ -106,7 +141,7 @@ class DecisionMakingProcess(WorkerProcess):
         thr.daemon = True
         self.threads.append(thr)
 
-    def _the_thread(self, inPs, outPs):
+    def _the_thread(self, inPs:List[Connection], outPs:List[Connection]):
         """Obtains image, applies the required image processing and computes the steering angle value.
 
         Parameters
@@ -124,12 +159,14 @@ class DecisionMakingProcess(WorkerProcess):
                 idx = self.inPsnames.index("lk")
                 lk_angle, _ = inPs[idx].recv()
                 self.state.update_lk_angle(lk_angle)
+                print("lk")
                 # print(f"Time taken lk {(time() - t_lk):.4f}s {lk_angle}")
 
                 t_id = time()
                 idx = self.inPsnames.index("iD")
                 detected_intersection = inPs[idx].recv()
                 self.state.update_intersection(detected_intersection)
+                print("id")
                 # print(f"TIme taken iD {(time()- t_id):.4f}s")
 
                 # sign Detection
@@ -140,10 +177,18 @@ class DecisionMakingProcess(WorkerProcess):
                         # TODO : get sign detection for all signs
                         sign, sign_area = inPs[idx].recv()
                         # self.state.update_sign_detected()
+                        print("sd")
 
                 if "pos" in self.inPsnames:
                     idx = self.inPsnames.index("pos")
-                    self.state.update_pos(*inPs[idx].recv())
+                    if inPs[idx].poll():
+                        pos=inPs[idx].recv()
+                        # print("pos")
+                        print("Position: ",pos)
+                        if pos[0]==0 and pos[1]==0:
+                            pass
+                        else:
+                            self.state.update_pos(*pos)
 
                 # TODO: add back
                 # # if trafficlight process is connected
@@ -151,11 +196,23 @@ class DecisionMakingProcess(WorkerProcess):
                 #     trafficlights = inPs[3].recv()
                 #     print(trafficlights)
 
+                # update car navigator, current ptype, current etype and current idx
+
+                trigger_behaviour(self.state,self.actman)
+
+                speed,steer=self.actman(self.state)
+                self.state.v=speed
+                self.state.steering_angle=steer
+
+                print("speed: ", self.state.v)
+                print("steer: ", self.state.steering_angle)
+
                 # TODO
                 # speed, steer_angle = self.get_controls()
 
-                print(f"Time taken {time() - start_time}s\n ========================")
+                # print(f"Time taken {time() - start_time}s\n ========================")
                 for outP in outPs:
+                    print("send")
                     outP.send((self.state.steering_angle, self.state.v))
 
             except Exception as e:

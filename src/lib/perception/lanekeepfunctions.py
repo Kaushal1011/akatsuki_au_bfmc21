@@ -139,7 +139,7 @@ class LaneKeep:
         if self.computation_method == "hough":
             angle, outimg = self.houghlines_angle(preprocess_img)
             angle_roadarea = self.graph_road_search(preprocess_img)
-            print(angle, " ", angle_roadarea)
+            # print(angle, " ", angle_roadarea)
 #             angle = (angle*2 + angle_roadarea) / 3
             return angle, outimg
 
@@ -239,10 +239,10 @@ class LaneKeep:
             angle = compute_steering_angle_lanelinecoord(
                 img[:, :, 0], lane_lines=lanelines
             )
-            print("angle: ", angle)
+            # print("angle: ", angle)
         except IndexError as e:
             angle = compute_steering_angle_lanelinecoord(img, lane_lines=lanelines)
-            print("angle: ", angle)
+            # print("angle: ", angle)
 
         # print("Time taken to find lanes", time()- b)
         c = time()
@@ -283,9 +283,9 @@ def get_road_ratio_angle(mask_img):
                 img_new[i][j] = 0
     visited = bfs_4(img_new, (img_new.shape[0], img_new.shape[1] // 2))
     right = len([i for i in visited if i[1] > img_new.shape[1] // 2])
-    print(img_new.shape[1] // 2)
+    # print(img_new.shape[1] // 2)
     left = len(visited) - right
-    print("Len of Halfs: ", right, " ", left)
+    # print("Len of Halfs: ", right, " ", left)
     return (right - left) / len(visited) * 50 + 90, visited
 
 

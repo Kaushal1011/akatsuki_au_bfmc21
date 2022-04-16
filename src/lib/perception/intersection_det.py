@@ -69,7 +69,7 @@ class IntersectionDetProcess(WorkerProcess):
                 stamps, img = get_last(inP)
                 # img = self.frame_shm
                 # Apply image processing
-                print(f"iD: time taken to recv img {time() - img_rec_time}")
+                # print(f"iD: time taken to recv img {time() - img_rec_time}")
                 detected, outimage = intersection_det(img)
                 # for outP in outPs:
                 outPs[0].send(detected)
