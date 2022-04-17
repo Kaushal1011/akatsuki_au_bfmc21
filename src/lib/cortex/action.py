@@ -64,6 +64,8 @@ class OvertakeBehaviour(BehaviourCallback):
         self.current_sensor_val=0.0
         self.last_update_time=None
         self.target_speed_array=[]
+        self.WB=0.3
+        print("behaviour init")
 
 
     def reset(self,**kwargs):
@@ -73,21 +75,31 @@ class OvertakeBehaviour(BehaviourCallback):
     def __call__(self,car_state:CarState):
         # get target speed
         self.current_sensor_val=car_state.front_distance
+
+        print("Called overtake")
         
         if not self.target_deteremined:
+            print("inside overtake speed calc")
             dt=time.time()-self.last_update_time
             self.last_update_time=time.time()
-            tspeed=((self.current_sensor_val-self.prev_sensor_val)/dt) - car_state.v
+            tspeed=((self.prev_sensor_val-self.current_sensor_val)/dt) - car_state.v
+            print("Target Speed: ", tspeed)
             self.target_speed_array.append(tspeed)
             if len(self.target_speed_array)>3:
-                self.target_speed=sum(self.target_speed_array)/len(self.target_speed_array)
-            print("Target Speed determined: ",self.target_speed)
-            self.target_deteremined=True
-            return 
+                self.target_speed=sum(self.target_speed_array[1:])/len(self.target_speed_array[1:])
+                print("Target Speed determined: ",self.target_speed)
+                self.target_deteremined=True
+                self.speed=car_state.v
+            return {"None":None}
         # once target is determined
         # make new target points on the left lane
         cx=car_state.rear_x
         cy=car_state.rear_y
+
+        # Use Of Inverted Yaw
+
+        print("cx,cy should be: ",car_state.navigator.get_nearest_node(cx,cy,car_state.yaw))
+
         tx=car_state.target_x
         ty=car_state.target_y
         # find m 
@@ -101,8 +113,9 @@ class OvertakeBehaviour(BehaviourCallback):
         y4 = m*x4+c
 
         yaw3=math.atan2(y3,x3)
-        yaw4=math.atan(y4,x4) 
-        
+        yaw4=math.atan2(y4,x4) 
+        print("x3 , y3",x3,y3)
+        print("x4, y4", x4,y4)
         # determine which point to pick 
 
         alpha = math.atan2(y3 - car_state.rear_y, x3 - car_state.rear_x) - (-car_state.yaw)
@@ -126,6 +139,8 @@ class OvertakeBehaviour(BehaviourCallback):
         if car_state.side_distance>0.5 and self.parallel_reach:
             self.parallel_out=True
 
+        print("In Overtake x3 y3 delta:",x3,y3,di)
+
         return {"steer":di,"speed":self.speed}
 
     def out_condition(self, **kwargs) -> bool:
@@ -134,6 +149,7 @@ class OvertakeBehaviour(BehaviourCallback):
         # return super().out_condition(**kwargs)
    
     def set(self,**kwargs):
+        print("Setting up overtake")
         state:CarState
         state=kwargs["car_state"]
         self.prev_sensor_val=state.front_distance
@@ -160,8 +176,8 @@ class ControlSystemBehaviour(BehaviourCallback):
     
     def __call__(self, car_state:CarState):
         ind,lf=self.cs.search_target_index(car_state)
-        print("Loc Index: ",ind)
-        print("Target: ",self.cs.cx[ind]," ", self.cs.cy[ind])
+        # print("Loc Index: ",ind)
+        # print("Target: ",self.cs.cx[ind]," ", self.cs.cy[ind])
         
         car_state.target_x=self.cs.cx[ind]
         car_state.target_y=self.cs.cx[ind]

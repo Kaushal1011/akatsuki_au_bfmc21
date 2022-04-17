@@ -63,7 +63,6 @@ def intersection_det(img, area_threshold=7_500) -> np.ndarray:
     
     for c in cnts:
         area = cv2.contourArea(c)
-        print(f"Intersection Area -> {area}")
         if area > area_threshold:
             detected = True
             # final_contours.append(c)

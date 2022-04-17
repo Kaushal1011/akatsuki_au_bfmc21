@@ -18,7 +18,7 @@ MAX_STEER = 23
 def get_last(inP: Connection, delta_time: float = 0.1):
     timestamp, data = inP.recv()
     while (time() - timestamp) > delta_time:
-        print("lk: skipping frame")
+        # print("lk: skipping frame")
         timestamp, data = inP.recv()
     
     return timestamp, data

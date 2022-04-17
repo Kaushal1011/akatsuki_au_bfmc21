@@ -15,7 +15,7 @@ def get_last(inP: Pipe, delta_time: float = 0.1):
     timestamp, data = inP.recv()
 
     while (time() - timestamp) > delta_time:
-        print("iD: skipping frame")
+        # print("iD: skipping frame")
         timestamp, data = inP.recv()
     return timestamp, data
 
@@ -71,7 +71,6 @@ class IntersectionDetProcess(WorkerProcess):
                 img_rec_time = time()
                 # stamps, img = inP.recv()
                 stamps, img = get_last(inP, 0.01)
-                print("iD: ", time(), stamps)
                 # img = self.frame_shm
                 # Apply image processing
                 # print(f"iD: time taken to recv img {time() - img_rec_time}")
