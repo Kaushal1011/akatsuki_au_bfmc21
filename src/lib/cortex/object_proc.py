@@ -1,23 +1,49 @@
+from pathlib import Path
 from threading import Thread
 from time import time
-
+from typing import List
+import cv2
 
 from src.lib.perception.lanekeepfunctions import LaneKeep as LaneKeepMethod
 from src.lib.cortex.posfushandle import Localize
 from src.templates.workerprocess import WorkerProcess
 from multiprocessing import Pipe
 from multiprocessing.connection import Connection
-from typing import List
 
 
 def get_last(inP: Pipe, delta_time: float = 0.1):
-    timestamp, data = inP.recv()
-
+    data = inP.recv()
+    timestamp = data["timestamp"]
     while (time() - timestamp) > delta_time:
-        timestamp, data = inP.recv()
+        data = inP.recv()
+        # print("xxxxxxxxxxxxxx Pos: skipping data")
+        # print(time(), data)
+        timestamp = data["timestamp"]
 
+    return data
+
+def get_last_frame(inP: Pipe, delta_time: float = 0.1):
+    timestamp, data = inP.recv()
+    while (time() - timestamp) > delta_time:
+        print("lk: skipping frame")
+        timestamp, data = inP.recv()
+    
     return timestamp, data
 
+
+class DetectCar:
+    def __init__(self) -> None:
+        #car_cascade_path = Path(Path(__file__).parent.parent.parent.resolve(), "data", "car_cascade.xml")
+        #print(car_cascade_path)
+        self.car_cascade = cv2.CascadeClassifier("/home/kaypee/akatsuki_au_bfmc21/src/data/car_cascade.xml")
+
+    def __call__(self, frame):
+        print("obj detection called")
+        gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+        car_bbox = self.car_cascade.detectMultiScale(gray, 1.15, 4)
+        if len(car_bbox) != 0:
+            return True
+        return False
 
 class ObjectProcess(WorkerProcess):
     # ===================================== Worker process =========================================
@@ -32,6 +58,7 @@ class ObjectProcess(WorkerProcess):
             List of output pipes (0 - send steering data to the movvement control process)
         """
         super(ObjectProcess, self).__init__(inPs, outPs)
+        self.detect_car = DetectCar()
 
     def run(self):
         """Apply the initializing methods and start the threads."""
@@ -66,11 +93,13 @@ class ObjectProcess(WorkerProcess):
         """
         try:
             while True:
-                stamp, image = inPs[0].recv()
-                distance_data = inPs[1].recv()
-                # print("Distance Data ====> ", distance_data)
-                # front_distance, side_distance, det_car, det_ped, det_closed_road
-                outPs[0].send((0.12, 0.12, False, False, False))
+                # RUN filters for distance 
+                # RUN object detection here
+                stamp, image = get_last_frame(inPs[0], 0.01)
+                distance_data = get_last(inPs[1], 0.01)
+                detected_car  = self.detect_car(image)
+                # SEND (front_distance, side_distance, det_car, det_ped, det_closed_road)
+                outPs[0].send((distance_data["sonar1"], distance_data["sonar2"], detected_car, False, False))
 
         except Exception as e:
             raise e

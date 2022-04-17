@@ -57,6 +57,8 @@ class Pure_Pursuit:
             ty = self.cy[-1]
             ind = len(self.cx) - 1
 
+        # Use Of Inverted Yaw Here
+
         alpha = math.atan2(ty - state.rear_y, tx - state.rear_x) - (-state.yaw)
 
         # print("rear pts: ",state.x,state.y)

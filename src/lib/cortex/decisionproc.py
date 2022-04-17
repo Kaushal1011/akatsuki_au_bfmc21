@@ -190,10 +190,9 @@ class DecisionMakingProcess(WorkerProcess):
 
                 if "obj" in self.inPsnames:
                     idx = self.inPsnames.index("obj")
-                    if inPs[idx].poll():
-                        obj_data = inPs[idx].recv()
-                        print(obj_data)
-                        self.state.update_object_det(*obj_data)
+                    obj_data = inPs[idx].recv()
+                    print("obj", obj_data)
+                    self.state.update_object_det(*obj_data)
 
                 if "pos" in self.inPsnames:
                     idx = self.inPsnames.index("pos")

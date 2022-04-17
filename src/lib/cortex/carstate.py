@@ -119,6 +119,7 @@ class CarState:
         self.rear_y = self.y - ((self.car_len / 2) * math.sin(-self.yaw))
 
     def update_pos_noloc(self):
+        # Use Of Inverted Yaw Here
         dt = time() - self.last_update_time
         self.last_update_time = time()
         self.x = self.x + self.v * math.cos(-self.yaw) * dt

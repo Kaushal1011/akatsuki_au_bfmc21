@@ -237,7 +237,7 @@ objFzzR, objFzzS = Pipe(duplex=False)
 
 objProc = ObjectProcess([camObjR, disObjR], [objFzzS])
 camOutPs.append(camObjS)
-dataFusionInputPs.append(objProc)
+dataFusionInputPs.append(objFzzR)
 dataFusionInputName.append("obj")
 allProcesses.append(objProc)
 
