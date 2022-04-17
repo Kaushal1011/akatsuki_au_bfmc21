@@ -1,4 +1,6 @@
+from hashlib import sha3_384
 import time
+
 from src.lib.cortex.control_sys import Pure_Pursuit
 import math
 import joblib
@@ -11,22 +13,22 @@ ptype=data[1]
 etype=data[2]
 class BehaviourCallback:
     
-    def __init__(self):
+    def __init__(self,**kwargs):
         pass
     
-    def out_condition(self) -> bool:
+    def out_condition(self,**kwargs) -> bool:
         return False
     
-    def toggle_condition(self) -> bool:
+    def toggle_condition(self,**kwargs) -> bool:
         return False
     
     def __call__(self, car_state):
         raise NotImplementedError
     
-    def reset(self):
+    def reset(self,**kwargs):
         pass
     
-    def set(self):
+    def set(self,**kwargs):
         raise NotImplementedError
 
 
@@ -36,7 +38,7 @@ class StopBehvaiour(BehaviourCallback):
         # return 0 speed and 0 steering
         return {"speed":0.0, "steer":0.0}
     
-    def set(self):
+    def set(self,**kwargs):
         pass
 
 class PriorityBehaviour(BehaviourCallback):
@@ -44,20 +46,100 @@ class PriorityBehaviour(BehaviourCallback):
         # return pririty speed 
         return {"speed":self.state.priority_speed}
 
-    def set(self):
+    def set(self,**kwargs):
         pass
 
 class OvertakeBehaviour(BehaviourCallback):
 
-    def reset(self):
+    def __init__(self,**kwargs):
+        super().__init__()
+        self.target_speed=None
+        self.values=[]
+        self.target_deteremined=False
+        self.speed=0.0
+        
+        self.parallel_reach=False
+        self.parallel_out=False
+        self.prev_sensor_val=0.0
+        self.current_sensor_val=0.0
+        self.last_update_time=None
+        self.target_speed_array=[]
+
+
+    def reset(self,**kwargs):
         # set path here for changing lanes
         pass
     
-    def __call__(self,car_state):
-        pass
+    def __call__(self,car_state:CarState):
+        # get target speed
+        self.current_sensor_val=car_state.front_distance
+        
+        if not self.target_deteremined:
+            dt=time.time()-self.last_update_time
+            self.last_update_time=time.time()
+            tspeed=((self.current_sensor_val-self.prev_sensor_val)/dt) - car_state.v
+            self.target_speed_array.append(tspeed)
+            if len(self.target_speed_array)>3:
+                self.target_speed=sum(self.target_speed_array)/len(self.target_speed_array)
+            print("Target Speed determined: ",self.target_speed)
+            self.target_deteremined=True
+            return 
+        # once target is determined
+        # make new target points on the left lane
+        cx=car_state.rear_x
+        cy=car_state.rear_y
+        tx=car_state.target_x
+        ty=car_state.target_y
+        # find m 
+        m = -(tx-cx)/(ty-cy)
+        # find c
+        c = ty-m*tx
+
+        x3 = tx+((0.35**2)/(m**2+1))**0.5 
+        x4 = tx-((0.35**2)/(m**2+1))**0.5
+        y3 = m*x3+c
+        y4 = m*x4+c
+
+        yaw3=math.atan2(y3,x3)
+        yaw4=math.atan(y4,x4) 
+        
+        # determine which point to pick 
+
+        alpha = math.atan2(y3 - car_state.rear_y, x3 - car_state.rear_x) - (-car_state.yaw)
+
+        # print("rear pts: ",state.x,state.y)
+        # print("target and yaw :", tx,ty,state.yaw)
+        # print("alpha and pts angle", alpha,alpha+state.yaw)
+
+        delta = math.atan2(2.0 * self.WB * math.sin(alpha) / ((y3-car_state.rear_y)**2+(x3-car_state.rear_x))**0.5, 1.0)
+
+        di= delta* 180 / math.pi
+        if di > 23:
+            di = 23
+        elif di < -23:
+            di = -23
+        car_state.cs_steer=di
+
+        if car_state.side_distance<0.5:
+            self.parallel_reach=True
+        
+        if car_state.side_distance>0.5 and self.parallel_reach:
+            self.parallel_out=True
+
+        return {"steer":di,"speed":self.speed}
+
+    def out_condition(self, **kwargs) -> bool:
+        if self.parallel_out:
+            return True
+        # return super().out_condition(**kwargs)
    
-    def set(self):
-        pass
+    def set(self,**kwargs):
+        state:CarState
+        state=kwargs["car_state"]
+        self.prev_sensor_val=state.front_distance
+        self.current_sensor_val=state.front_distance
+        self.last_update_time=time.time()
+        self.speed=state.v
         
 class LaneKeepBehaviour(BehaviourCallback):
     def __call__(self, car_state):
@@ -67,7 +149,7 @@ class LaneKeepBehaviour(BehaviourCallback):
             # return  {"steer":car_state.lanekeeping_angle}
             return None
     
-    def set(self):
+    def set(self,**kwargs):
         pass
 
 class ControlSystemBehaviour(BehaviourCallback):
@@ -80,8 +162,13 @@ class ControlSystemBehaviour(BehaviourCallback):
         ind,lf=self.cs.search_target_index(car_state)
         print("Loc Index: ",ind)
         print("Target: ",self.cs.cx[ind]," ", self.cs.cy[ind])
+        
+        car_state.target_x=self.cs.cx[ind]
+        car_state.target_y=self.cs.cx[ind]
+        
         car_state.current_ptype=ptype[ind]
         car_state.can_overtake=etype[ind]
+
         di=self.cs.purest_pursuit_steer_control(car_state, ind, lf)
         di = di * 180 / math.pi
         if di > 23:
@@ -91,7 +178,7 @@ class ControlSystemBehaviour(BehaviourCallback):
         car_state.cs_steer=di
         return {"steer":di, "speed":car_state.max_v}
 
-    def set(self):
+    def set(self,**kwargs):
         pass
     
     def reset(self,**kwargs):
@@ -104,7 +191,7 @@ class ObjectStopBehaviour(BehaviourCallback):
         if car_state.front_distance<0.3:
             return {'speed':0.0}
     
-    def set(self):
+    def set(self,**kwargs):
         pass
 
     
@@ -131,6 +218,7 @@ class ActionBehaviour:
         if state:
             if self.callback.out_condition():
                 self.state=False
+                toggle=True
             return self.callback(car_state) 
         elif toggle:
             self.callback.toggle_condition()
@@ -139,7 +227,7 @@ class ActionBehaviour:
             return {}
         
     
-    def state_check(self):
+    def state_check(self,**kwargs):
         if self.state == True:
             if self.action_time is not None:
                 if (time.time() - self.state_start) > self.action_time:
@@ -161,7 +249,7 @@ class ActionBehaviour:
         else:
             return self.state
     
-    def check_cooldown(self):
+    def check_cooldown(self,**kwargs):
         
         if not self.state_start or (self.state_start + self.action_time + self.release_time < time.time()):
             print("Check Cooldown Called: ",True)
@@ -173,7 +261,7 @@ class ActionBehaviour:
 
 class ActionManager:
 
-    def __init__(self):
+    def __init__(self,**kwargs):
         self.lk=None
         self.cs=None
         self.objstop=None
@@ -224,7 +312,7 @@ class ActionManager:
             self.l1_ab=action
             self.l1_ab.set(action_time=action_time,**kwargs)
             return True
-        elif action.name=="parking" or action.name=="overtaking" or action.name=="tailing":
+        elif (action.name=="parking" or action.name=="overtaking" or action.name=="tailing" ) and self.l2_ab is None:
             self.l2_ab=action
             self.l2_ab.set(action_time=action_time,**kwargs)
             return True

@@ -43,6 +43,12 @@ class CarState:
         self.car_len=car_len
         self.rear_x = self.x - ((car_len / 2) * math.cos(-self.yaw))
         self.rear_y = self.y - ((car_len / 2) * math.sin(-self.yaw))
+        
+        self.target_x=None
+        self.target_y=None
+        self.target_ptype=None
+        self.target_etype=None
+
 
         self.last_update_time=time()
 
