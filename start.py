@@ -233,8 +233,12 @@ allProcesses.append(disProc)
 # camera -> object
 camObjR, camObjS = Pipe(duplex=False)
 # object -> decision making
-objProc = ObjectProcess([camObjR, disObjR], [])
+objFzzR, objFzzS = Pipe(duplex=False)
+
+objProc = ObjectProcess([camObjR, disObjR], [objFzzS])
 camOutPs.append(camObjS)
+dataFusionInputPs.append(objFzzR)
+dataFusionInputName.append("obj")
 allProcesses.append(objProc)
 
 

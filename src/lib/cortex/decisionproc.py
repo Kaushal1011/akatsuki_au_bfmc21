@@ -16,7 +16,15 @@ from src.lib.cortex.pathplanning import (
 from src.lib.cortex.carstate import CarState
 from src.templates.workerprocess import WorkerProcess
 from time import time
-from src.lib.cortex.action import ActionBehaviour,ActionManager,LaneKeepBehaviour,ControlSystemBehaviour, ObjectStopBehaviour,StopBehvaiour,PriorityBehaviour
+from src.lib.cortex.action import (
+    ActionBehaviour,
+    ActionManager,
+    LaneKeepBehaviour,
+    ControlSystemBehaviour,
+    ObjectStopBehaviour,
+    StopBehvaiour,
+    PriorityBehaviour,
+)
 import joblib
 
 import math
@@ -30,19 +38,18 @@ def get_last(inP: Pipe, delta_time: float = 1e-2):
     return timestamp, data
 
 
-def trigger_behaviour(carstate: CarState,action_man:ActionManager):
+def trigger_behaviour(carstate: CarState, action_man: ActionManager):
     # print(carstate.detected_sign)
     if carstate.detected_intersection and carstate.current_ptype == "int":
         # intersection
         pass
-    
-    if carstate.detected_intersection :
+
+    if carstate.detected_intersection:
         pass
         # stop for t secs intersection
-        stopobj=StopBehvaiour()
-        stopaction=ActionBehaviour(name="stop",release_time=6.0,callback=stopobj)
-        action_man.set_action(stopaction,action_time=3.0)
-
+        stopobj = StopBehvaiour()
+        stopaction = ActionBehaviour(name="stop", release_time=6.0, callback=stopobj)
+        action_man.set_action(stopaction, action_time=3.0)
 
     if carstate.detected_sign["parking"]:
         # Parking
@@ -64,9 +71,9 @@ def trigger_behaviour(carstate: CarState,action_man:ActionManager):
 
     if carstate.detected_sign["stop"]:
         # stop for t secs
-        stopobj=StopBehvaiour()
-        stopaction=ActionBehaviour(name="stop",release_time=6.0,callback=stopobj)
-        action_man.set_action(stopaction,action_time=3.0)
+        stopobj = StopBehvaiour()
+        stopaction = ActionBehaviour(name="stop", release_time=6.0, callback=stopobj)
+        action_man.set_action(stopaction, action_time=3.0)
 
     if carstate.detected_sign["priority"]:
         # slowdown for t secs
@@ -102,24 +109,26 @@ class DecisionMakingProcess(WorkerProcess):
         self.state = CarState(navigator_config=None)
         self.inPsnames = inPsnames
 
-        self.actman=ActionManager()
+        self.actman = ActionManager()
 
-        lkobj=LaneKeepBehaviour()
-        lkaction=ActionBehaviour(name="lk",callback=lkobj)
+        lkobj = LaneKeepBehaviour()
+        lkaction = ActionBehaviour(name="lk", callback=lkobj)
         self.actman.set_action(lkaction)
-        data_path = pathlib.Path(pathlib.Path(__file__).parent.parent.parent.resolve(), "data", "mid_course.z")
-        data=joblib.load(data_path)
-        # pass coordlist here from navigator config 
-        csobj=ControlSystemBehaviour(coord_list=data[0])
-        csaction=ActionBehaviour(name="cs",callback=csobj)
+        data_path = pathlib.Path(
+            pathlib.Path(__file__).parent.parent.parent.resolve(),
+            "data",
+            "mid_course.z",
+        )
+        data = joblib.load(data_path)
+        # pass coordlist here from navigator config
+        csobj = ControlSystemBehaviour(coord_list=data[0])
+        csaction = ActionBehaviour(name="cs", callback=csobj)
         self.actman.set_action(csaction)
 
-        # pass coordlist here from navigator config 
-        stopobj=ObjectStopBehaviour()
-        stopobjaction=ActionBehaviour(name="objstop",callback=stopobj)
+        # pass coordlist here from navigator config
+        stopobj = ObjectStopBehaviour()
+        stopobjaction = ActionBehaviour(name="objstop", callback=stopobj)
         self.actman.set_action(stopobjaction)
-
-
 
     def run(self):
         """Apply the initializing methods and start the threads."""
@@ -141,7 +150,7 @@ class DecisionMakingProcess(WorkerProcess):
         thr.daemon = True
         self.threads.append(thr)
 
-    def _the_thread(self, inPs:List[Connection], outPs:List[Connection]):
+    def _the_thread(self, inPs: List[Connection], outPs: List[Connection]):
         """Obtains image, applies the required image processing and computes the steering angle value.
 
         Parameters
@@ -166,7 +175,7 @@ class DecisionMakingProcess(WorkerProcess):
                 idx = self.inPsnames.index("iD")
                 detected_intersection = inPs[idx].recv()
                 self.state.update_intersection(detected_intersection)
-                print("id: ",detected_intersection)
+                print("id: ", detected_intersection)
                 # print(f"TIme taken iD {(time()- t_id):.4f}s")
 
                 # sign Detection
@@ -179,13 +188,20 @@ class DecisionMakingProcess(WorkerProcess):
                         # self.state.update_sign_detected()
                         print("sd")
 
+                if "obj" in self.inPsnames:
+                    if inPs[idx].poll():
+                        idx = self.inPsnames.index("obj")
+                        obj_data = inPs[idx].recv()
+                        print("obj", obj_data)
+                        self.state.update_object_det(*obj_data)
+
                 if "pos" in self.inPsnames:
                     idx = self.inPsnames.index("pos")
                     if inPs[idx].poll():
-                        pos=inPs[idx].recv()
+                        pos = inPs[idx].recv()
                         # print("pos")
                         # print("Position: ",pos)
-                        if pos[0]==0 and pos[1]==0:
+                        if pos[0] == 0 and pos[1] == 0:
                             pass
                         else:
                             self.state.update_pos(*pos)
@@ -200,11 +216,11 @@ class DecisionMakingProcess(WorkerProcess):
 
                 # update car navigator, current ptype, current etype and current idx
 
-                trigger_behaviour(self.state,self.actman)
+                trigger_behaviour(self.state, self.actman)
 
-                speed,steer=self.actman(self.state)
-                self.state.v=speed
-                self.state.steering_angle=steer
+                speed, steer = self.actman(self.state)
+                self.state.v = speed
+                self.state.steering_angle = steer
 
                 # print("speed: ", self.state.v)
                 # print("steer: ", self.state.steering_angle)

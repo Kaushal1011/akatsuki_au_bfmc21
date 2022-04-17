@@ -11,12 +11,11 @@ import numpy as np
 # from simple_pid import PID
 from src.lib.perception.lanekeepfunctions import LaneKeep as LaneKeepMethod
 from src.templates.workerprocess import WorkerProcess
-from multiprocessing import Pipe
 
 MAX_STEER = 23
 
 
-def get_last(inP: Pipe, delta_time: float = 0.1):
+def get_last(inP: Connection, delta_time: float = 0.1):
     timestamp, data = inP.recv()
     while (time() - timestamp) > delta_time:
         print("lk: skipping frame")

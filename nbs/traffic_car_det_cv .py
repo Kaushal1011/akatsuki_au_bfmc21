@@ -22,7 +22,7 @@ def check_cross(frame):
     tls = tl_cascade.detectMultiScale(gray, 1.35, 3)
     if tls.len() !=0:
         return True, tls[0], tls[1], tls[2], tls[3]
-    return False,0,0,0,0
+    return False, 0, 0, 0, 0
 
 def check_tl(frame):
     tl_cascade = cv2.CascadeClassifier("tl_cascade.xml")
@@ -91,7 +91,7 @@ if __name__ == "__main__":
     cap.set(3, frameWidth)
     cap.set(4, frameHeight)
     interpreter, labels = setup()
-    frame = cv2.imread("/home/b0nzo/akatsuki_au_bfmc21/nbs/crosswalk.jpeg")
+    frame = cv2.imread("crosswalk.jpeg")
     frame = frame[0:np.int32(frame.shape[0]/2), np.int32(frame.shape[1]/2):np.int32(frame.shape[1])]
     while True:
         out = detections(frame, interpreter, labels)

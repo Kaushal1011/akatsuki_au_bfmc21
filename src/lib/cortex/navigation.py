@@ -7,7 +7,10 @@ from typing import List, Tuple
 import networkx as nx
 import numpy as np
 from copy import deepcopy
+from src.lib.cortex.pathplanning import PathPlanning
+
 # from src.config import config
+
 
 def dijkstra(G, start, target):
     d = {start: 0}
@@ -43,14 +46,13 @@ def dijkstra(G, start, target):
             try:
                 ptyperet[i - 1] = "int"
             except Exception as e:
-                print("pathplanning.py[46]",e)
+                print("pathplanning.py[46]", e)
 
             try:
                 ptyperet[i + 1] = "int"
                 i += 1
             except Exception as e:
-                print("pathplanning.py[52]",e)
-                
+                print("pathplanning.py[52]", e)
 
     edgeret = []
 
@@ -61,6 +63,7 @@ def dijkstra(G, start, target):
     edgeret.append(None)
 
     return fp, ptyperet, edgeret
+
 
 def add_yaw(G):
     node_dict = deepcopy(dict(G.nodes(data=True)))
@@ -79,9 +82,8 @@ def add_yaw(G):
     return node_dict
 
 
-class Navigator():
-    
-    def __init__(self,test=False):
+class Navigator:
+    def __init__(self, test=False):
         if test:
             self.graph = nx.read_graphml(
                 "./src/lib/cortex/path_data/test_track.graphml"
@@ -92,23 +94,26 @@ class Navigator():
             )
 
         self.node_dict = add_yaw(self.graph)
-        self.cur_index=0
-        self.path=[]
-        self.ptype=[]
-        self.etype=[]
-        
-    def plan_course(self,config_json):
+        self.cur_index = 0
+        self.path = []
+        self.ptype = []
+        self.etype = []
+        self.path_planning = PathPlanning()
+
+    def plan_course(self, cofig_json):
+        initial_x = 14
+        initial_y = 1
         raise NotImplementedError
-    
-    def replan_course(self,completed_list,config_json):
+
+    def replan_course(self, completed_list, config_json):
         raise NotImplementedError
-        
-    def get_course_ahead(self,x,y,yaw):
+
+    def get_course_ahead(self, x, y, yaw):
         raise NotImplementedError
 
     def get_current_node(self):
         raise NotImplementedError
-        
+
     def get_nearest_node(self, x, y, yaw):
         dx = []
         dy = []
@@ -126,24 +131,22 @@ class Navigator():
                 continue
             if (abs(dyaw) < 0.7).any():
                 return idx  # , self.node_dict[str(idx)]
-    
-    
-    def get_path_ahead(self,x,y,yaw):
-        
-        idx=self.get_nearest_node(self,x,y,yaw)
-        return self._convert_nx_path2list(path_list[idx:]), _ptype[idx:],_edgret[idx:]
-    
-    def replan_path(self,end_idx):
-        
-        idx=self.get_nearest_node(self,x,y,yaw)
+
+    def get_path_ahead(self, x, y, yaw):
+
+        idx = self.get_nearest_node(self, x, y, yaw)
+        return self._convert_nx_path2list(path_list[idx:]), _ptype[idx:], _edgret[idx:]
+
+    def replan_path(self, end_idx):
+
+        idx = self.get_nearest_node(self, x, y, yaw)
         path_list, _ptype, _edgret = dijkstra(self.graph, idx, end_idx)
-        return self._convert_nx_path2list(path_list), _ptype,_edgret
-        
-            
+        return self._convert_nx_path2list(path_list), _ptype, _edgret
+
     def get_path(self, start_idx: str, end_idx: str) -> Tuple[List[Tuple[int]], str]:
-        
+
         path_list, _ptype, _edgret = dijkstra(self.graph, start_idx, end_idx)
-        return self._convert_nx_path2list(path_list), _ptype,_edgret
+        return self._convert_nx_path2list(path_list), _ptype, _edgret
 
     def _convert_nx_path2list(self, path_list) -> List[Tuple[int]]:
         coord_list = []
