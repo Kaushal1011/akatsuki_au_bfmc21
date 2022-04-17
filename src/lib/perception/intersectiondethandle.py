@@ -35,7 +35,7 @@ def roi_func(img: np.ndarray) -> np.ndarray:
     return img
 
 
-def intersection_det(img, area_threshold=8_500) -> np.ndarray:
+def intersection_det(img, area_threshold=7_500) -> np.ndarray:
     # preprocess
     # lower_white = np.array([90, 90, 90])
     # upper_white = np.array([255, 255, 255])

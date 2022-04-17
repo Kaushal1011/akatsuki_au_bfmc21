@@ -81,6 +81,7 @@ class LaneKeepingProcess(WorkerProcess):
             while True:
                 # Obtain image
                 image_recv_start = time()
+                # stamps, img = inP.recv()
                 stamps, img = get_last(inP, 0.01)
                 # print("LK", stamps)
                 # img = self.frame_shm

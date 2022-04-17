@@ -162,8 +162,9 @@ class ActionBehaviour:
             return self.state
     
     def check_cooldown(self):
-        print("Check Cooldown Called")
+        
         if not self.state_start or (self.state_start + self.action_time + self.release_time < time.time()):
+            print("Check Cooldown Called: ",True)
             return True
         else:
             return False
@@ -204,8 +205,6 @@ class ActionManager:
                         self.l1_ab=None
                     elif count==3:
                         self.l2_ab=None
-                    elif count==4:
-                        self.l3_ab=None
                     elif count==5:
                         self.l4_ab=None
             count+=1
@@ -229,7 +228,7 @@ class ActionManager:
             self.l2_ab=action
             self.l2_ab.set(action_time=action_time,**kwargs)
             return True
-        elif (action.name=="stop" or action.name=="priority" or action.name=="crosswalk") and (self.l3_ab is None or self.l3_ab.check_cooldown() or action.name!=self.l3_ab.name):
+        elif (action.name=="stop" or action.name=="priority" or action.name=="crosswalk") and (self.l3_ab is None or self.l3_ab.check_cooldown()): # or action.name!=self.l3_ab.name):
             self.l3_ab=action
             self.l3_ab.set(action_time=action_time,**kwargs)
             return True
