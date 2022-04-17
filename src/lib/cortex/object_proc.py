@@ -69,8 +69,8 @@ class ObjectProcess(WorkerProcess):
                 stamp, image = inPs[0].recv()
                 distance_data = inPs[1].recv()
                 # print("Distance Data ====> ", distance_data)
-
-                # self.outPs[0].send(pos_data)
+                # front_distance, side_distance, det_car, det_ped, det_closed_road
+                outPs[0].send((0.12, 0.12, False, False, False))
 
         except Exception as e:
             raise e
