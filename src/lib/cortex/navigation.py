@@ -1,15 +1,19 @@
 import heapq
 import math
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 # from scipy.interpolate import interp1d
 # from src.lib.cortex import cubic_spline_planner
 import networkx as nx
 import numpy as np
 from copy import deepcopy
-from src.lib.cortex.pathplanning import PathPlanning
+from src.config import get_config
+
+config = get_config()
 
 # from src.config import config
+
+target_idx = config["end_idx"]
 
 
 def dijkstra(G, start, target):
@@ -98,11 +102,8 @@ class Navigator:
         self.path = []
         self.ptype = []
         self.etype = []
-        self.path_planning = PathPlanning()
 
     def plan_course(self, cofig_json):
-        initial_x = 14
-        initial_y = 1
         raise NotImplementedError
 
     def replan_course(self, completed_list, config_json):
@@ -111,8 +112,13 @@ class Navigator:
     def get_course_ahead(self, x, y, yaw):
         raise NotImplementedError
 
-    def get_current_node(self):
-        raise NotImplementedError
+    def get_current_node(self, x, y, yaw):
+        idx = self.get_nearest_node(self, x, y, yaw)
+        return (
+            self.path[idx],
+            self.ptype[idx],
+            self.etype[idx],
+        )
 
     def get_nearest_node(self, x, y, yaw):
         dx = []
@@ -135,18 +141,28 @@ class Navigator:
     def get_path_ahead(self, x, y, yaw):
 
         idx = self.get_nearest_node(self, x, y, yaw)
-        return self._convert_nx_path2list(path_list[idx:]), _ptype[idx:], _edgret[idx:]
+        return (
+            self.path[idx:],
+            self.ptype[idx:],
+            self.etype[idx:],
+        )
 
-    def replan_path(self, end_idx):
+    # use this (if start idx is know pass it to kwarg start_idx)
+    def plan_path(self, x, y, yaw, start_idx: Optional[int] = -1):
+        """Given pos get update path"""
+        if start_idx == -1:
+            start_idx = self.get_nearest_node(x, y, yaw)
 
-        idx = self.get_nearest_node(self, x, y, yaw)
-        path_list, _ptype, _edgret = dijkstra(self.graph, idx, end_idx)
-        return self._convert_nx_path2list(path_list), _ptype, _edgret
+        path_list, _ptype, _edgret = dijkstra(self.graph, start_idx, target_idx)
+        self.path = self._convert_nx_path2list(path_list)
+        self.ptype = _ptype
+        self.etype = _edgret
 
-    def get_path(self, start_idx: str, end_idx: str) -> Tuple[List[Tuple[int]], str]:
-
-        path_list, _ptype, _edgret = dijkstra(self.graph, start_idx, end_idx)
-        return self._convert_nx_path2list(path_list), _ptype, _edgret
+    # def get_path(self, start_idx: str, end_idx: str) -> Tuple[List[Tuple[int]], str]:
+    #     path_list, _ptype, _edgret = dijkstra(self.graph, start_idx, target_idx)
+    #     self.path = self._convert_nx_path2list(path_list)
+    #     self.ptype = _ptype
+    #     self.etype = _edgret
 
     def _convert_nx_path2list(self, path_list) -> List[Tuple[int]]:
         coord_list = []
