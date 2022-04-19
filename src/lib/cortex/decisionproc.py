@@ -27,7 +27,7 @@ from src.lib.cortex.action import (
     OvertakeBehaviour,
 )
 import joblib
-
+from loguru import logger
 import math
 
 
@@ -187,12 +187,16 @@ class DecisionMakingProcess(WorkerProcess):
                 idx = self.inPsnames.index("lk")
                 lk_angle, _ = inPs[idx].recv()
                 self.state.update_lk_angle(lk_angle)
+                logger.log("PIPE", f"Recv LK {lk_angle}")
+
                 # print(f"Time taken lk {(time() - t_lk):.4f}s {lk_angle}")
 
                 t_id = time()
                 idx = self.inPsnames.index("iD")
                 detected_intersection = inPs[idx].recv()
                 self.state.update_intersection(detected_intersection)
+                logger.log("PIPE", f"Recv ID {detected_intersection}")
+
                 # print("id: ", detected_intersection)
                 # print(f"TIme taken iD {(time()- t_id):.4f}s")
 
@@ -203,14 +207,16 @@ class DecisionMakingProcess(WorkerProcess):
                     if inPs[idx].poll():
                         # TODO : get sign detection for all signs
                         sign, sign_area = inPs[idx].recv()
+                        logger.log("PIPE", f"Recv -> SD {sign}")
+
                         # self.state.update_sign_detected()
 
                 if "obj" in self.inPsnames:
                     if inPs[idx].poll(timeout=0.01):
                         idx = self.inPsnames.index("obj")
                         obj_data = inPs[idx].recv()
-                        print("obj", obj_data)
                         self.state.update_object_det(*obj_data)
+                        logger.log("PIPE", f"Recv -> OBJ {obj_data}")
 
                 if "dis" in self.inPsnames:
                     idx = self.inPsnames.index("dis")
@@ -223,13 +229,15 @@ class DecisionMakingProcess(WorkerProcess):
                         False,
                     )
                     # print("distance", distance_data["sonar1"], distance_data["sonar1"])
-                    print("distance", final_data[:2])
+                    logger.log("PIPE", f"Recv-> DIS {final_data[:2]}")
                     self.state.update_object_det(*final_data)
 
                 if "pos" in self.inPsnames:
                     idx = self.inPsnames.index("pos")
                     if inPs[idx].poll():
                         pos = inPs[idx].recv()
+                        logger.log("PIPE", f"Recv-> POS {pos}")
+
                         # print("pos")
                         # print("Position: ",pos)
                         if pos[0] == 0 and pos[1] == 0:
@@ -253,8 +261,8 @@ class DecisionMakingProcess(WorkerProcess):
                 self.state.v = speed
                 self.state.steering_angle = steer
 
-                print("Sonar Front: ", self.state.front_distance)
-                print("Sonar Side: ", self.state.side_distance)
+                logger.debug(f"Sonar Front: {self.state.front_distance}")
+                logger.debug(f"Sonar Side: {self.state.side_distance}")
                 # print("speed: ", self.state.v)
                 # print("steer: ", self.state.steering_angle)
 

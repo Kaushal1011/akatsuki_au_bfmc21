@@ -1,6 +1,12 @@
-from turtle import distance
 from typing import List
-import RPi.GPIO as GPIO
+from loguru import logger
+
+try:
+    import RPi.GPIO as GPIO
+except ModuleNotFoundError as e:
+    logger.error(e)
+    pass
+
 from multiprocessing.connection import Connection
 import time
 import functools

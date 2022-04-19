@@ -42,6 +42,8 @@ from src.utils.camerastreamer.CameraStreamerProcess import CameraStreamerProcess
 from src.utils.remotecontrol.RemoteControlReceiverProcess import (
     RemoteControlReceiverProcess,
 )
+import sys
+from loguru import logger
 
 isPI = True
 try:
@@ -49,6 +51,25 @@ try:
 except Exception as e:
     print(e)
     isPI = False
+# =================== CONFIG LOGGER ======================================
+
+logger.level("PIPE", no=12, color="<blue>", icon="🌊")
+logger.level("SYNC", no=13, color="<yellow>")
+
+
+def filter(level: int):
+    return lambda r: r["level"].no == level or r["level"].no > 19
+
+
+TEST_PIPE = True
+logger.remove()
+if TEST_PIPE:
+    logger.add(sys.stdout, filter=filter(12))
+
+# logger.level("LK", no=10, color="<blue>", icon='🌊' )
+# logger.level("INT", no=10, color="<blue>", icon='🌊' )
+
+
 # ========================================================================
 # SCRIPT USED FOR WIRING ALL COMPONENTS
 # ========================================================================
