@@ -5,7 +5,7 @@ from multiprocessing.connection import Connection
 import pathlib
 from threading import Thread
 from time import time
-from typing import List, Optional
+from typing import List, Optional, final
 
 from src.lib.cortex.pathplanning import (
     PathPlanning,
@@ -39,8 +39,18 @@ def get_last(inP: Pipe, delta_time: float = 1e-2):
     return timestamp, data
 
 
+def get_last_distance(inP: Connection, delta_time: float = 0.1):
+        data = inP.recv() 
+        while (time() - data["timestamp"]) > delta_time:
+            if inP.poll():
+                data = inP.recv()
+            else:
+                break
+        
+        return data
+
 def trigger_behaviour(carstate: CarState, action_man: ActionManager):
-    print(carstate.front_distance)
+    # print(carstate.side_distance)
     if carstate.detected_intersection and carstate.current_ptype == "int":
         # intersection
         pass
@@ -61,11 +71,11 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
     #     pass
 
     if carstate.front_distance<0.5 :
-        print("Overtake Trigger")
+        # print("Overtake Trigger")
         # overtake
         overtakeobj = OvertakeBehaviour(car_state=carstate)
         overtakeobjaction = ActionBehaviour(name="overtaking", callback=overtakeobj)
-        action_man.set_action(overtakeobjaction,car_state=carstate)    
+        action_man.set_action(overtakeobjaction,action_time=None,car_state=carstate)    
 
     if carstate.detected_car and not carstate.can_overtake:
         # tailing or stop
@@ -201,6 +211,14 @@ class DecisionMakingProcess(WorkerProcess):
                         print("obj", obj_data)
                         self.state.update_object_det(*obj_data)
 
+                if "dis" in self.inPsnames:
+                    idx = self.inPsnames.index("dis")
+                    distance_data = get_last_distance(inPs[idx])
+                    final_data = (distance_data["sonar1"], distance_data["sonar2"], False, False, False)
+                    # print("distance", distance_data["sonar1"], distance_data["sonar1"])
+                    # print("distance", final_data[:2])
+                    self.state.update_object_det(*final_data)
+
                 if "pos" in self.inPsnames:
                     idx = self.inPsnames.index("pos")
                     if inPs[idx].poll():
@@ -228,6 +246,8 @@ class DecisionMakingProcess(WorkerProcess):
                 self.state.v = speed
                 self.state.steering_angle = steer
 
+                print("Sonar Front: ", self.state.front_distance)
+                print("Sonar Side: ", self.state.side_distance)
                 # print("speed: ", self.state.v)
                 # print("steer: ", self.state.steering_angle)
 

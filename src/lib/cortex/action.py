@@ -65,7 +65,7 @@ class OvertakeBehaviour(BehaviourCallback):
         self.last_update_time=None
         self.target_speed_array=[]
         self.WB=0.3
-        print("behaviour init")
+        # print("behaviour init")
 
 
     def reset(self,**kwargs):
@@ -76,7 +76,7 @@ class OvertakeBehaviour(BehaviourCallback):
         # get target speed
         self.current_sensor_val=car_state.front_distance
 
-        print("Called overtake")
+        # print("Called overtake")
         
         if not self.target_deteremined:
             print("inside overtake speed calc")
@@ -93,32 +93,41 @@ class OvertakeBehaviour(BehaviourCallback):
             return {"None":None}
         # once target is determined
         # make new target points on the left lane
-        cx=car_state.rear_x
-        cy=car_state.rear_y
+        cx=car_state.x
+        cy=car_state.y
 
         # Use Of Inverted Yaw
 
-        print("cx,cy should be: ",car_state.navigator.get_nearest_node(cx,cy,car_state.yaw))
+        # print("cx,cy should be: ",car_state.navigator.get_nearest_node(cx,cy,car_state.yaw))
+        nn=car_state.navigator.get_nearest_node(cx,cy,car_state.yaw)
+
+        # cx,cy=nn["x"],nn["y"]
+
 
         tx=car_state.target_x
         ty=car_state.target_y
+
         # find m 
         m = -(tx-cx)/(ty-cy)
+
+        # print("m: ",m)
         # find c
         c = ty-m*tx
+        # print("C: ",c)
 
-        x3 = tx+((0.35**2)/(m**2+1))**0.5 
-        x4 = tx-((0.35**2)/(m**2+1))**0.5
+        x3 = tx+((0.7**2)/(m**2+1))**0.5 
+        x4 = tx-((0.7**2)/(m**2+1))**0.5
         y3 = m*x3+c
         y4 = m*x4+c
 
         yaw3=math.atan2(y3,x3)
         yaw4=math.atan2(y4,x4) 
-        print("x3 , y3",x3,y3)
-        print("x4, y4", x4,y4)
+
+        # print("x3 , y3",x3,y3)
+        # print("x4, y4", x4,y4)
         # determine which point to pick 
 
-        alpha = math.atan2(y3 - car_state.rear_y, x3 - car_state.rear_x) - (-car_state.yaw)
+        alpha = math.atan2(y4 - car_state.rear_y, x4 - car_state.rear_x) - (-car_state.yaw)
 
         # print("rear pts: ",state.x,state.y)
         # print("target and yaw :", tx,ty,state.yaw)
@@ -133,15 +142,15 @@ class OvertakeBehaviour(BehaviourCallback):
             di = -23
         car_state.cs_steer=di
 
-        if car_state.side_distance<0.5:
+        if car_state.side_distance<0.3:
             self.parallel_reach=True
         
-        if car_state.side_distance>0.5 and self.parallel_reach:
+        if car_state.side_distance>0.9 and self.parallel_reach:
             self.parallel_out=True
 
         print("In Overtake x3 y3 delta:",x3,y3,di)
 
-        return {"steer":di,"speed":self.speed}
+        return {"steer":di,"speed":car_state.v}
 
     def out_condition(self, **kwargs) -> bool:
         if self.parallel_out:
@@ -149,7 +158,7 @@ class OvertakeBehaviour(BehaviourCallback):
         # return super().out_condition(**kwargs)
    
     def set(self,**kwargs):
-        print("Setting up overtake")
+        # print("Setting up overtake")
         state:CarState
         state=kwargs["car_state"]
         self.prev_sensor_val=state.front_distance
@@ -176,11 +185,11 @@ class ControlSystemBehaviour(BehaviourCallback):
     
     def __call__(self, car_state:CarState):
         ind,lf=self.cs.search_target_index(car_state)
-        # print("Loc Index: ",ind)
-        # print("Target: ",self.cs.cx[ind]," ", self.cs.cy[ind])
+        print("Loc Index: ",ind)
+        print("Target: ",self.cs.cx[ind]," ", self.cs.cy[ind])
         
         car_state.target_x=self.cs.cx[ind]
-        car_state.target_y=self.cs.cx[ind]
+        car_state.target_y=self.cs.cy[ind]
         
         car_state.current_ptype=ptype[ind]
         car_state.can_overtake=etype[ind]
@@ -234,7 +243,7 @@ class ActionBehaviour:
         if state:
             if self.callback.out_condition():
                 self.state=False
-                toggle=True
+                return {"toggle":True}
             return self.callback(car_state) 
         elif toggle:
             self.callback.toggle_condition()
@@ -297,6 +306,7 @@ class ActionManager:
 
         for i in obj:   
             if i:
+                print("Currently Active Behaviour",i.name)
                 outputs=i(carstate)
                 if outputs and "speed" in outputs.keys():
                     speed=outputs["speed"]
@@ -308,11 +318,12 @@ class ActionManager:
                     if count==2:
                         self.l1_ab=None
                     elif count==3:
+                        print("killed l2")
                         self.l2_ab=None
                     elif count==5:
                         self.l4_ab=None
             count+=1
-
+        print("Output of system (Speed, Steer): " ,speed,steer)
         return speed,steer
 
     def set_action(self,action,action_time=None,**kwargs):

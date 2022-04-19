@@ -224,22 +224,24 @@ if len(posFusionInputPs) > 0:
 #     posFusionInputPs.append(imuPosR)
 #     posFusionInputName.append("imu")
 # else:
-disObjR, disObjS = Pipe(duplex=False)
-disProc = DistanceSIM([], [disObjS], 6666)
+disFzzR, disFzzS = Pipe(duplex=False)
+disProc = DistanceSIM([], [disFzzS], 6666)
+dataFusionInputName.append("dis")
+dataFusionInputPs.append(disFzzR)
 allProcesses.append(disProc)
 
 # ===================== Object Classifier ==========================================
 # distance -> object (already created)
 # camera -> object
-camObjR, camObjS = Pipe(duplex=False)
-# object -> decision making
-objFzzR, objFzzS = Pipe(duplex=False)
+# camObjR, camObjS = Pipe(duplex=False)
+# # object -> decision making
+# objFzzR, objFzzS = Pipe(duplex=False)
 
-objProc = ObjectProcess([camObjR, disObjR], [objFzzS])
-camOutPs.append(camObjS)
-dataFusionInputPs.append(objFzzR)
-dataFusionInputName.append("obj")
-allProcesses.append(objProc)
+# objProc = ObjectProcess([camObjR, disObjR], [objFzzS])
+# camOutPs.append(camObjS)
+# dataFusionInputPs.append(objFzzR)
+# dataFusionInputName.append("obj")
+# allProcesses.append(objProc)
 
 
 # ======================= Decision Making =========================================
