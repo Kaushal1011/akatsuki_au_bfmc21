@@ -29,6 +29,7 @@ from src.data.trafficlights.trafficProc import TrafficProcess
 from src.hardware.camera.cameraprocess import CameraProcess
 from src.hardware.camera.SIMCameraProcess import SIMCameraProcess
 from src.hardware.serialhandler.SerialHandlerProcess import SerialHandlerProcess
+from src.hardware.ultrasonic.distanceProc import DistanceProcess
 from src.lib.actuator.momentcontrol import MovementControl
 from src.lib.actuator.sim_connect import SimulatorConnector
 from src.lib.cortex.decisionproc import DecisionMakingProcess
@@ -224,11 +225,20 @@ if len(posFusionInputPs) > 0:
 #     posFusionInputPs.append(imuPosR)
 #     posFusionInputName.append("imu")
 # else:
-disFzzR, disFzzS = Pipe(duplex=False)
-disProc = DistanceSIM([], [disFzzS], 6666)
-dataFusionInputName.append("dis")
-dataFusionInputPs.append(disFzzR)
-allProcesses.append(disProc)
+if config["enableSIM"]:
+    disFzzR, disFzzS = Pipe(duplex=False)
+    disProc = DistanceSIM([], [disFzzS], 6666)
+
+    dataFusionInputName.append("dis")
+    dataFusionInputPs.append(disFzzR)
+    allProcesses.append(disProc)
+elif isPI:
+    disFzzR, disFzzS = Pipe(duplex=False)
+    disProc = DistanceProcess([], [disFzzS])
+
+    dataFusionInputName.append("dis")
+    dataFusionInputPs.append(disFzzR)
+    allProcesses.append(disProc)
 
 # ===================== Object Classifier ==========================================
 # distance -> object (already created)

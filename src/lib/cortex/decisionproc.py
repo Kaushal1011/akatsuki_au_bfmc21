@@ -24,7 +24,7 @@ from src.lib.cortex.action import (
     ObjectStopBehaviour,
     StopBehvaiour,
     PriorityBehaviour,
-    OvertakeBehaviour
+    OvertakeBehaviour,
 )
 import joblib
 
@@ -40,14 +40,15 @@ def get_last(inP: Pipe, delta_time: float = 1e-2):
 
 
 def get_last_distance(inP: Connection, delta_time: float = 0.1):
-        data = inP.recv() 
-        while (time() - data["timestamp"]) > delta_time:
-            if inP.poll():
-                data = inP.recv()
-            else:
-                break
-        
-        return data
+    data = inP.recv()
+    while (time() - data["timestamp"]) > delta_time:
+        if inP.poll():
+            data = inP.recv()
+        else:
+            break
+
+    return data
+
 
 def trigger_behaviour(carstate: CarState, action_man: ActionManager):
     # print(carstate.side_distance)
@@ -70,12 +71,12 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
     #     # overtake
     #     pass
 
-    if carstate.front_distance<0.5 :
+    if carstate.front_distance < 0.5:
         # print("Overtake Trigger")
         # overtake
         overtakeobj = OvertakeBehaviour(car_state=carstate)
         overtakeobjaction = ActionBehaviour(name="overtaking", callback=overtakeobj)
-        action_man.set_action(overtakeobjaction,action_time=None,car_state=carstate)    
+        action_man.set_action(overtakeobjaction, action_time=None, car_state=carstate)
 
     if carstate.detected_car and not carstate.can_overtake:
         # tailing or stop
@@ -214,9 +215,15 @@ class DecisionMakingProcess(WorkerProcess):
                 if "dis" in self.inPsnames:
                     idx = self.inPsnames.index("dis")
                     distance_data = get_last_distance(inPs[idx])
-                    final_data = (distance_data["sonar1"], distance_data["sonar2"], False, False, False)
+                    final_data = (
+                        distance_data["sonar1"],
+                        distance_data["sonar2"],
+                        False,
+                        False,
+                        False,
+                    )
                     # print("distance", distance_data["sonar1"], distance_data["sonar1"])
-                    # print("distance", final_data[:2])
+                    print("distance", final_data[:2])
                     self.state.update_object_det(*final_data)
 
                 if "pos" in self.inPsnames:
