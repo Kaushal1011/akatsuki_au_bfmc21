@@ -2,7 +2,7 @@ import datetime
 import math
 
 from time import time
-from navigation import Navigator
+from src.lib.cortex.navigation import Navigator
 
 
 class DetectedSign:
@@ -45,6 +45,12 @@ class CarState:
         self.car_len = car_len
         self.rear_x = self.x - ((car_len / 2) * math.cos(-self.yaw))
         self.rear_y = self.y - ((car_len / 2) * math.sin(-self.yaw))
+        
+        self.target_x=None
+        self.target_y=None
+        self.target_ptype=None
+        self.target_etype=None
+
         self.navigator = Navigator()
         # plan path -> self.navigator.plan_path(self.x,self.y,self.yaw)
         # current node -> self.navigator.get_current_node(self.x, self.y, self.yaw)

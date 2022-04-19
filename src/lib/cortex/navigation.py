@@ -135,8 +135,8 @@ class Navigator:
             except KeyError as e:
                 print(e)
                 continue
-            if (abs(dyaw) < 0.7).any():
-                return idx  # , self.node_dict[str(idx)]
+            if (abs(dyaw) < 0.2).any():
+                return self.node_dict[str(idx)]
 
     def get_path_ahead(self, x, y, yaw):
 

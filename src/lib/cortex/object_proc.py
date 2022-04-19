@@ -11,21 +11,24 @@ from multiprocessing import Pipe
 from multiprocessing.connection import Connection
 
 
-def get_last(inP: Pipe, delta_time: float = 0.1):
-    data = inP.recv()
-    timestamp = data["timestamp"]
-    while (time() - timestamp) > delta_time:
-        data = inP.recv()
-        # print("xxxxxxxxxxxxxx Pos: skipping data")
-        # print(time(), data)
-        timestamp = data["timestamp"]
-
-    return data
+def get_last(inP: Connection, delta_time: float = 0.1):
+    if inP.poll():
+        data = inP.recv() 
+        while (time() - data["timestamp"]) > delta_time:
+            if inP.poll():
+                data = inP.recv()
+            else:
+                return None
+        
+        return data
+    else:
+        return None
 
 def get_last_frame(inP: Pipe, delta_time: float = 0.1):
+
     timestamp, data = inP.recv()
     while (time() - timestamp) > delta_time:
-        print("lk: skipping frame")
+        # print("lk: skipping frame")
         timestamp, data = inP.recv()
     
     return timestamp, data
@@ -38,7 +41,6 @@ class DetectCar:
         self.car_cascade = cv2.CascadeClassifier("/home/kaypee/akatsuki_au_bfmc21/src/data/car_cascade.xml")
 
     def __call__(self, frame):
-        print("obj detection called")
         gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
         car_bbox = self.car_cascade.detectMultiScale(gray, 1.15, 4)
         if len(car_bbox) != 0:
@@ -96,10 +98,12 @@ class ObjectProcess(WorkerProcess):
                 # RUN filters for distance 
                 # RUN object detection here
                 stamp, image = get_last_frame(inPs[0], 0.01)
-                distance_data = get_last(inPs[1], 0.01)
-                detected_car  = self.detect_car(image)
-                # SEND (front_distance, side_distance, det_car, det_ped, det_closed_road)
-                outPs[0].send((distance_data["sonar1"], distance_data["sonar2"], detected_car, False, False))
+                distance_data = get_last(inPs[1], 0.1)
+                if distance_data:
+                    print(time(), distance_data["timestamp"])
+                    # detected_car  = self.detect_car(image)
+                    # SEND (front_distance, side_distance, det_car, det_ped, det_closed_road)
+                    outPs[0].send((distance_data["sonar1"], distance_data["sonar2"], False, False, False))
 
         except Exception as e:
             raise e
