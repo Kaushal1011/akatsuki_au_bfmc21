@@ -81,7 +81,15 @@ class imu(threading.Thread):
                 self.accely = self.accel[1]
                 self.accelz = self.accel[2]
                 for outP in self.outPs:
-                    outP.send({"roll": self.roll, "pitch": self.pitch, "yaw": self.yaw})
+                    outP.send({"timestamp":time.time(),
+                               "roll": self.roll,
+                               "pitch": self.pitch,
+                               "yaw": self.yaw,
+                               "accelx":self.accelx,
+                               "accely":self.accely,
+                               "accelz":self.accelz
+                               
+                               })
                 # time.sleep(self.poll_interval * 1.0 / 1000.0)
 
             time.sleep(0.5)
