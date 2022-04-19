@@ -95,6 +95,7 @@ class PositionFusionProcess(WorkerProcess):
                         # gyaw = 2 * math.pi - (gyaw + math.pi)
 
                 if "imu" in self.inPsnames:
+                    idx = self.inPsnames.index("imu")
                     if inPs[idx].poll():
                         idx = self.inPsnames.index("imu")
                         imu = get_last(inPs[idx])

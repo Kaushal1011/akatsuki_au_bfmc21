@@ -5,7 +5,7 @@ from multiprocessing.connection import Connection
 import pathlib
 from threading import Thread
 from time import time
-from typing import List, Optional, final
+from typing import List, Optional
 
 from src.lib.cortex.pathplanning import (
     PathPlanning,
