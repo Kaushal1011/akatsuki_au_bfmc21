@@ -38,17 +38,18 @@ def get_last(inP: Pipe, delta_time: float = 1e-2):
         timestamp, data = inP.recv()
     return timestamp, data
 
-def get_last_value(inP:Connection, required:bool = True):
+
+def get_last_value(inP: Connection, required: bool = True):
     timestamp, data = inP.recv()
     while inP.poll():
         timestamp, data = inP.recv()
-    return timestamp, data    
+    return timestamp, data
 
 
 def get_last_distance(inP: Connection):
     data = inP.recv()
     while inP.poll():
-            data = inP.recv()
+        data = inP.recv()
     return data
 
 
@@ -138,11 +139,14 @@ class DecisionMakingProcess(WorkerProcess):
         data_path = pathlib.Path(
             pathlib.Path(__file__).parent.parent.parent.resolve(),
             "data",
-            "mid_course.z",
+            "preplan.z",
         )
         data = joblib.load(data_path)
+        cx = data["x"]
+        cy = data["y"]
+        coord_list = [x for x in zip(cx, cy)]
         # pass coordlist here from navigator config
-        csobj = ControlSystemBehaviour(coord_list=data[0])
+        csobj = ControlSystemBehaviour(coord_list=coord_list)
         csaction = ActionBehaviour(name="cs", callback=csobj)
         self.actman.set_action(csaction)
 
@@ -199,12 +203,12 @@ class DecisionMakingProcess(WorkerProcess):
                 self.state.update_intersection(detected_intersection)
                 logger.log("PIPE", f"Recv->ID {detected_intersection}")
                 logger.log("SYNC", f"iD delta {time()- id_timestamp}")
-                
+
                 # print("id: ", detected_intersection)
                 # print(f"TIme taken iD {(time()- t_id):.4f}s")
 
                 # sign Detection
-                #TODO
+                # TODO
                 t_sD = time()
                 if "sD" in self.inPsnames:
                     idx = self.inPsnames.index("sD")
@@ -214,7 +218,7 @@ class DecisionMakingProcess(WorkerProcess):
                         logger.log("PIPE", f"Recv->SD {sign}")
 
                         # self.state.update_sign_detected()
-                #TODO
+                # TODO
                 if "obj" in self.inPsnames:
                     if inPs[idx].poll(timeout=0.01):
                         idx = self.inPsnames.index("obj")
@@ -234,15 +238,20 @@ class DecisionMakingProcess(WorkerProcess):
                     )
                     # print("distance", distance_data["sonar1"], distance_data["sonar1"])
                     logger.log("PIPE", f"Recv->DIS {final_data[0]},{final_data[1]}")
-                    logger.log("SYNC", f"dis delta {time()- distance_data['timestamp']}")
-                
+                    logger.log(
+                        "SYNC", f"dis delta {time()- distance_data['timestamp']}"
+                    )
+
                     self.state.update_object_det(*final_data)
 
                 if "pos" in self.inPsnames:
                     idx = self.inPsnames.index("pos")
                     if inPs[idx].poll():
                         pos_timestamp, pos = get_last_value(inPs[idx])
-                        logger.log("PIPE", f"Recv->POS {pos[0]:.2f} {pos[1]:.2f} {pos[2]:.2f} {pos[3]:.2f} {pos[4]:.2f}")
+                        logger.log(
+                            "PIPE",
+                            f"Recv->POS {pos[0]:.2f} {pos[1]:.2f} {pos[2]:.2f} {pos[3]:.2f} {pos[4]:.2f}",
+                        )
                         logger.log("SYNC", f"pos delta {time()- pos_timestamp}")
                         print(f"({pos[0]:.3f}, {pos[1]:.3f}) YAW {pos[2]:.3f}")
                         # print("pos")

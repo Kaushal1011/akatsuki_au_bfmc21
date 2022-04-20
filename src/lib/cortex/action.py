@@ -11,11 +11,11 @@ import pathlib
 from loguru import logger
 
 data_path = pathlib.Path(
-    pathlib.Path(__file__).parent.parent.parent.resolve(), "data", "mid_course.z"
+    pathlib.Path(__file__).parent.parent.parent.resolve(), "data", "preplan.z"
 )
 data = joblib.load(data_path)
-ptype = data[1]
-etype = data[2]
+ptype = data["ptype"]
+etype = data["etype"]
 
 
 class BehaviourCallback:
