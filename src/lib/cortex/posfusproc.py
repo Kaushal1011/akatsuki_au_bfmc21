@@ -9,7 +9,9 @@ from multiprocessing import Pipe
 from multiprocessing.connection import Connection
 from typing import List
 from loguru import logger
-#import  config
+
+# import  config
+
 
 def get_last(inP: Pipe, delta_time: float = 0.1):
     data = inP.recv()
@@ -19,7 +21,6 @@ def get_last(inP: Pipe, delta_time: float = 0.1):
         # print("xxxxxxxxxxxxxx Pos: skipping data")
         # print(time(), data)
         # timestamp = data["timestamp"]
-
     return data
 
 
@@ -38,7 +39,7 @@ class PositionFusionProcess(WorkerProcess):
         super(PositionFusionProcess, self).__init__(inPs, outPs)
         self.inPsnames = inPsnames
         # update gx gy based on initial values
-        self.localize = Localize(ix=0,iy=0,gx=0,gy=0)
+        self.localize = Localize(ix=0, iy=0, gx=0, gy=0)
 
     def run(self):
         """Apply the initializing methods and start the threads."""
@@ -88,7 +89,9 @@ class PositionFusionProcess(WorkerProcess):
                 if "loc" in self.inPsnames:
                     idx = self.inPsnames.index("loc")
                     if inPs[idx].poll():
-                        loc:dict = get_last(inPs[idx], 0.5)
+                        loc: dict = get_last(inPs[idx])
+                        logger.log("SYNC", f'loc delta {(time()-imu["timestamp"]):.4f}')
+
                         # print("LOC", time(), loc["timestamp"])
                         pos_timestamp = loc["timestamp"]
                         gx = loc["posA"]
@@ -115,9 +118,12 @@ class PositionFusionProcess(WorkerProcess):
                         az = imu["accelz"]
 
                 if iyaw or gx:
-                    pos_data = (pos_timestamp,self.localize.update(
-                        iyaw, ipitch, iroll, ax, ay, az, gx, gy, gyaw
-                    ))
+                    pos_data = (
+                        pos_timestamp,
+                        self.localize.update(
+                            iyaw, ipitch, iroll, ax, ay, az, gx, gy, gyaw
+                        ),
+                    )
                     self.outPs[0].send(pos_data)
 
         except Exception as e:

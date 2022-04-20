@@ -63,7 +63,7 @@ class LocalisationProcess(WorkerProcess):
                 bts = bts.decode()
                 command = json.loads(bts)
                 for outP in outPs:
-                    outP.send((time.time(), command))
+                    outP.send(command)
 
         except Exception as e:
             print("Home LocSys Error")

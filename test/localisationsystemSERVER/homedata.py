@@ -9,7 +9,7 @@ from threading import Thread
 
 from workerprocess import WorkerProcess
 
-PI_IP = "0.0.0.0"
+PI_IP = "192.168.51.89"
 PORT = 8888
 
 
@@ -87,7 +87,7 @@ class LocalisationServer(WorkerProcess):
 
         self.preview = preview
         self.port = PORT
-        self.serverIp = "0.0.0.0"
+        self.serverIp = PI_IP  # pi addr
         self.threads = list()
 
     def run(self):
@@ -138,7 +138,7 @@ class LocalisationServer(WorkerProcess):
         )
         bytes1 = bytes()  # buffer
         if r.status_code == 200:
-            for idx, chunk in enumerate(r.iter_content(chunk_size=240_000)):
+            for idx, chunk in enumerate(r.iter_content(chunk_size=100_000)):
                 start_time = time.time()
                 count += 1
                 bytes1 += chunk
