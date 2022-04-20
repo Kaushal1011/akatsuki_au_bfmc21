@@ -38,15 +38,17 @@ def get_last(inP: Pipe, delta_time: float = 1e-2):
         timestamp, data = inP.recv()
     return timestamp, data
 
+def get_last_value(inP:Connection, required:bool = True):
+    timestamp, data = inP.recv()
+    while inP.poll():
+        timestamp, data = inP.recv()
+    return timestamp, data    
 
-def get_last_distance(inP: Connection, delta_time: float = 0.1):
+
+def get_last_distance(inP: Connection):
     data = inP.recv()
-    while (time() - data["timestamp"]) > delta_time:
-        if inP.poll():
+    while inP.poll():
             data = inP.recv()
-        else:
-            break
-
     return data
 
 
@@ -185,38 +187,40 @@ class DecisionMakingProcess(WorkerProcess):
                 start_time = time()
                 t_lk = time()
                 idx = self.inPsnames.index("lk")
-                lk_angle, _ = inPs[idx].recv()
+                lk_timestamp, lk_angle = get_last_value(inPs[idx])
                 self.state.update_lk_angle(lk_angle)
-                logger.log("PIPE", f"Recv LK {lk_angle}")
-
+                logger.log("PIPE", f"Recv->LK {lk_angle}")
+                logger.log("SYNC", f"LK delta {time()- lk_timestamp}")
                 # print(f"Time taken lk {(time() - t_lk):.4f}s {lk_angle}")
 
                 t_id = time()
                 idx = self.inPsnames.index("iD")
-                detected_intersection = inPs[idx].recv()
+                id_timestamp, detected_intersection = get_last_value(inPs[idx])
                 self.state.update_intersection(detected_intersection)
-                logger.log("PIPE", f"Recv ID {detected_intersection}")
-
+                logger.log("PIPE", f"Recv->ID {detected_intersection}")
+                logger.log("SYNC", f"iD delta {time()- id_timestamp}")
+                
                 # print("id: ", detected_intersection)
                 # print(f"TIme taken iD {(time()- t_id):.4f}s")
 
                 # sign Detection
+                #TODO
                 t_sD = time()
                 if "sD" in self.inPsnames:
                     idx = self.inPsnames.index("sD")
                     if inPs[idx].poll():
                         # TODO : get sign detection for all signs
                         sign, sign_area = inPs[idx].recv()
-                        logger.log("PIPE", f"Recv -> SD {sign}")
+                        logger.log("PIPE", f"Recv->SD {sign}")
 
                         # self.state.update_sign_detected()
-
+                #TODO
                 if "obj" in self.inPsnames:
                     if inPs[idx].poll(timeout=0.01):
                         idx = self.inPsnames.index("obj")
                         obj_data = inPs[idx].recv()
                         self.state.update_object_det(*obj_data)
-                        logger.log("PIPE", f"Recv -> OBJ {obj_data}")
+                        logger.log("PIPE", f"Recv->OBJ {obj_data}")
 
                 if "dis" in self.inPsnames:
                     idx = self.inPsnames.index("dis")
@@ -229,15 +233,17 @@ class DecisionMakingProcess(WorkerProcess):
                         False,
                     )
                     # print("distance", distance_data["sonar1"], distance_data["sonar1"])
-                    logger.log("PIPE", f"Recv-> DIS {final_data[:2]}")
+                    logger.log("PIPE", f"Recv->DIS {final_data[0]},{final_data[1]}")
+                    logger.log("SYNC", f"dis delta {time()- distance_data['timestamp']}")
+                
                     self.state.update_object_det(*final_data)
 
                 if "pos" in self.inPsnames:
                     idx = self.inPsnames.index("pos")
                     if inPs[idx].poll():
-                        pos = inPs[idx].recv()
-                        logger.log("PIPE", f"Recv-> POS {pos}")
-
+                        pos_timestamp, pos = get_last_value(inPs[idx])
+                        logger.log("PIPE", f"Recv->POS {pos[0]:.2f} {pos[1]:.2f} {pos[2]:.2f} {pos[3]:.2f} {pos[4]:.2f}")
+                        logger.log("SYNC", f"pos delta {time()- pos_timestamp}")
                         # print("pos")
                         # print("Position: ",pos)
                         if pos[0] == 0 and pos[1] == 0:

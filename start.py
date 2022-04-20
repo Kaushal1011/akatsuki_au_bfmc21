@@ -44,6 +44,7 @@ from src.utils.remotecontrol.RemoteControlReceiverProcess import (
 )
 import sys
 from loguru import logger
+from typing import List
 
 isPI = True
 try:
@@ -53,18 +54,18 @@ except Exception as e:
     isPI = False
 # =================== CONFIG LOGGER ======================================
 
-logger.level("PIPE", no=12, color="<blue>", icon="==")
+logger.level("PIPE", no=12, icon="==")
 logger.level("SYNC", no=13, color="<yellow>")
 
 
-def filter(level: int):
-    return lambda r: r["level"].no == level or r["level"].no > 19
+def filter(level: List[int]):
+    return lambda r: r["level"].no in level or r["level"].no > 19
 
 
 TEST_PIPE = True
 logger.remove()
 if TEST_PIPE:
-    logger.add(sys.stdout, filter=filter(12))
+    logger.add(sys.stderr, filter=filter([13]))
 
 # logger.level("LK", no=10, color="<blue>", icon='' )
 # logger.level("INT", no=10, color="<blue>", icon='' )

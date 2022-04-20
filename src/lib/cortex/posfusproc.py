@@ -8,16 +8,17 @@ from src.templates.workerprocess import WorkerProcess
 from multiprocessing import Pipe
 from multiprocessing.connection import Connection
 from typing import List
+from loguru import logger
 #import  config
 
 def get_last(inP: Pipe, delta_time: float = 0.1):
     data = inP.recv()
-    timestamp = data["timestamp"]
-    while (time() - timestamp) > delta_time:
+    # timestamp = data["timestamp"]
+    while inP.poll():
         data = inP.recv()
         # print("xxxxxxxxxxxxxx Pos: skipping data")
         # print(time(), data)
-        timestamp = data["timestamp"]
+        # timestamp = data["timestamp"]
 
     return data
 
@@ -89,6 +90,7 @@ class PositionFusionProcess(WorkerProcess):
                     if inPs[idx].poll():
                         loc:dict = get_last(inPs[idx], 0.5)
                         # print("LOC", time(), loc["timestamp"])
+                        pos_timestamp = loc["timestamp"]
                         gx = loc["posA"]
                         gy = loc["posB"]
                         gyaw = loc["rotA"] if "rotA" in loc.keys() else loc["radA"]
@@ -99,7 +101,10 @@ class PositionFusionProcess(WorkerProcess):
                     if inPs[idx].poll():
                         idx = self.inPsnames.index("imu")
                         imu = get_last(inPs[idx])
+                        # logger.log("SYNC", f'imu delta {time()-imu["timestamp"]}')
+                        logger.log("PIPE", f"imu {imu}")
                         # print("IMU", time(), imu["timestamp"])
+                        pos_timestamp = imu["timestamp"]
                         iroll = imu["roll"]
                         ipitch = imu["pitch"]
                         iyaw = imu["yaw"]
@@ -110,9 +115,9 @@ class PositionFusionProcess(WorkerProcess):
                         az = imu["accelz"]
 
                 if iyaw or gx:
-                    pos_data = self.localize.update(
+                    pos_data = (pos_timestamp,self.localize.update(
                         iyaw, ipitch, iroll, ax, ay, az, gx, gy, gyaw
-                    )
+                    ))
                     self.outPs[0].send(pos_data)
 
         except Exception as e:

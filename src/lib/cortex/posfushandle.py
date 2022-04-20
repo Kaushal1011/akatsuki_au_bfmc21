@@ -223,4 +223,4 @@ class Localize:
                 # self.kf2.observation_covariance=10*self.kf2.observation_covariance
                 pass
             
-        return self.gx, self.gy, self.gyaw, self.ipitch, self.iroll
+        return self.gx, self.gy, self.iyaw, self.ipitch, self.iroll

@@ -147,7 +147,7 @@ class OvertakeBehaviour(BehaviourCallback):
             2.0
             * self.WB
             * math.sin(alpha)
-            / ((y3 - car_state.rear_y) ** 2 + (x3 - car_state.rear_x)) ** 0.5,
+            / math.sqrt((y3 - car_state.rear_y) ** 2 + (x3 - car_state.rear_x)),
             1.0,
         )
 

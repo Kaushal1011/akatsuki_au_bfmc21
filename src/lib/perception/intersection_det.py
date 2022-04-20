@@ -9,13 +9,14 @@ import numpy as np
 from src.lib.perception.intersectiondethandle import intersection_det
 from src.templates.workerprocess import WorkerProcess
 from multiprocessing import Pipe
+from loguru import logger
 
 # import SharedArray as sa
-def get_last(inP: Pipe, delta_time: float = 0.1):
+def get_last(inP: Connection):
     timestamp, data = inP.recv()
-
-    while (time() - timestamp) > delta_time:
-        # print("iD: skipping frame")
+    while inP.poll():
+        # print("lk: skipping frame")
+        # logger.log("SYNC", f"Skipping Frame delta - {time() - timestamp}")
         timestamp, data = inP.recv()
     return timestamp, data
 
@@ -70,15 +71,17 @@ class IntersectionDetProcess(WorkerProcess):
                 # Obtain image
                 img_rec_time = time()
                 # stamps, img = inP.recv()
-                stamps, img = get_last(inP, 0.01)
+                stamp, img = get_last(inP)
+                logger.log("PIPE", "recv image")
+                
                 # img = self.frame_shm
                 # Apply image processing
                 # print(f"iD: time taken to recv img {time() - img_rec_time}")
                 detected, outimage = intersection_det(img)
                 # for outP in outPs:
-                outPs[0].send(detected)
+                outPs[0].send((stamp, detected))
                 if len(outPs) > 1:
-                    outPs[1].send((1, outimage))
+                    outPs[1].send((stamp, outimage))
                     # print("Sending from Intersection Detection")
                 # print("Time taken by ID:", time() - a)
         except Exception as e:

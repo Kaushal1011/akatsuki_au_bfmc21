@@ -7,7 +7,7 @@ from typing import List
 import numpy as np
 
 # import SharedArray as sa
-
+from loguru import logger
 # from simple_pid import PID
 from src.lib.perception.lanekeepfunctions import LaneKeep as LaneKeepMethod
 from src.templates.workerprocess import WorkerProcess
@@ -15,12 +15,12 @@ from src.templates.workerprocess import WorkerProcess
 MAX_STEER = 23
 
 
-def get_last(inP: Connection, delta_time: float = 0.1):
+def get_last(inP: Connection):
     timestamp, data = inP.recv()
-    while (time() - timestamp) > delta_time:
+    while inP.poll():
         # print("lk: skipping frame")
+        # logger.log("SYNC", f"Skipping Frame delta - {time() - timestamp}")
         timestamp, data = inP.recv()
-    
     return timestamp, data
 
 
@@ -81,7 +81,8 @@ class LaneKeepingProcess(WorkerProcess):
                 # Obtain image
                 image_recv_start = time()
                 # stamps, img = inP.recv()
-                stamps, img = get_last(inP, 0.01)
+                stamp, img = get_last(inP)
+                logger.log("PIPE", "recv image")
                 # print("LK", stamps)
                 # img = self.frame_shm
                 # print(f"lk: Time taken to recv image {time() - image_recv_start}")
@@ -90,7 +91,7 @@ class LaneKeepingProcess(WorkerProcess):
                 # Apply image processing
                 val, outimage = self.lk(img)
                 angle = self.computeSteeringAnglePID(val)
-                self.outPs[0].send((angle, None))
+                self.outPs[0].send((stamp, angle))
                 # print(f"LK compute time {(time() - compute_time):.4f}s")
                 if len(outPs) > 1:
                     print(outimage.shape)
