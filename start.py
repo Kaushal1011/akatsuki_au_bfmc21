@@ -64,8 +64,8 @@ def filter(level: List[int]):
 
 TEST_PIPE = True
 logger.remove()
-if TEST_PIPE:
-    logger.add(sys.stderr, filter=filter([13]))
+# if TEST_PIPE:
+#    logger.add(sys.stderr, filter=filter([13]))
 
 # logger.level("LK", no=10, color="<blue>", icon='' )
 # logger.level("INT", no=10, color="<blue>", icon='' )
@@ -176,6 +176,7 @@ if config["enableSIM"]:
 
 elif config["home_loc"]:
     # LocSys -> Position Fusion
+    print("\n\n\n Starting Home Localization process \n\n\n")
     lsPosR, lsPosS = Pipe(duplex=False)
     locsysProc = LocalisationProcess([], [lsPosS])
     allProcesses.append(locsysProc)

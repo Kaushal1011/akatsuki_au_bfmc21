@@ -16,8 +16,12 @@ from loguru import logger
 def get_last(inP: Pipe, delta_time: float = 0.1):
     data = inP.recv()
     # timestamp = data["timestamp"]
+    consume_start = time()
     while inP.poll():
         data = inP.recv()
+        if time() - consume_start > 0.1:
+            print("Time to move on")
+            break
         # print("xxxxxxxxxxxxxx Pos: skipping data")
         # print(time(), data)
         # timestamp = data["timestamp"]
@@ -86,19 +90,6 @@ class PositionFusionProcess(WorkerProcess):
                 gyaw = None
 
                 pos = list()
-                if "loc" in self.inPsnames:
-                    idx = self.inPsnames.index("loc")
-                    if inPs[idx].poll():
-                        loc: dict = get_last(inPs[idx])
-                        logger.log("SYNC", f'loc delta {(time()-imu["timestamp"]):.4f}')
-
-                        # print("LOC", time(), loc["timestamp"])
-                        pos_timestamp = loc["timestamp"]
-                        gx = loc["posA"]
-                        gy = loc["posB"]
-                        gyaw = loc["rotA"] if "rotA" in loc.keys() else loc["radA"]
-                        # gyaw = 2 * math.pi - (gyaw + math.pi)
-
                 if "imu" in self.inPsnames:
                     idx = self.inPsnames.index("imu")
                     if inPs[idx].poll():
@@ -116,6 +107,20 @@ class PositionFusionProcess(WorkerProcess):
                         ax = imu["accelx"]
                         ay = imu["accely"]
                         az = imu["accelz"]
+
+                if "loc" in self.inPsnames:
+                    idx = self.inPsnames.index("loc")
+                    if inPs[idx].poll():
+                        loc: dict = get_last(inPs[idx])
+                        # logger.log("SYNC", f'loc delta {(time()-loc["timestamp"]):.4f}')
+
+                        # print("LOC", time(), loc["timestamp"])
+                        pos_timestamp = loc["timestamp"]
+                        gx = loc["posA"]
+                        gy = loc["posB"]
+                        gyaw = loc["rotA"] if "rotA" in loc.keys() else loc["radA"]
+                        # gyaw = 2 * math.pi - (gyaw + math.pi)
+
 
                 if iyaw or gx:
                     pos_data = (

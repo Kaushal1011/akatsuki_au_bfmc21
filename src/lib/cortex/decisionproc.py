@@ -244,6 +244,7 @@ class DecisionMakingProcess(WorkerProcess):
                         pos_timestamp, pos = get_last_value(inPs[idx])
                         logger.log("PIPE", f"Recv->POS {pos[0]:.2f} {pos[1]:.2f} {pos[2]:.2f} {pos[3]:.2f} {pos[4]:.2f}")
                         logger.log("SYNC", f"pos delta {time()- pos_timestamp}")
+                        print(f"({pos[0]:.3f}, {pos[1]:.3f}) YAW {pos[2]:.3f}")
                         # print("pos")
                         # print("Position: ",pos)
                         if pos[0] == 0 and pos[1] == 0:

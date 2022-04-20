@@ -58,6 +58,7 @@ class LocalisationProcess(WorkerProcess):
         """
         # self.server_socket.setblocking(False)
         try:
+            print("Starting Home Localization Process")
             while True:
                 bts, addr = self.server_socket.recvfrom(1024)
                 bts = bts.decode()

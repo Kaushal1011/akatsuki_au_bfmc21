@@ -76,10 +76,17 @@ class imu(threading.Thread):
                 self.accel = self.data["accel"]
                 self.roll = math.degrees(self.fusionPose[0])
                 self.pitch = math.degrees(self.fusionPose[1])
-                self.yaw = math.degrees(self.fusionPose[2])
+                yaw = math.degrees(self.fusionPose[2])
                 self.accelx = self.accel[0]
                 self.accely = self.accel[1]
                 self.accelz = self.accel[2]
+                
+                # fix yaw
+                yaw = yaw*math.pi / 180
+                if yaw > math.pi:
+                    yaw = yaw - 2*math.pi
+                self.yaw = -yaw
+                
                 for outP in self.outPs:
                     outP.send({"timestamp":time.time(),
                                "roll": self.roll,
