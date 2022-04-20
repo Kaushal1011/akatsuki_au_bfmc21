@@ -53,7 +53,7 @@ except Exception as e:
     isPI = False
 # =================== CONFIG LOGGER ======================================
 
-logger.level("PIPE", no=12, color="<blue>", icon="🌊")
+logger.level("PIPE", no=12, color="<blue>", icon="==")
 logger.level("SYNC", no=13, color="<yellow>")
 
 
@@ -66,8 +66,8 @@ logger.remove()
 if TEST_PIPE:
     logger.add(sys.stdout, filter=filter(12))
 
-# logger.level("LK", no=10, color="<blue>", icon='🌊' )
-# logger.level("INT", no=10, color="<blue>", icon='🌊' )
+# logger.level("LK", no=10, color="<blue>", icon='' )
+# logger.level("INT", no=10, color="<blue>", icon='' )
 
 
 # ========================================================================
