@@ -78,41 +78,16 @@ def annotate_image(x: float, y: float, image: np.ndarray) -> np.ndarray:
     )
 
 
-class LocalisationServer(WorkerProcess):
+class LocalisationServer:
     """Home Localisation Server"""
 
     def __init__(self, preview=False) -> None:
-
-        super(LocalisationServer, self).__init__(inPs=[], outPs=[])
 
         self.preview = preview
         self.port = PORT
         self.serverIp = PI_IP  # pi addr
         self.threads = list()
-
-    def run(self):
-        """Apply the initializing methods and start the threads."""
-        self._init_threads()
         self._init_socket()
-        for th in self.threads:
-            th.start()
-
-        for th in self.threads:
-            th.join()
-        super(LocalisationServer, self).run()
-
-    def _init_threads(self):
-        """Initialize the thread."""
-        if self._blocker.is_set():
-            return
-
-        thr = Thread(
-            name="LocalisationServer",
-            target=self._the_thread,
-            args=(),
-        )
-        thr.daemon = False
-        self.threads.append(thr)
 
     def _init_socket(self):
         """Initialize the communication socket client."""
@@ -120,7 +95,7 @@ class LocalisationServer(WorkerProcess):
             family=socket.AF_INET, type=socket.SOCK_DGRAM
         )
 
-    def _the_thread(self):
+    def run(self):
         """Obtains image, applies the required image processing and computes the steering angle value.
 
         Parameters
@@ -156,7 +131,8 @@ class LocalisationServer(WorkerProcess):
                 width = 720
                 height = 1280
                 # specify conjugate x,y coordinates (not y,x)
-                input = np.float32([[2, 370], [589, 51], [1264, 66], [806, 719]])
+                # input = np.float32([[61, 345], [616, 35], [1279, 51], [870, 676]])
+                input = np.float32([[0, 366], [582, 51], [1257, 66], [788, 715]])
                 output = np.float32(
                     [[0, 0], [width - 1, 0], [width - 1, width - 1], [0, width - 1]]
                 )
@@ -188,16 +164,22 @@ class LocalisationServer(WorkerProcess):
                     data = json.dumps(data).encode()
                     self.client_socket.sendto(data, (self.serverIp, self.port))
                     print(data)
-                    if self.preview:
-                        imgOutput = annotate_image(x, y, image)
-                        cv2.imshow("Track Image", imgOutput)
-                        key = cv2.waitKey(1)
-                        if key == 27 or key == 113:
-                            cv2.destroyAllWindows()
-                            break
-                        else:
-                            if key != -1:
-                                print(key)
-                            pass
+                    imgOutput = annotate_image(x, y, image)
+                else:
+                    imgOutput = image
+                if self.preview:
+                    cv2.imshow("Track Image", imgOutput)
+                    key = cv2.waitKey(1)
+                    if key == 27 or key == 113:
+                        cv2.destroyAllWindows()
+                        break
+                    else:
+                        if key != -1:
+                            print(key)
+                        pass
         else:
             print("Received unexpected status code {}".format(r.status_code))
+
+if __name__ == "__main__":
+    loc = LocalisationServer(preview=True)
+    loc.run()
