@@ -8,6 +8,7 @@ import numpy as np
 
 # import SharedArray as sa
 from loguru import logger
+
 # from simple_pid import PID
 from src.lib.perception.lanekeepfunctions import LaneKeep as LaneKeepMethod
 from src.templates.workerprocess import WorkerProcess
@@ -66,7 +67,7 @@ class LaneKeepingProcess(WorkerProcess):
         val = max(-MAX_STEER, min(val - 90, MAX_STEER))
         return val
 
-    def _the_thread(self, inP:Connection, outPs:List[Connection]):
+    def _the_thread(self, inP: Connection, outPs: List[Connection]):
         """Obtains image, applies the required image processing and computes the steering angle value.
 
         Parameters

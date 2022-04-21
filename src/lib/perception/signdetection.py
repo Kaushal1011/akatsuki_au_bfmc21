@@ -4,6 +4,7 @@ import time
 from src.templates.workerprocess import WorkerProcess
 import platform
 import cv2
+from multiprocessing.connection import Connection
 
 device = platform.uname().processor
 
@@ -12,6 +13,15 @@ if device == "x86_64":
     # from src.lib.perception.detectts_x86 import setup, detect_signs, draw_box
 else:
     from src.lib.perception.sign_det_cv import setup, detect_signs, draw_box
+
+
+def get_last(inP: Connection):
+    timestamp, data = inP.recv()
+    while inP.poll():
+        # print("lk: skipping frame")
+        # logger.log("SYNC", f"Skipping Frame delta - {time() - timestamp}")
+        timestamp, data = inP.recv()
+    return timestamp, data
 
 
 class SignDetectionProcess(WorkerProcess):
@@ -64,7 +74,7 @@ class SignDetectionProcess(WorkerProcess):
         while True:
             try:
                 if inP[0].poll():
-                    stamps, img = inP[0].recv()
+                    stamps, img = get_last(inP[0])
                     count += 1
                     if count % 5 != 0:
                         continue
