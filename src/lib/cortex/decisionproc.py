@@ -30,6 +30,8 @@ import joblib
 from loguru import logger
 import math
 
+rx = []
+ry = []
 
 def get_last(inP: Pipe, delta_time: float = 1e-2):
     timestamp, data = inP.recv()
@@ -276,7 +278,9 @@ class DecisionMakingProcess(WorkerProcess):
                 speed, steer = self.actman(self.state)
                 self.state.v = speed
                 self.state.steering_angle = steer
-
+                rx.append(self.state.x)
+                ry.append(self.state.y)
+                logger.log("XY", f"{self.state.x}, {self.state.y},")
                 logger.debug(f"Sonar Front: {self.state.front_distance}")
                 logger.debug(f"Sonar Side: {self.state.side_distance}")
                 # print("speed: ", self.state.v)
@@ -292,3 +296,5 @@ class DecisionMakingProcess(WorkerProcess):
             except Exception as e:
                 print("Decision Process error:")
                 raise e
+            finally:
+                joblib.dump({"x":rx, "y":ry}, "real_coords.z")

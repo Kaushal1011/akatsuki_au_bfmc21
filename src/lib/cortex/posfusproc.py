@@ -43,7 +43,7 @@ class PositionFusionProcess(WorkerProcess):
         super(PositionFusionProcess, self).__init__(inPs, outPs)
         self.inPsnames = inPsnames
         # update gx gy based on initial values
-        self.localize = Localize(ix=0, iy=0, gx=0, gy=0)
+        self.localize = Localize(gx=0.73, gy=5.22, ix=0.73, iy=5.22)
 
     def run(self):
         """Apply the initializing methods and start the threads."""
@@ -95,7 +95,7 @@ class PositionFusionProcess(WorkerProcess):
                     if inPs[idx].poll():
                         idx = self.inPsnames.index("imu")
                         imu = get_last(inPs[idx])
-                        # logger.log("SYNC", f'imu delta {time()-imu["timestamp"]}')
+                        print(f'imu delta {time()-imu["timestamp"]}')
                         logger.log("PIPE", f"imu {imu}")
                         # print("IMU", time(), imu["timestamp"])
                         pos_timestamp = imu["timestamp"]

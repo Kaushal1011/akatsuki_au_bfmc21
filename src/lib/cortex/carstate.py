@@ -32,7 +32,7 @@ class DetectedSign:
 
 
 class CarState:
-    def __init__(self, max_v=0.15, dt=0.13, car_len=0.365, **kwargs) -> None:
+    def __init__(self, max_v=0.20, dt=0.13, car_len=0.365, **kwargs) -> None:
 
         self.max_v = max_v
         # position data

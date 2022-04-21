@@ -56,7 +56,7 @@ except Exception as e:
 
 logger.level("PIPE", no=12, icon="==")
 logger.level("SYNC", no=13, color="<yellow>")
-
+logger.level("XY", no=14)
 
 def filter(level: List[int]):
     return lambda r: r["level"].no in level or r["level"].no > 19
@@ -64,9 +64,10 @@ def filter(level: List[int]):
 
 TEST_PIPE = True
 logger.remove()
-# if TEST_PIPE:
-#    logger.add(sys.stderr, filter=filter([13]))
+if TEST_PIPE:
+    logger.add(sys.stderr, filter=filter([18]))
 
+logger.add("file1.log", filter=lambda r:r["level"] == 14)
 # logger.level("LK", no=10, color="<blue>", icon='' )
 # logger.level("INT", no=10, color="<blue>", icon='' )
 

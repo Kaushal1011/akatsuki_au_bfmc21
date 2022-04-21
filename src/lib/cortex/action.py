@@ -202,7 +202,7 @@ class ControlSystemBehaviour(BehaviourCallback):
 
     def __call__(self, car_state: CarState):
         ind, lf = self.cs.search_target_index(car_state)
-        logger.info(f"Target: {ind} ({self.cs.cx[ind]:.2f}, {self.cs.cy[ind]:.2f})")
+        logger.info(f"({car_state.x}, {car_state.y}) Target: {ind} ({self.cs.cx[ind]:.2f}, {self.cs.cy[ind]:.2f})")
 
         car_state.target_x = self.cs.cx[ind]
         car_state.target_y = self.cs.cy[ind]

@@ -7,7 +7,7 @@ now = time.time
 
 
 class Localize:
-    def __init__(self, gx=0.9, gy=14.8, ix=0.9, iy=14.8):
+    def __init__(self, gx=0.73, gy=5.22, ix=0.73, iy=5.22):
 
         initial_state_mean = [0, ix, 0, iy]
 
@@ -97,18 +97,24 @@ class Localize:
 
         self.var_dt = now() - self.lupdate_i
         self.lupdate_i = now()
-
-        self.accelx = ax
-        self.accely = ay
-        self.accelz = az
-
-        # v = u + at
-        self.ux = self.ux + self.accelx * self.var_dt
-        self.uy = self.uy + self.accely * self.var_dt
+        
+        self.accelx = -ax*10
+        self.accely = ay*10
+        self.accelz = az*10
+        print(self.accelx, self.accely, self.accelz)
+        
+        if self.var_dt > 1:
+            self.var_dt = 0.5
+        
+        print("var_dt", self.var_dt)
 
         # s = ut + 0.5at^2
-        self.ix = self.ix + (self.ux * self.var_dt + 0.5 * self.accelx * self.var_dt)
-        self.iy = self.iy + (self.uy * self.var_dt + 0.5 * self.accely * self.var_dt)
+        self.ix = self.ix + 0.5 * self.accelx * (self.var_dt**2)
+        self.iy = self.iy + 0.5 * self.accely * (self.var_dt**2)
+
+        # v = u + at
+        self.ux = self.accelx * self.var_dt
+        self.uy = self.accely * self.var_dt
 
         self.i_arr.append((self.ix, self.iy))
         # self.iy_arr.append(self.iy)
@@ -223,4 +229,4 @@ class Localize:
                 # self.kf2.observation_covariance=10*self.kf2.observation_covariance
                 pass
 
-        return rix, riy, self.iyaw, self.ipitch, self.iroll
+        return self.gx, self.gy, self.iyaw, self.ipitch, self.iroll
