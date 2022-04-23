@@ -56,7 +56,7 @@ class IntersectionDetProcess(WorkerProcess):
         thr.daemon = True
         self.threads.append(thr)
 
-    def _the_thread(self, inP:Connection, outPs:List[Connection]):
+    def _the_thread(self, inP: Connection, outPs: List[Connection]):
         """Obtains image, applies the required image processing and computes the steering angle value.
 
         Parameters
@@ -69,15 +69,23 @@ class IntersectionDetProcess(WorkerProcess):
         try:
             while True:
                 # Obtain image
-                img_rec_time = time()
+                image_recv_start = time()
                 # stamps, img = inP.recv()
                 stamp, img = get_last(inP)
                 logger.log("PIPE", "recv image")
-                
+                logger.log(
+                    "TIME",
+                    f"Time taken to rec image {(time() - image_recv_start):.4f}s",
+                )
                 # img = self.frame_shm
                 # Apply image processing
                 # print(f"iD: time taken to recv img {time() - img_rec_time}")
+                compute_time = time()
                 detected, outimage = intersection_det(img)
+                logger.log(
+                    "TIME",
+                    f"Process Time -> {(time() - compute_time):.4f}s",
+                )
                 # for outP in outPs:
                 outPs[0].send((stamp, detected))
                 if len(outPs) > 1:

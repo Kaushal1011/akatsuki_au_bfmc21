@@ -84,6 +84,10 @@ class LaneKeepingProcess(WorkerProcess):
                 # stamps, img = inP.recv()
                 stamp, img = get_last(inP)
                 logger.log("PIPE", "recv image")
+                logger.log(
+                    "TIME",
+                    f"Time taken to rec image {(time() - image_recv_start):.4f}s",
+                )
                 # print("LK", stamps)
                 # img = self.frame_shm
                 # print(f"lk: Time taken to recv image {time() - image_recv_start}")
@@ -93,6 +97,10 @@ class LaneKeepingProcess(WorkerProcess):
                 val, outimage = self.lk(img)
                 angle = self.computeSteeringAnglePID(val)
                 self.outPs[0].send((stamp, angle))
+                logger.log(
+                    "TIME",
+                    f"Process Time -> {(time() - compute_time):.4f}s",
+                )
                 # print(f"LK compute time {(time() - compute_time):.4f}s")
                 if len(outPs) > 1:
                     print(outimage.shape)
