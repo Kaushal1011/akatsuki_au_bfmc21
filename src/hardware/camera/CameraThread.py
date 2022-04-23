@@ -144,7 +144,7 @@ class CameraThread(ThreadWithStop):
             # output image and time stamp
             # Note: The sending process can be blocked, when doesn't exist any consumer process and it reaches the limit size.
             for outP in self.outPs:
-                outP.put((stamp, frame))
+                outP.send((stamp, frame))
 
             self._stream.seek(0)
             self._stream.truncate()
