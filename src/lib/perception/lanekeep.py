@@ -1,4 +1,5 @@
 # from multiprocessing import shared_memory
+from multiprocessing import Queue
 from multiprocessing.connection import Connection
 from threading import Thread
 from time import time
@@ -16,12 +17,12 @@ from src.templates.workerprocess import WorkerProcess
 MAX_STEER = 23
 
 
-def get_last(inP: Connection):
-    timestamp, data = inP.recv()
-    while inP.poll():
+def get_last(inP: Queue):
+    timestamp, data = inP.get()
+    while inP.empty():
         # print("lk: skipping frame")
         # logger.log("SYNC", f"Skipping Frame delta - {time() - timestamp}")
-        timestamp, data = inP.recv()
+        timestamp, data = inP.get()
     return timestamp, data
 
 
@@ -67,7 +68,7 @@ class LaneKeepingProcess(WorkerProcess):
         val = max(-MAX_STEER, min(val - 90, MAX_STEER))
         return val
 
-    def _the_thread(self, inP: Connection, outPs: List[Connection]):
+    def _the_thread(self, inP: Queue, outPs: List[Connection]):
         """Obtains image, applies the required image processing and computes the steering angle value.
 
         Parameters

@@ -1,5 +1,6 @@
 # from multiprocessing import shared_memory
 from multiprocessing.connection import Connection
+from multiprocessing import Queue
 from threading import Thread
 from time import time
 from typing import List
@@ -12,12 +13,12 @@ from multiprocessing import Pipe
 from loguru import logger
 
 # import SharedArray as sa
-def get_last(inP: Connection):
-    timestamp, data = inP.recv()
-    while inP.poll():
+def get_last(inP: Queue):
+    timestamp, data = inP.get()
+    while inP.empty():
         # print("lk: skipping frame")
         # logger.log("SYNC", f"Skipping Frame delta - {time() - timestamp}")
-        timestamp, data = inP.recv()
+        timestamp, data = inP.get()
     return timestamp, data
 
 
