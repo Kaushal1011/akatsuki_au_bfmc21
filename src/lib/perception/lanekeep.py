@@ -27,7 +27,9 @@ def get_last(inP: Connection):
 
 class LaneKeepingProcess(WorkerProcess):
     # ===================================== Worker process =========================================
-    def __init__(self, inPs, outPs):
+    def __init__(
+        self, inPs: List[Connection], outPs: List[Connection], stream: bool = True
+    ):
         """Process used for the image processing needed for lane keeping and for computing the steering value.
 
         Parameters
@@ -40,6 +42,7 @@ class LaneKeepingProcess(WorkerProcess):
         super(LaneKeepingProcess, self).__init__(inPs, outPs)
         self.lk = LaneKeepMethod(use_perspective=False, computation_method="hough")
         # self.frame_shm = sa.attach("shm://shared_frame1")
+        self.stream = stream
 
     def run(self):
         """Apply the initializing methods and start the threads."""
@@ -100,7 +103,11 @@ class LaneKeepingProcess(WorkerProcess):
                 # print("Time taken to recieve image", time()- i)
                 compute_time = time()
                 # Apply image processing
-                val, intersection_detected = self.lk(img)
+                if self.stream:
+                    val, intersection_detected, outimage = self.lk(img, self.stream)
+                else:
+                    val, intersection_detected = self.lk(img)
+
                 angle = self.computeSteeringAnglePID(val)
                 self.outPs[0].send((stamp, angle, intersection_detected))
                 t += time() - compute_time
@@ -109,9 +116,8 @@ class LaneKeepingProcess(WorkerProcess):
                     f"Process Time -> {(t/count):.4f}s",
                 )
                 # print(f"LK compute time {(time() - compute_time):.4f}s")
-                if len(outPs) > 1 and False:
-                    print(outimage.shape)
-                    self.outPs[1].send((angle, outimage))
+                if len(outPs) > 1 and outimage:
+                    self.outPs[1].send((stamp, outimage))
 
                     # print("Sending from Lane Keeping")
 

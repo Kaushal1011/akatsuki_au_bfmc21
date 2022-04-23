@@ -139,6 +139,10 @@ class LaneKeep:
     ) -> Tuple[float, bool, Optional[np.ndarray]]:
         preprocess_img = self.preprocess_pipeline(img)
         intersection_detected, cnts = self.intersection_det(preprocess_img)
+        mask = np.ones(preprocess_img, dtype="uint8") * 255
+        cv2.drawContours(mask, [cnts], -1, 0, -1)
+        preprocess_img = cv2.bitwise_and(preprocess_img, preprocess_img, mask=mask)
+
         if self.computation_method == "hough":
             if get_image:
                 angle, outimg = self.houghlines_angle(preprocess_img, get_img=get_image)

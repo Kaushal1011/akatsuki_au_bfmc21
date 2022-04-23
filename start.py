@@ -120,9 +120,9 @@ if config["enableLaneKeeping"]:
     dataFusionInputPs.append(lkFzzR)
     dataFusionInputName.append("lk")
 
-    if config["enableStream"] and False:
+    if config["enableStream"]:
         lkStrR, lkStrS = Pipe(duplex=False)
-        lkProc = LaneKeeping([lkR], [lkFzzS, lkStrS])
+        lkProc = LaneKeeping([lkR], [lkFzzS, lkStrS], stream=True)
     else:
         lkProc = LaneKeeping([lkR], [lkFzzS])
 
@@ -325,11 +325,8 @@ else:
 
 # ========================= Streamer =====================================================
 if config["enableStream"]:
-    # if config["enableLaneKeeping"] and config["enableIntersectionDet"]:
-    #     # shouldnt idstr go here also ?
-    #     streamProc = CameraStreamerProcess([lkStrR], [])
     if config["enableLaneKeeping"]:
-        streamProc = CameraStreamerProcess([idStrR], [])
+        streamProc = CameraStreamerProcess([lkStrR], [])
         allProcesses.append(streamProc)
     else:
         camStR, camStS = Pipe(duplex=False)  # camera  ->  streamer
