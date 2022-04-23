@@ -66,7 +66,7 @@ class IntersectionDetProcess(WorkerProcess):
         outP : Pipe
             Output pipe to send the steering angle value to other process.
         """
-        count = 1
+        count = 0
         t = 0.0
         t_r = 0.1
         try:
@@ -76,6 +76,7 @@ class IntersectionDetProcess(WorkerProcess):
                 # stamps, img = inP.recv()
                 stamp, img = get_last(inP)
                 logger.log("PIPE", "recv image")
+                count +=1
                 t_r += time() - image_recv_start
                 logger.log(
                     "TIME",

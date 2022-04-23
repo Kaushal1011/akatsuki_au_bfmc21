@@ -77,7 +77,7 @@ class LaneKeepingProcess(WorkerProcess):
         outP : Pipe
             Output pipe to send the steering angle value to other process.
         """
-        count = 1
+        count = 0
         t = 0.0
         t_r = 0.1
         try:
@@ -88,6 +88,8 @@ class LaneKeepingProcess(WorkerProcess):
                 stamp, img = get_last(inP)
                 logger.log("PIPE", "recv image")
                 t_r += time() - image_recv_start
+                count += 1
+                
                 logger.log(
                     "TIME",
                     f"Time taken to rec image {(t_r/count):.4f}s",
@@ -102,7 +104,6 @@ class LaneKeepingProcess(WorkerProcess):
                 angle = self.computeSteeringAnglePID(val)
                 self.outPs[0].send((stamp, angle))
                 t += time() - compute_time
-                count += 1
                 logger.log(
                     "TIME",
                     f"Process Time -> {(t/count):.4f}s",

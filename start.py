@@ -1,5 +1,5 @@
 import sys
-from multiprocessing import Event, Pipe, Queue
+from multiprocessing import Event, Pipe
 
 
 import argparse
@@ -89,7 +89,7 @@ STREAM_PORT2 = 4422
 # Pipe collections
 allProcesses = []
 movementControlR = []
-camOutPs: List[Queue] = []
+camOutPs = []
 dataFusionInputPs = []
 dataFusionInputName = []
 
@@ -108,8 +108,7 @@ if config["enableRc"]:
 
 if config["enableLaneKeeping"]:
     # Camera process -> Lane keeping
-    # lkR, lkS = Pipe(duplex=False)
-    q_lk = Queue()
+    lkR, lkS = Pipe(duplex=False)
 
     # Lane keeping -> Data Fusion
     lkFzzR, lkFzzS = Pipe(duplex=False)
@@ -117,7 +116,7 @@ if config["enableLaneKeeping"]:
     # Decision Process -> Movement control
     FzzMcR, FzzMcS = Pipe(duplex=False)
 
-    camOutPs.append(q_lk)
+    camOutPs.append(lkS)
     dataFusionInputPs.append(lkFzzR)
     dataFusionInputName.append("lk")
 
@@ -125,28 +124,27 @@ if config["enableLaneKeeping"]:
         lkStrR, lkStrS = Pipe(duplex=False)
         lkProc = LaneKeeping([lkR], [lkFzzS, lkStrS])
     else:
-        lkProc = LaneKeeping([q_lk], [lkFzzS])
+        lkProc = LaneKeeping([lkR], [lkFzzS])
 
     allProcesses.append(lkProc)
 
 if config["enableIntersectionDet"]:
     # Camera process -> Intersection Detection
-    # camiDR, camiDS = Pipe(duplex=False)
-    q_id = Queue()
+    camiDR, camiDS = Pipe(duplex=False)
 
     # Intersection Detection -> Data Fusion
     iDFzzR, iDFzzS = Pipe(duplex=False)
 
-    camOutPs.append(q_id)
+    camOutPs.append(camiDS)
     dataFusionInputPs.append(iDFzzR)
     dataFusionInputName.append("iD")
 
     if config["enableStream"]:
         # TODO: add streaming utility
         idStrR, idStrS = Pipe(duplex=False)
-        idProc = IntersectionDetProcess([q_id], [iDFzzS, idStrS])
+        idProc = IntersectionDetProcess([camiDR], [iDFzzS, idStrS])
     else:
-        idProc = IntersectionDetProcess([q_id], [iDFzzS])
+        idProc = IntersectionDetProcess([camiDR], [iDFzzS])
     allProcesses.append(idProc)
 
 if config["enableSignDet"]:
