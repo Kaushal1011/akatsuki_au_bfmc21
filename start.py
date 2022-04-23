@@ -69,7 +69,7 @@ logger.remove()
 if TEST_PIPE:
     logger.add(sys.stderr, filter=filter([15]))
 
-logger.add("file1.log", filter=filter([15]))
+logger.add("file1.log", filter=lambda r: r["level"] == 14)
 # logger.level("LK", no=10, color="<blue>", icon='' )
 # logger.level("INT", no=10, color="<blue>", icon='' )
 
