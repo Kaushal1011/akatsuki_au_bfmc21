@@ -89,7 +89,7 @@ class LaneKeepingProcess(WorkerProcess):
                 logger.log("PIPE", "recv image")
                 t_r += time() - image_recv_start
                 count += 1
-                
+
                 logger.log(
                     "TIME",
                     f"Time taken to rec image {(t_r/count):.4f}s",
@@ -100,16 +100,16 @@ class LaneKeepingProcess(WorkerProcess):
                 # print("Time taken to recieve image", time()- i)
                 compute_time = time()
                 # Apply image processing
-                val, outimage = self.lk(img)
+                val, intersection_detected = self.lk(img)
                 angle = self.computeSteeringAnglePID(val)
-                self.outPs[0].send((stamp, angle))
+                self.outPs[0].send((stamp, angle, intersection_detected))
                 t += time() - compute_time
                 logger.log(
                     "TIME",
                     f"Process Time -> {(t/count):.4f}s",
                 )
                 # print(f"LK compute time {(time() - compute_time):.4f}s")
-                if len(outPs) > 1:
+                if len(outPs) > 1 and False:
                     print(outimage.shape)
                     self.outPs[1].send((angle, outimage))
 

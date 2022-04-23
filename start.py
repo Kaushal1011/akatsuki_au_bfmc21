@@ -128,24 +128,24 @@ if config["enableLaneKeeping"]:
 
     allProcesses.append(lkProc)
 
-if config["enableIntersectionDet"]:
-    # Camera process -> Intersection Detection
-    camiDR, camiDS = Pipe(duplex=False)
+# if config["enableIntersectionDet"]:
+#     # Camera process -> Intersection Detection
+#     camiDR, camiDS = Pipe(duplex=False)
 
-    # Intersection Detection -> Data Fusion
-    iDFzzR, iDFzzS = Pipe(duplex=False)
+#     # Intersection Detection -> Data Fusion
+#     iDFzzR, iDFzzS = Pipe(duplex=False)
 
-    camOutPs.append(camiDS)
-    dataFusionInputPs.append(iDFzzR)
-    dataFusionInputName.append("iD")
+#     camOutPs.append(camiDS)
+#     dataFusionInputPs.append(iDFzzR)
+#     dataFusionInputName.append("iD")
 
-    if config["enableStream"]:
-        # TODO: add streaming utility
-        idStrR, idStrS = Pipe(duplex=False)
-        idProc = IntersectionDetProcess([camiDR], [iDFzzS, idStrS])
-    else:
-        idProc = IntersectionDetProcess([camiDR], [iDFzzS])
-    allProcesses.append(idProc)
+#     if config["enableStream"]:
+#         # TODO: add streaming utility
+#         idStrR, idStrS = Pipe(duplex=False)
+#         idProc = IntersectionDetProcess([camiDR], [iDFzzS, idStrS])
+#     else:
+#         idProc = IntersectionDetProcess([camiDR], [iDFzzS])
+#     allProcesses.append(idProc)
 
 if config["enableSignDet"]:
     # Camera process -> Sign Detection

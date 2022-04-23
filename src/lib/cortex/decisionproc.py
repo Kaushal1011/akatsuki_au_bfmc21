@@ -33,6 +33,7 @@ import math
 rx = []
 ry = []
 
+
 def get_last(inP: Pipe, delta_time: float = 1e-2):
     timestamp, data = inP.recv()
 
@@ -193,18 +194,20 @@ class DecisionMakingProcess(WorkerProcess):
                 start_time = time()
                 t_lk = time()
                 idx = self.inPsnames.index("lk")
-                lk_timestamp, lk_angle = get_last_value(inPs[idx])
+                lk_timestamp, lk_angle, detected_intersection = get_last_value(
+                    inPs[idx]
+                )
                 self.state.update_lk_angle(lk_angle)
+                self.state.update_intersection(detected_intersection)
                 logger.log("PIPE", f"Recv->LK {lk_angle}")
                 logger.log("SYNC", f"LK delta {time()- lk_timestamp}")
                 # print(f"Time taken lk {(time() - t_lk):.4f}s {lk_angle}")
 
-                t_id = time()
-                idx = self.inPsnames.index("iD")
-                id_timestamp, detected_intersection = get_last_value(inPs[idx])
-                self.state.update_intersection(detected_intersection)
-                logger.log("PIPE", f"Recv->ID {detected_intersection}")
-                logger.log("SYNC", f"iD delta {time()- id_timestamp}")
+                # t_id = time()
+                # idx = self.inPsnames.index("iD")
+                # id_timestamp, detected_intersection = get_last_value(inPs[idx])
+                # logger.log("PIPE", f"Recv->ID {detected_intersection}")
+                # logger.log("SYNC", f"iD delta {time()- id_timestamp}")
 
                 # print("id: ", detected_intersection)
                 # print(f"TIme taken iD {(time()- t_id):.4f}s")
@@ -297,4 +300,4 @@ class DecisionMakingProcess(WorkerProcess):
                 print("Decision Process error:")
                 raise e
             finally:
-                joblib.dump({"x":rx, "y":ry}, "real_coords.z")
+                joblib.dump({"x": rx, "y": ry}, "real_coords.z")
