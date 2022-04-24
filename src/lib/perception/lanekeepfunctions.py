@@ -137,16 +137,19 @@ class LaneKeep:
     def __call__(
         self, img: np.ndarray, get_image: bool = False
     ) -> Tuple[float, bool, Optional[np.ndarray]]:
-        preprocess_img = self.preprocess_pipeline(img)
+        preprocess_img: np.ndarray = self.preprocess_pipeline(img)
         intersection_detected, cnts = self.intersection_det(preprocess_img)
-        mask = np.ones(preprocess_img, dtype="uint8") * 255
-        cv2.drawContours(mask, [cnts], -1, 0, -1)
+        mask = np.ones(preprocess_img.shape, dtype="uint8") * 255
+        if len(cnts) > 0:
+            print(type(cnts), type(cnts[0]))
+            cv2.drawContours(mask, cnts, -1, 0, -1)
         preprocess_img = cv2.bitwise_and(preprocess_img, preprocess_img, mask=mask)
 
         if self.computation_method == "hough":
             if get_image:
                 angle, outimg = self.houghlines_angle(preprocess_img, get_img=get_image)
-                self.draw_intersection_bbox(outimg, cnts)
+                if len(cnts) > 0:
+                    self.draw_intersection_bbox(outimg, cnts)
                 return angle, intersection_detected, outimg
 
             else:
@@ -208,7 +211,7 @@ class LaneKeep:
         mask = cv2.inRange(imgn, lower, upper)
         return mask
 
-    def intersection_det(img: np.ndarray, area_threshold=6_500):
+    def intersection_det(self, img: np.ndarray, area_threshold=6_500):
         # detect horizontal lines
         horizontal_size = img.shape[1] // 4
         horizontal_kernel = cv2.getStructuringElement(

@@ -6,7 +6,7 @@
   "enableIntersectionDet": true,
   "enableSignDet": false,
   "enableSIM": false,
-  "using_server": true,
+  "using_server": false,
   "test_track": false,
   "start_idx": "86",
   "end_idx": "40",

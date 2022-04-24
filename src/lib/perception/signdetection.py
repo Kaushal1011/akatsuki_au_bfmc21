@@ -10,7 +10,7 @@ device = platform.uname().processor
 
 if device == "x86_64":
     print("Using x86 model")
-    # from src.lib.perception.detectts_x86 import setup, detect_signs, draw_box
+    from src.lib.perception.detectts_x86 import setup, detect_signs, draw_box
 else:
     from src.lib.perception.sign_det_cv import setup, detect_signs, draw_box
 
