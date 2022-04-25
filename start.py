@@ -57,6 +57,8 @@ except Exception as e:
 logger.level("PIPE", no=12, icon="==")
 logger.level("SYNC", no=13, color="<yellow>")
 logger.level("XY", no=14)
+logger.level("TIME", no=15)
+
 
 def filter(level: List[int]):
     return lambda r: r["level"].no in level or r["level"].no > 19
@@ -65,9 +67,9 @@ def filter(level: List[int]):
 TEST_PIPE = True
 logger.remove()
 if TEST_PIPE:
-    logger.add(sys.stderr, filter=filter([18]))
+    logger.add(sys.stderr, filter=filter([15]))
 
-logger.add("file1.log", filter=lambda r:r["level"] == 14)
+logger.add("file1.log", filter=lambda r: r["level"] == 14)
 # logger.level("LK", no=10, color="<blue>", icon='' )
 # logger.level("INT", no=10, color="<blue>", icon='' )
 
@@ -118,32 +120,32 @@ if config["enableLaneKeeping"]:
     dataFusionInputPs.append(lkFzzR)
     dataFusionInputName.append("lk")
 
-    if config["enableStream"] and False:
+    if config["enableStream"]:
         lkStrR, lkStrS = Pipe(duplex=False)
-        lkProc = LaneKeeping([lkR], [lkFzzS, lkStrS])
+        lkProc = LaneKeeping([lkR], [lkFzzS, lkStrS], stream=True)
     else:
         lkProc = LaneKeeping([lkR], [lkFzzS])
 
     allProcesses.append(lkProc)
 
-if config["enableIntersectionDet"]:
-    # Camera process -> Intersection Detection
-    camiDR, camiDS = Pipe(duplex=False)
+# if config["enableIntersectionDet"]:
+#     # Camera process -> Intersection Detection
+#     camiDR, camiDS = Pipe(duplex=False)
 
-    # Intersection Detection -> Data Fusion
-    iDFzzR, iDFzzS = Pipe(duplex=False)
+#     # Intersection Detection -> Data Fusion
+#     iDFzzR, iDFzzS = Pipe(duplex=False)
 
-    camOutPs.append(camiDS)
-    dataFusionInputPs.append(iDFzzR)
-    dataFusionInputName.append("iD")
+#     camOutPs.append(camiDS)
+#     dataFusionInputPs.append(iDFzzR)
+#     dataFusionInputName.append("iD")
 
-    if config["enableStream"]:
-        # TODO: add streaming utility
-        idStrR, idStrS = Pipe(duplex=False)
-        idProc = IntersectionDetProcess([camiDR], [iDFzzS, idStrS])
-    else:
-        idProc = IntersectionDetProcess([camiDR], [iDFzzS])
-    allProcesses.append(idProc)
+#     if config["enableStream"]:
+#         # TODO: add streaming utility
+#         idStrR, idStrS = Pipe(duplex=False)
+#         idProc = IntersectionDetProcess([camiDR], [iDFzzS, idStrS])
+#     else:
+#         idProc = IntersectionDetProcess([camiDR], [iDFzzS])
+#     allProcesses.append(idProc)
 
 if config["enableSignDet"]:
     # Camera process -> Sign Detection
@@ -323,11 +325,8 @@ else:
 
 # ========================= Streamer =====================================================
 if config["enableStream"]:
-    # if config["enableLaneKeeping"] and config["enableIntersectionDet"]:
-    #     # shouldnt idstr go here also ?
-    #     streamProc = CameraStreamerProcess([lkStrR], [])
     if config["enableLaneKeeping"]:
-        streamProc = CameraStreamerProcess([idStrR], [])
+        streamProc = CameraStreamerProcess([lkStrR], [])
         allProcesses.append(streamProc)
     else:
         camStR, camStS = Pipe(duplex=False)  # camera  ->  streamer

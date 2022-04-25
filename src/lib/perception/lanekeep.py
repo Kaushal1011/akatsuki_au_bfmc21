@@ -27,7 +27,9 @@ def get_last(inP: Connection):
 
 class LaneKeepingProcess(WorkerProcess):
     # ===================================== Worker process =========================================
-    def __init__(self, inPs, outPs):
+    def __init__(
+        self, inPs: List[Connection], outPs: List[Connection], stream: bool = True
+    ):
         """Process used for the image processing needed for lane keeping and for computing the steering value.
 
         Parameters
@@ -40,6 +42,7 @@ class LaneKeepingProcess(WorkerProcess):
         super(LaneKeepingProcess, self).__init__(inPs, outPs)
         self.lk = LaneKeepMethod(use_perspective=False, computation_method="hough")
         # self.frame_shm = sa.attach("shm://shared_frame1")
+        self.stream = stream
 
     def run(self):
         """Apply the initializing methods and start the threads."""
@@ -77,6 +80,9 @@ class LaneKeepingProcess(WorkerProcess):
         outP : Pipe
             Output pipe to send the steering angle value to other process.
         """
+        count = 0
+        t = 0.0
+        t_r = 0.1
         try:
             while True:
                 # Obtain image
@@ -84,19 +90,34 @@ class LaneKeepingProcess(WorkerProcess):
                 # stamps, img = inP.recv()
                 stamp, img = get_last(inP)
                 logger.log("PIPE", "recv image")
+                t_r += time() - image_recv_start
+                count += 1
+
+                logger.log(
+                    "TIME",
+                    f"Time taken to rec image {(t_r/count):.4f}s",
+                )
                 # print("LK", stamps)
                 # img = self.frame_shm
                 # print(f"lk: Time taken to recv image {time() - image_recv_start}")
                 # print("Time taken to recieve image", time()- i)
                 compute_time = time()
                 # Apply image processing
-                val, outimage = self.lk(img)
+                if self.stream:
+                    val, intersection_detected, outimage = self.lk(img, self.stream)
+                else:
+                    val, intersection_detected = self.lk(img)
+
                 angle = self.computeSteeringAnglePID(val)
-                self.outPs[0].send((stamp, angle))
+                self.outPs[0].send((stamp, angle, intersection_detected))
+                t += time() - compute_time
+                logger.log(
+                    "TIME",
+                    f"Process Time -> {(t/count):.4f}s",
+                )
                 # print(f"LK compute time {(time() - compute_time):.4f}s")
-                if len(outPs) > 1:
-                    print(outimage.shape)
-                    self.outPs[1].send((angle, outimage))
+                if len(outPs) > 1 and outimage:
+                    self.outPs[1].send((stamp, outimage))
 
                     # print("Sending from Lane Keeping")
 

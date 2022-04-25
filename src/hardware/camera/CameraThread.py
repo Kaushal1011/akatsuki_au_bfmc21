@@ -28,6 +28,8 @@
 
 from copy import deepcopy
 import io
+from multiprocessing import Queue
+from typing import List
 import numpy as np
 import time
 
@@ -50,7 +52,7 @@ from src.templates.threadwithstop import ThreadWithStop
 class CameraThread(ThreadWithStop):
 
     # ================================ CAMERA =============================================
-    def __init__(self, outPs):
+    def __init__(self, outPs: List[Queue]):
         """The purpose of this thread is to setup the camera parameters and send the result to the CameraProcess.
         It is able also to record videos and save them locally. You can do so by setting the self.RecordMode = True.
 

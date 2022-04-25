@@ -2,7 +2,7 @@ import math
 from functools import reduce
 from multiprocessing.sharedctypes import Value
 from time import time
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 from xml.dom import ValidationErr
 
 import cv2
@@ -134,15 +134,30 @@ class LaneKeep:
 
         self.preprocess_pipeline = reduce(compose, pipeline_list, lambda x: x)
 
-    def __call__(self, img: np.ndarray) -> float:
-        preprocess_img = self.preprocess_pipeline(img)
+    def __call__(
+        self, img: np.ndarray, get_image: bool = False
+    ) -> Tuple[float, bool, Optional[np.ndarray]]:
+        preprocess_img: np.ndarray = self.preprocess_pipeline(img)
+        intersection_detected, cnts = self.intersection_det(preprocess_img)
+        mask = np.ones(preprocess_img.shape, dtype="uint8") * 255
+        if len(cnts) > 0:
+            print(type(cnts), type(cnts[0]))
+            cv2.drawContours(mask, cnts, -1, 0, -1)
+        preprocess_img = cv2.bitwise_and(preprocess_img, preprocess_img, mask=mask)
+
         if self.computation_method == "hough":
-            angle, outimg = self.houghlines_angle(preprocess_img)
-            angle_roadarea = self.graph_road_search(preprocess_img)
-            # angle=self.get_lane_error(preprocess_img)
-            # print(angle, " ", angle_roadarea)
-#             angle = (angle*2 + angle_roadarea) / 3
-            return angle, outimg
+            if get_image:
+                angle, outimg = self.houghlines_angle(preprocess_img, get_img=get_image)
+                if len(cnts) > 0:
+                    self.draw_intersection_bbox(outimg, cnts)
+                return angle, intersection_detected, outimg
+
+            else:
+                angle = self.houghlines_angle(preprocess_img)
+                # angle_roadarea = self.graph_road_search(preprocess_img)
+                # print(angle, " ", angle_roadarea)
+                #             angle = (angle*2 + angle_roadarea) / 3
+                return intersection_detected, angle
 
     def roi_func(self, img: np.ndarray) -> np.ndarray:
         """Given image get Region of interest
@@ -196,6 +211,34 @@ class LaneKeep:
         mask = cv2.inRange(imgn, lower, upper)
         return mask
 
+    def intersection_det(self, img: np.ndarray, area_threshold=6_500):
+        # detect horizontal lines
+        horizontal_size = img.shape[1] // 4
+        horizontal_kernel = cv2.getStructuringElement(
+            cv2.MORPH_RECT, (horizontal_size, 10)
+        )
+        detect_horizontal = cv2.morphologyEx(
+            img, cv2.MORPH_OPEN, horizontal_kernel, iterations=2
+        )
+        cnts = cv2.findContours(
+            detect_horizontal, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+        )
+        cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+        detected = False
+        final_contours = []
+
+        for c in cnts:
+            area = cv2.contourArea(c)
+            if area > area_threshold:
+                detected = True
+                final_contours.append(c)
+                # cv2.drawContours(result, [c], -1, (255, 0, 0), 5)
+
+        return detected, final_contours
+
+    def draw_intersection_bbox(self, img: np.ndarray, cnt) -> np.ndarray:
+        cv2.drawContours(img, [cnt], -1, (255, 0, 0), 5)
+
     def persepective_wrap(self, img: np.ndarray) -> np.ndarray:
         """ROI of image and Perform perspective wrapping on the image"""
         roi = [
@@ -221,7 +264,7 @@ class LaneKeep:
 
         return birdseye
 
-    def houghlines_angle(self, img: np.ndarray) -> float:
+    def houghlines_angle(self, img: np.ndarray, get_img: bool = False) -> float:
         """Given processed image compute steering angle"""
         # find lanes takes processed image
         a = time()
@@ -247,13 +290,13 @@ class LaneKeep:
 
         # print("Time taken to find lanes", time()- b)
         c = time()
-
-        # draw lanelines
-        processed_img = draw_line(processed_img, lanelines)
-        # draw heading lines
-        outimage = display_heading_line(processed_img, angle)
-
-        return angle, outimage
+        if get_img:
+            # draw lanelines
+            processed_img = draw_line(processed_img, lanelines)
+            # draw heading lines
+            outimage = display_heading_line(processed_img, angle)
+            return angle, outimage
+        return angle
 
     def sliding_window_search(self, img: np.ndarray) -> float:
         """Given processed image compute steering angle"""
