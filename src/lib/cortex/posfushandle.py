@@ -7,7 +7,7 @@ now = time.time
 
 
 class Localize:
-    def __init__(self, gx=0.73, gy=5.22, ix=0.73, iy=5.22):
+    def __init__(self, gx=0.8, gy=14.8, ix=0.8, iy=14.8):
 
         initial_state_mean = [0, ix, 0, iy]
 

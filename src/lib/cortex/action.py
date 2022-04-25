@@ -11,11 +11,13 @@ import pathlib
 from loguru import logger
 
 data_path = pathlib.Path(
-    pathlib.Path(__file__).parent.parent.parent.resolve(), "data", "preplan.z"
+    pathlib.Path(__file__).parent.parent.parent.resolve(), "data", "mid_course.z"
 )
 data = joblib.load(data_path)
-ptype = data["ptype"]
-etype = data["etype"]
+# ptype = data["ptype"]
+# etype = data["etype"]
+ptype=data[1]
+etype=data[2]
 
 
 class BehaviourCallback:
@@ -185,11 +187,13 @@ class OvertakeBehaviour(BehaviourCallback):
 
 class LaneKeepBehaviour(BehaviourCallback):
     def __call__(self, car_state):
+        print("Lanekeeping angle: ",car_state.lanekeeping_angle)
+        # return  {"steer":car_state.lanekeeping_angle}
         if abs(car_state.cs_steer - car_state.lanekeeping_angle) > 20:
             return None
         elif car_state.current_ptype == "lk":
-            # return  {"steer":car_state.lanekeeping_angle}
-            return None
+            return  {"steer":car_state.lanekeeping_angle}
+            # return None
 
     def set(self, **kwargs):
         pass
