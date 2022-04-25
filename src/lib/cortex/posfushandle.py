@@ -2,6 +2,7 @@ import time
 from typing import Tuple
 from filterpy.leastsq import LeastSquaresFilter
 from pykalman import KalmanFilter
+import math
 
 now = time.time
 
@@ -69,6 +70,7 @@ class Localize:
         self.uy = 0
         self.fix_dt = 0.1
         self.var_dt = 0.1
+        self.v=0
 
         # last update time to calculate dt
         self.lupdate_i = 0
@@ -97,7 +99,8 @@ class Localize:
 
         self.var_dt = now() - self.lupdate_i
         self.lupdate_i = now()
-        
+
+        # should this - be here ?
         self.accelx = -ax*10
         self.accely = ay*10
         self.accelz = az*10
@@ -105,18 +108,34 @@ class Localize:
         
         if self.var_dt > 1:
             self.var_dt = 0.5
+
+        # change according to need (v=u+at or v=at)
+        self.ux = self.ux + self.accelx * self.var_dt
+        self.uy = self.uy + self.accely * self.var_dt
+
+        # vector sum 
+        self.v = math.sqrt(self.ux**2 + self.uy**2)
+
+        #self localise using imu
+        self.ix = self.ix + self.v * math.cos(-self.iyaw) * self.var_dt
+        self.iy = self.iy + self.v * math.sin(-self.iyaw) * self.var_dt
         
-        print("var_dt", self.var_dt)
 
-        # s = ut + 0.5at^2
-        self.ix = self.ix + 0.5 * self.accelx * (self.var_dt**2)
-        self.iy = self.iy + 0.5 * self.accely * (self.var_dt**2)
+        ##################################
+        #          Bad Physics           #
+        ##################################
 
-        # v = u + at
-        self.ux = self.accelx * self.var_dt
-        self.uy = self.accely * self.var_dt
+        # print("var_dt", self.var_dt)
 
-        self.i_arr.append((self.ix, self.iy))
+        # # s = ut + 0.5at^2
+        # self.ix = self.ix + 0.5 * self.accelx * (self.var_dt**2)
+        # self.iy = self.iy + 0.5 * self.accely * (self.var_dt**2)
+
+        # # v = u + at
+        # self.ux = self.accelx * self.var_dt
+        # self.uy = self.accely * self.var_dt
+
+        # self.i_arr.append((self.ix, self.iy))
         # self.iy_arr.append(self.iy)
 
     def update_gps(self, gx, gy, gyaw):
@@ -226,7 +245,7 @@ class Localize:
 
             if len(self.g_arr) == 10:
                 # print("in here")
-                # self.kf2.observation_covariance=10*self.kf2.observation_covariance
+                self.kf2.observation_covariance=10*self.kf2.observation_covariance
                 pass
 
         return self.gx, self.gy, self.iyaw, self.ipitch, self.iroll
