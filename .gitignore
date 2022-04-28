@@ -4,6 +4,7 @@
 
 # ignore data directory
 nbs/*/data
+nbs/yolov5
 nbs/data
 mldlai/data
 mldlai/*/data
