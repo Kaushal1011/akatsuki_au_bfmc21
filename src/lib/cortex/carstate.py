@@ -35,6 +35,7 @@ class CarState:
     def __init__(self, max_v=0.20, dt=0.13, car_len=0.365, **kwargs) -> None:
 
         self.max_v = max_v
+        self.highway_speed=0.25
         # position data
         # 0.75, 4.8
         self.x = 0.8
@@ -48,8 +49,6 @@ class CarState:
         
         self.target_x=None
         self.target_y=None
-        self.target_ptype=None
-        self.target_etype=None
 
         self.navigator = Navigator()
         # plan path -> self.navigator.plan_path(self.x,self.y,self.yaw)

@@ -71,7 +71,7 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
         pass
 
     if carstate.detected_intersection:
-        pass
+        # pass
         # stop for t secs intersection
         stopobj = StopBehvaiour()
         stopaction = ActionBehaviour(name="stop", release_time=6.0, callback=stopobj)
@@ -117,11 +117,11 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
         pass
 
     if carstate.pitch > 0.2:
-        # incline
+        # incline trigger ramp
         pass
 
     if carstate.pitch < -0.2:
-        # decline
+        # decline exit ramp
         pass
 
 
