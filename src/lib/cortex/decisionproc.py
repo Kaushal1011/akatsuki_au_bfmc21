@@ -36,17 +36,25 @@ ry = []
 
 def get_last(inP: Pipe, delta_time: float = 1e-2):
     timestamp, data = inP.recv()
-
     while (time() - timestamp) > delta_time:
         timestamp, data = inP.recv()
     return timestamp, data
 
 
 def get_last_value(inP: Connection, required: bool = True):
-    timestamp, data = inP.recv()
+    timestamp, *data = inP.recv()
+
     while inP.poll():
-        timestamp, data = inP.recv()
+        timestamp, *data = inP.recv()
     return timestamp, data
+
+
+def get_last_lk_id(inP: Connection):
+    timestamp, lk, id = inP.recv()
+
+    while inP.poll():
+        timestamp, lk, id = inP.recv()
+    return timestamp, lk, id
 
 
 def get_last_distance(inP: Connection):
@@ -148,7 +156,7 @@ class DecisionMakingProcess(WorkerProcess):
         # cx = data["x"]
         # cy = data["y"]
         # coord_list = [x for x in zip(cx, cy)]
-        coord_list=data[0]
+        coord_list = data[0]
         # pass coordlist here from navigator config
         csobj = ControlSystemBehaviour(coord_list=coord_list)
         csaction = ActionBehaviour(name="cs", callback=csobj)
@@ -195,13 +203,13 @@ class DecisionMakingProcess(WorkerProcess):
                 start_time = time()
                 t_lk = time()
                 idx = self.inPsnames.index("lk")
-                lk_timestamp, lk_angle, detected_intersection = get_last_value(
+                lk_timestamp, lk_angle, detected_intersection = get_last_lk_id(
                     inPs[idx]
                 )
                 self.state.update_lk_angle(lk_angle)
                 self.state.update_intersection(detected_intersection)
                 logger.log("PIPE", f"Recv->LK {lk_angle}")
-                logger.log("SYNC", f"LK delta {time()- lk_timestamp}")
+                logger.log("SYNC", f"LK timedelta {time()- lk_timestamp}")
                 # print(f"Time taken lk {(time() - t_lk):.4f}s {lk_angle}")
 
                 # t_id = time()
@@ -220,8 +228,10 @@ class DecisionMakingProcess(WorkerProcess):
                     idx = self.inPsnames.index("sD")
                     if inPs[idx].poll():
                         # TODO : get sign detection for all signs
-                        sign, sign_area = inPs[idx].recv()
-                        logger.log("PIPE", f"Recv->SD {sign}")
+                        sd_timestamp, sign = inPs[idx].recv()
+                        print("SD <-<", sign)
+                        logger.log("SYNC", f"SD timedelta {time() - sd_timestamp}")
+                        logger.log("PIPE", f"Recv -> SD {sign}")
 
                         # self.state.update_sign_detected()
                 # TODO
