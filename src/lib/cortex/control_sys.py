@@ -3,7 +3,7 @@ import math
 class Pure_Pursuit:
     def __init__(self, coord_list):
         self.k = 0.01  # look forward gain
-        self.Lfc = 0.425  # [m] look-ahead distance
+        self.Lfc = 0.325  # [m] look-ahead distance
         self.Kp = 1.0  # speed proportional gain
         self.WB = 0.3  # [m] wheel base of vehicle
         self.cx, self.cy = zip(*coord_list)

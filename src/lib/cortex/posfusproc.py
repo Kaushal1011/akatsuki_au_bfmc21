@@ -43,7 +43,7 @@ class PositionFusionProcess(WorkerProcess):
         super(PositionFusionProcess, self).__init__(inPs, outPs)
         self.inPsnames = inPsnames
         # update gx gy based on initial values
-        self.localize = Localize(gx=0.73, gy=5.22, ix=0.73, iy=5.22)
+        self.localize = Localize(gx=0.8, gy=14.8, ix=0.8, iy=14.8)
 
     def run(self):
         """Apply the initializing methods and start the threads."""

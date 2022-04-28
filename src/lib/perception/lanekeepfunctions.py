@@ -309,6 +309,27 @@ class LaneKeep:
         # out_img=display_heading_line(processed_img,angle)
         return angle
         # ,out_img
+    
+    def get_lane_error(self,img:np.ndarray)->float:
+        angle=get_error_lane(img)
+        return angle
+
+def get_error_lane(mask_image):
+    mid_y=(mask_image.shape[0]//2)
+    pval=int(mid_y+0.6*(mask_image.shape[0]//2))
+    mval=int(mid_y+ 0.8*(mask_image.shape[0]//2))
+    # print(pval,mval)
+    img_new=mask_image[pval:mval,:]
+    img_new=cv2.resize(img_new,None,fx=0.35,fy=0.35,interpolation = cv2.INTER_NEAREST)
+    # plt.plot(img_new)
+    print(img_new.shape)
+    histogram = np.sum(img_new[img_new.shape[0] // 2 :, :], axis=0)  # noqa
+    plt.plot(histogram)
+    midpoint = np.int(histogram.shape[0] / 2)
+    leftxBase = np.argmax(histogram[:midpoint])
+    rightxBase = np.argmax(histogram[midpoint:]) + midpoint
+    print(leftxBase,midpoint,rightxBase)
+    return (abs(rightxBase-midpoint)-abs(leftxBase-midpoint))*26.5/(midpoint)
 
 
 def get_road_ratio_angle(mask_img):
