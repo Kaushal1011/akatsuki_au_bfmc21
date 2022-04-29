@@ -57,5 +57,5 @@ def get_config():
 
     print("Started with config: ")
 
-    pprint(config)
+    # pprint(config)
     return config

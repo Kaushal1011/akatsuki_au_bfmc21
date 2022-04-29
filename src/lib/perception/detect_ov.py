@@ -338,14 +338,9 @@ class Detection:
         x: np.ndarray = img / 255
         x = x.astype(np.float32)
         x = np.expand_dims(x.transpose(2, 0, 1), 0)
-        request = self.compiled_model.infer_new_request({self.input_layer_ir.any_name: x})
-        print(request)
-        
-        # ret = request.infer({self.input_layer_ir.any_name: x})
-        print(ret)
-        print("Requested Infer")
+        request = self.compiled_model.create_infer_request()
+        request.infer({self.input_layer_ir.any_name: x})
         pred = request.get_tensor("output").data
-        print("detect_ov.py:345 => Got pred")
         pred_nms = non_max_suppression_np(pred)[0]
         if len(pred_nms) == 0:
             return []
