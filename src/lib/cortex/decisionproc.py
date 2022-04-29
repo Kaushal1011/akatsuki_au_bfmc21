@@ -42,10 +42,10 @@ def get_last(inP: Pipe, delta_time: float = 1e-2):
 
 
 def get_last_value(inP: Connection, required: bool = True):
-    timestamp, *data = inP.recv()
+    timestamp, data = inP.recv()
 
     while inP.poll():
-        timestamp, *data = inP.recv()
+        timestamp, data = inP.recv()
     return timestamp, data
 
 

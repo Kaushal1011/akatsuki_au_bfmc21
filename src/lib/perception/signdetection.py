@@ -6,7 +6,7 @@ import platform
 import cv2
 from multiprocessing.connection import Connection
 from src.lib.perception.detect_ov import Detection
-
+from loguru import logger
 device = platform.uname().processor
 
 # if device == "x86_64":
@@ -75,7 +75,10 @@ class SignDetectionProcess(WorkerProcess):
         while True:
             try:
                 if inP[0].poll():
+                    recv_time = time.time()
                     stamp, img = get_last(inP[0])
+                    print(f"recv image {time.time() - recv_time}")
+                    logger.log("PIPE", f"recv image {time.time() - recv_time}")
                     count += 1
                     start_time = time.time()
                     classes = self.detection(img)
@@ -91,7 +94,8 @@ class SignDetectionProcess(WorkerProcess):
 
                     # print(label, area)
                     # for outP in outPs:
-                    outPs[0].send((stamp, classes))
+                    print((stamp, classes))
+                    # outPs[0].send((stamp, classes))
 
                     if len(outPs) > 1:
                         outPs[1].send((stamp, frame))

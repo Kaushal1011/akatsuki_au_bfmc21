@@ -345,7 +345,9 @@ if __name__ == "__main__":
     i_time = time.time()
     request = compiled_model.create_infer_request()
     print(x.shape)
-    request.infer({input_layer_ir.any_name: x})
+    print({input_layer_ir.any_name: x})
+    ret = request.infer({input_layer_ir.any_name: x})
+    print(ret)
     pred = request.get_tensor("output").data
     print(f"Inference Time {time.time()-i_time}")
     

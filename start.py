@@ -67,7 +67,7 @@ def filter(level: List[int]):
 TEST_PIPE = True
 logger.remove()
 if TEST_PIPE:
-    logger.add(sys.stderr, filter=filter([15]))
+    logger.add(sys.stderr, filter=filter([18]))
 
 logger.add("file1.log", filter=lambda r: r["level"] == 14)
 # logger.level("LK", no=10, color="<blue>", icon='' )

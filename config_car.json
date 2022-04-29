@@ -3,7 +3,7 @@
   "enableCameraSpoof": false,
   "enableRc": false,
   "enableLaneKeeping": true,
-  "enableIntersectionDet": true,
+  "enableIntersectionDet": false,
   "enableSignDet": true,
   "enableSIM": false,
   "using_server": false,
@@ -12,6 +12,6 @@
   "end_idx": "40",
   "pc_ip": "192.168.186.18",
   "pi_ip": "192.168.186.89",
-  "home_loc": true,
+  "home_loc": false,
   "preplan": false
 }
