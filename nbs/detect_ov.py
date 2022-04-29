@@ -248,7 +248,7 @@ if __name__ == "__main__":
     ##  Load Model
     ie = Core()
     model = ie.read_model(model="best_openvino_model/best.xml")
-    compiled_model = ie.compile_model(model=model, device_name="CPU")
+    compiled_model = ie.compile_model(model=model, device_name="MYRIAD")
 
     input_layer_ir = next(iter(compiled_model.inputs))
 
@@ -266,16 +266,22 @@ if __name__ == "__main__":
     # Reshape to network input shape
     input_image:np.ndarray = np.expand_dims(resized_image.transpose(2, 0, 1), 0)
 
+    a = time.time()
     x:np.ndarray = input_image/255
     x = x.astype(np.float32)
 
-    ## Inference
 
+    ## Inference
+    i_time = time.time()
     request = compiled_model.create_infer_request()
     request.infer({input_layer_ir.any_name: x})
     pred = request.get_tensor("output").data
+    print(f"Inference Time {time.time()-i_time}")
+    
+    nms_time = time.time()
     pred_nms = non_max_suppression_np(pred)
 
+    print(f"NMS Time taken {time.time() - nms_time}")
     print(image.shape)
 
     for i, det in enumerate(pred_nms):  # per image
@@ -297,4 +303,5 @@ if __name__ == "__main__":
 
     im0 = annotator.result()
     im0 = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    cv2.imwrite("output101.jpg",im0)
+    cv2.imwrite("output102.jpg",im0)
+    print(f"Time taken {time.time() - a}s")
