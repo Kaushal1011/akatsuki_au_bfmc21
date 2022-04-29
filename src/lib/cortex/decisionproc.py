@@ -139,6 +139,8 @@ class DecisionMakingProcess(WorkerProcess):
         lkobj = LaneKeepBehaviour()
         lkaction = ActionBehaviour(name="lk", callback=lkobj)
         self.actman.set_action(lkaction)
+
+        ##################################################################
         data_path = pathlib.Path(
             pathlib.Path(__file__).parent.parent.parent.resolve(),
             "data",
@@ -149,6 +151,8 @@ class DecisionMakingProcess(WorkerProcess):
         # cy = data["y"]
         # coord_list = [x for x in zip(cx, cy)]
         coord_list=data[0]
+        #################################################################
+
         # pass coordlist here from navigator config
         csobj = ControlSystemBehaviour(coord_list=coord_list)
         csaction = ActionBehaviour(name="cs", callback=csobj)

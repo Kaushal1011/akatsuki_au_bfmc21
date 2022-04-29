@@ -10,15 +10,17 @@ import pathlib
 
 from loguru import logger
 
-data_path = pathlib.Path(
-    pathlib.Path(__file__).parent.parent.parent.resolve(), "data", "mid_course.z"
-)
-data = joblib.load(data_path)
-# ptype = data["ptype"]
-# etype = data["etype"]
-ptype=data[1]
-etype=data[2]
-
+# Extra because no path planning at start
+####################################################################################
+data_path = pathlib.Path(                                                          #
+    pathlib.Path(__file__).parent.parent.parent.resolve(), "data", "mid_course.z"  #
+)                                                                                  #
+data = joblib.load(data_path)                                                      #
+# ptype = data["ptype"]                                                            #
+# etype = data["etype"]                                                            #
+ptype=data[1]                                                                      #
+etype=data[2]                                                                      #
+####################################################################################
 
 class BehaviourCallback:
     def __init__(self, **kwargs):
