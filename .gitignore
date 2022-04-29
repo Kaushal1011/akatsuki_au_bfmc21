@@ -1,6 +1,7 @@
 # vscode
 .vscode 
 *.zip
+best_openvino_model
 
 # ignore data directory
 nbs/*/data

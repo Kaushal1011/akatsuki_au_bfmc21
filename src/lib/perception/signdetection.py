@@ -5,14 +5,15 @@ from src.templates.workerprocess import WorkerProcess
 import platform
 import cv2
 from multiprocessing.connection import Connection
+from src.lib.perception.detect_ov import Detection
 
 device = platform.uname().processor
 
-if device == "x86_64":
-    print("Using x86 model")
-    from src.lib.perception.detectts_x86 import setup, detect_signs, draw_box
-else:
-    from src.lib.perception.sign_det_cv import setup, detect_signs, draw_box
+# if device == "x86_64":
+#     print("Using x86 model")
+#     from src.lib.perception.detectts_x86 import setup, detect_signs, draw_box
+# else:
+#     from src.lib.perception.sign_det_cv import setup, detect_signs, draw_box
 
 
 def get_last(inP: Connection):
@@ -37,6 +38,7 @@ class SignDetectionProcess(WorkerProcess):
             List of output pipes (0 - send steering data to the movvement control process)
         """
         super(SignDetectionProcess, self).__init__(inPs, outPs)
+        self.detection = Detection()
 
     def run(self):
         """Apply the initializing methods and start the threads."""
@@ -70,45 +72,30 @@ class SignDetectionProcess(WorkerProcess):
         """
         print("Started Sign Detection")
         count = 0
-        model, labels = setup()
         while True:
             try:
                 if inP[0].poll():
-                    stamps, img = get_last(inP[0])
+                    stamp, img = get_last(inP[0])
                     count += 1
-                    if count % 5 != 0:
-                        continue
-                    # Apply image processing
-                    width = img.shape[1]
-                    height = img.shape[0]
-                    # should be top right quarter
-                    img = img[: int(height / 2), int(width / 2) :]
+                    start_time = time.time()
+                    classes = self.detection(img)
+                    print(f"sD compute time {time.time() - start_time:.2f}s")
+                    # print("Model prediction {label}")
+                    # box, label, location = out
+                    # # box 0 is top left box 1 is bottom right
+                    # # area = wxh w=x2-x1 h=y2-y1
+                    # area = (box[1][0] - box[0][0]) * (box[1][1] - box[0][1])
+                    # # if area < 10000:
+                    # #     continue
+                    # frame = draw_box(img, label, location, box)
 
-                    a = time.time()
-                    # print(self.model)
-                    out = detect_signs(img, model, labels)
-                    # print("Time taken by model ", time.time() - a, "s")
-                    if out is not None:
-                        # print("Model prediction {label}")
-                        box, label, location = out
-                        # box 0 is top left box 1 is bottom right
-                        # area = wxh w=x2-x1 h=y2-y1
-                        area = (box[1][0] - box[0][0]) * (box[1][1] - box[0][1])
-                        # if area < 10000:
-                        #     continue
-                        frame = draw_box(img, label, location, box)
+                    # print(label, area)
+                    # for outP in outPs:
+                    outPs[0].send((stamp, classes))
 
-                        # print(label, area)
-                        # for outP in outPs:
-                        outPs[0].send((label, area))
-
-                        if len(outPs) > 1:
-                            outPs[1].send((1, frame))
-                    else:
-                        outPs[0].send((None, 0))
-                        if len(outPs) > 1:
-                            outPs[1].send((1, img))
+                    if len(outPs) > 1:
+                        outPs[1].send((stamp, frame))
 
             except Exception as e:
                 print("Sign Detection error:")
-                print(e)
+                raise e

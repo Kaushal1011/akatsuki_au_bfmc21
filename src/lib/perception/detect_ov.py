@@ -1,3 +1,4 @@
+from typing import Tuple
 import cv2
 import numpy as np
 from openvino.runtime import Core
@@ -315,64 +316,114 @@ def non_max_suppression_np(
     return output
 
 
-if __name__ == "__main__":
-    ##  Load Model
-    ie = Core()
-    model = ie.read_model(model="best_openvino_model/best.xml")
-    compiled_model = ie.compile_model(model=model, device_name="MYRIAD")
-
-    input_layer_ir = next(iter(compiled_model.inputs))
-
-    ##  Load Image
-    # Text detection models expects image in BGR format
-    image = cv2.imread("test.jpeg")
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    # N,C,H,W = batch size, number of channels, height, width
-    N, C, H, W = input_layer_ir.shape
-
-    # Resize image to meet network expected input sizes
-    resized_image = cv2.resize(image, (W, H))
-
-    # Reshape to network input shape
-    input_image: np.ndarray = np.expand_dims(resized_image.transpose(2, 0, 1), 0)
-
-    a = time.time()
-    x: np.ndarray = input_image / 255
-    x = x.astype(np.float32)
+def get_area(bbox: np.ndarray) -> np.ndarray:
+    return ((bbox[:, 2] - bbox[:, 0]) * (bbox[:, 3] - bbox[:, 1])).tolist()
 
 
-    ## Inference
-    i_time = time.time()
-    request = compiled_model.create_infer_request()
-    print(x.shape)
-    request.infer({input_layer_ir.any_name: x})
-    pred = request.get_tensor("output").data
-    print(f"Inference Time {time.time()-i_time}")
-    
-    nms_time = time.time()
-    pred_nms = non_max_suppression_np(pred)
+class Detection:
+    def __init__(self, model_path: str = "best_openvino_model/best.xml") -> None:
+        ie = Core()
+        model = ie.read_model(model=model_path)
+        device = "MYRIAD" if "MYRIAD" in ie.available_devices else "CPU"
+        print(f">>> Loading model in {device}.")
+        self.compiled_model = ie.compile_model(model=model, device_name=device)
+        self.input_layer_ir = next(iter(self.compiled_model.inputs))
+        N, C, H, W = self.input_layer_ir.shape
+        assert H == 640 and W == 640, ""
 
-    print(f"NMS Time taken {time.time() - nms_time}")
-    print(image.shape)
+    def __call__(self, img: np.ndarray, bbox: bool = False) -> np.ndarray:
+        if not img.shape == (640, 640, 3):
+            img = cv2.resize(img, (640, 640))
 
-    for i, det in enumerate(pred_nms):  # per image
-        annotator = Annotator(image, line_width=2)
-        s = ""
-        if len(det):
-            det[:, :4] = scale_coords(x.shape[2:], det[:, :4], image.shape).round()
+        x: np.ndarray = img / 255
+        x = x.astype(np.float32)
+        x = np.expand_dims(x.transpose(2, 0, 1), 0)
+        request = self.compiled_model.create_infer_request()
+        request.infer({self.input_layer_ir.any_name: x})
+        pred = request.get_tensor("output").data
+        pred_nms = non_max_suppression_np(pred)[0]
+        if len(pred_nms) == 0:
+            return []
 
-            # Print results
-            print(np.unique(det[:, -1]))
-            for c in np.unique(det[:, -1]):
+        pred_nms[:, :4] = scale_coords(x.shape[2:], pred_nms[:, :4], img.shape).round()
+        classes = np.unique(pred_nms[:, -1]).tolist()
+        area = get_area(pred_nms[:, :4])
+        if bbox:
+            out_image = self.draw_bbox(pred_nms, classes=classes, image=img)
+            return (classes, area, out_image)
+        else:
+            return classes, area
 
+    def draw_bbox(
+        self, pred_nms: np.ndarray, classes: Tuple[int], image: np.ndarray
+    ) -> np.ndarray:
+        """Draw bbox on image"""
+        for i, det in enumerate(pred_nms):  # per image
+            annotator = Annotator(image, line_width=2)
+            for c in classes:
                 n = (det[:, -1] == c).sum()  # detections per class
                 # s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
 
             for *xyxy, conf, cls in reversed(det):
-                print("XYXY", xyxy)
                 annotator.box_label(xyxy, "", colors(c, True))
 
-    im0 = annotator.result()
-    im0 = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    cv2.imwrite("output102.jpg",im0)
-    print(f"Time taken {time.time() - a}s")
+        im0 = annotator.result()
+        # TODO: change channels if required
+        im0 = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        # cv2.imwrite("output101.jpg", im0)
+        return im0
+
+
+# if __name__ == "__main__":
+#     ##  Load Model
+#     ie = Core()
+#     model = ie.read_model(model="best_openvino_model/best.xml")
+#     compiled_model = ie.compile_model(model=model, device_name="MYRIAD")
+
+#     input_layer_ir = next(iter(compiled_model.inputs))
+
+#     ##  Load Image
+#     # Text detection models expects image in BGR format
+#     image = cv2.imread("test.jpeg")
+#     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+#     # N,C,H,W = batch size, number of channels, height, width
+#     N, C, H, W = input_layer_ir.shape
+
+#     # Resize image to meet network expected input sizes
+#     resized_image = cv2.resize(image, (W, H))
+
+#     # Reshape to network input shape
+#     input_image: np.ndarray = np.expand_dims(resized_image.transpose(2, 0, 1), 0)
+
+#     x: np.ndarray = input_image / 255
+#     x = x.astype(np.float16)
+#     x = x.unsqueeze(0)
+#     ## Inference
+#     print("X ====> ", x.shape)
+#     request = compiled_model.create_infer_request()
+#     request.infer({input_layer_ir.any_name: x})
+#     pred = request.get_tensor("output").data
+#     pred_nms = non_max_suppression_np(pred)
+
+#     print(image.shape)
+
+#     for i, det in enumerate(pred_nms):  # per image
+#         annotator = Annotator(image, line_width=2)
+#         s = ""
+#         if len(det):
+#             det[:, :4] = scale_coords(x.shape[2:], det[:, :4], image.shape).round()
+
+#             # Print results
+#             print(np.unique(det[:, -1]))
+#             for c in np.unique(det[:, -1]):
+
+#                 n = (det[:, -1] == c).sum()  # detections per class
+#                 # s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
+
+#             for *xyxy, conf, cls in reversed(det):
+#                 print("XYXY", xyxy)
+#                 annotator.box_label(xyxy, "", colors(c, True))
+
+#     im0 = annotator.result()
+#     im0 = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+#     cv2.imwrite("output101.jpg", im0)

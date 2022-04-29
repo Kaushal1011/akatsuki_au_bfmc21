@@ -10,15 +10,17 @@ import pathlib
 
 from loguru import logger
 
-data_path = pathlib.Path(
-    pathlib.Path(__file__).parent.parent.parent.resolve(), "data", "mid_course.z"
-)
-data = joblib.load(data_path)
-# ptype = data["ptype"]
-# etype = data["etype"]
-ptype=data[1]
-etype=data[2]
-
+# Extra because no path planning at start
+####################################################################################
+data_path = pathlib.Path(                                                          #
+    pathlib.Path(__file__).parent.parent.parent.resolve(), "data", "mid_course.z"  #
+)                                                                                  #
+data = joblib.load(data_path)                                                      #
+# ptype = data["ptype"]                                                            #
+# etype = data["etype"]                                                            #
+ptype=data[1]                                                                      #
+etype=data[2]                                                                      #
+####################################################################################
 
 class BehaviourCallback:
     def __init__(self, **kwargs):
@@ -52,10 +54,32 @@ class StopBehvaiour(BehaviourCallback):
 class PriorityBehaviour(BehaviourCallback):
     def __call__(self, car_state):
         # return pririty speed
-        return {"speed": self.state.priority_speed}
+        return {"speed": car_state.priority_speed}
 
     def set(self, **kwargs):
         pass
+
+class HighwayBehaviour(BehaviourCallback):
+
+    def __init__(self, **kwargs):
+        self.exit_highway=False
+    
+    def __call__(self, car_state:CarState):
+        if car_state.detected_sign["highway_exit"]:
+            self.exit_highway=True
+
+        return {"speed":car_state.highway_speed}
+    
+    def out_condition(self, **kwargs) -> bool:
+        return self.exit_highway
+    
+    def set(self,**kwargs):
+        self.exit_highway=False
+
+    def reset(self, **kwargs):
+        
+        self.exit_highway=False
+        return True
 
 
 class OvertakeBehaviour(BehaviourCallback):
@@ -112,6 +136,7 @@ class OvertakeBehaviour(BehaviourCallback):
         # print("cx,cy should be: ",car_state.navigator.get_nearest_node(cx,cy,car_state.yaw))
         nn = car_state.navigator.get_nearest_node(cx, cy, car_state.yaw)
 
+        # have to uncomment this no idea why this doesnt work uncommented
         # cx,cy=nn["x"],nn["y"]
 
         tx = car_state.target_x
@@ -135,23 +160,44 @@ class OvertakeBehaviour(BehaviourCallback):
 
         # print("x3 , y3",x3,y3)
         # print("x4, y4", x4,y4)
+
         # determine which point to pick
 
-        alpha = math.atan2(y4 - car_state.rear_y, x4 - car_state.rear_x) - (
-            -car_state.yaw
+        # how to determine -> find a point on the road with -yaw
+        on = car_state.navigator.get_nearest_node(cx, cy, -car_state.yaw)
+        ox,oy=on["x"],on["y"]
+
+        d3=math.sqrt((ox-x3)**2+(oy-y3)**2)
+        d4=math.sqrt((ox-x4)**2+(oy-y4)**2)
+
+        if d4 < d3:
+            alpha = math.atan2(y4 - car_state.rear_y, x4 - car_state.rear_x) - (
+                -car_state.yaw
+            )
+            delta = math.atan2(
+            2.0
+            * self.WB
+            * math.sin(alpha)
+            / math.sqrt((y4 - car_state.rear_y) ** 2 + (x4 - car_state.rear_x)),
+            1.0,
         )
-
-        # print("rear pts: ",state.x,state.y)
-        # print("target and yaw :", tx,ty,state.yaw)
-        # print("alpha and pts angle", alpha,alpha+state.yaw)
-
-        delta = math.atan2(
+        else:
+            alpha = math.atan2(y3 - car_state.rear_y, x3 - car_state.rear_x) - (
+                -car_state.yaw
+            )
+            delta = math.atan2(
             2.0
             * self.WB
             * math.sin(alpha)
             / math.sqrt((y3 - car_state.rear_y) ** 2 + (x3 - car_state.rear_x)),
             1.0,
         )
+
+        # print("rear pts: ",state.x,state.y)
+        # print("target and yaw :", tx,ty,state.yaw)
+        # print("alpha and pts angle", alpha,alpha+state.yaw)
+
+        
 
         di = delta * 180 / math.pi
         if di > 23:
@@ -210,6 +256,7 @@ class ControlSystemBehaviour(BehaviourCallback):
 
         car_state.target_x = self.cs.cx[ind]
         car_state.target_y = self.cs.cy[ind]
+        car_state.current_target=(car_state.target_x,car_state.target_y)
 
         car_state.current_ptype = ptype[ind]
         car_state.can_overtake = etype[ind]

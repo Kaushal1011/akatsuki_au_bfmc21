@@ -8,7 +8,6 @@ import numpy as np
 
 from src.lib.perception.intersectiondethandle import intersection_det
 from src.templates.workerprocess import WorkerProcess
-from multiprocessing import Pipe
 from loguru import logger
 
 # import SharedArray as sa
@@ -77,7 +76,7 @@ class IntersectionDetProcess(WorkerProcess):
                 stamp, img = get_last(inP)
                 count += 1
                 logger.log("PIPE", "recv image")
-                count +=1
+                count += 1
                 t_r += time() - image_recv_start
                 logger.log(
                     "TIME",
