@@ -129,14 +129,24 @@ class Navigator:
 
         d = np.hypot(dx, dy)
         idxs = np.argsort(d)
-        for idx in idxs:
+        min_dyaw = float("inf")
+        min_dyaw_idx = -1
+        for idx in idxs[:10]:
             try:
-                dyaw = np.array(self.node_dict[str(idx)]["yaw"]) - yaw
+                dyaw: np.ndarray = abs(np.array(self.node_dict[str(idx)]["yaw"]) - yaw)
+                dyaw = dyaw.min()
+                if dyaw > 3.141592:
+                    dyaw = abs(dyaw - 6.283185)
+                if dyaw > min_dyaw:
+                    min_dyaw = dyaw
+                    min_dyaw_idx = idx
+
+                # if (abs(dyaw) < 0.2).any():
+                #     return self.node_dict[str(idx)]
             except KeyError as e:
                 print(e)
                 continue
-            if (abs(dyaw) < 0.2).any():
-                return self.node_dict[str(idx)]
+        return self.node_dict[str(min_dyaw_idx)]
 
     def get_path_ahead(self, x, y, yaw):
 
