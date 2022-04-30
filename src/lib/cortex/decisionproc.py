@@ -85,7 +85,7 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
     #     # overtake
     #     pass
 
-    if carstate.front_distance < 0.6:
+    if carstate.front_distance < 0.6 and carstate.detected_car:
         # print("Overtake Trigger")
         # overtake
         overtakeobj = OvertakeBehaviour(car_state=carstate)

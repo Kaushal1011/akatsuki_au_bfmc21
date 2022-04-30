@@ -123,12 +123,12 @@ class CameraStreamerProcess(WorkerProcess):
         inP : Pipe
             Input pipe to read the frames from CameraProcess or CameraSpooferProcess.
         """
-        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 70]
+        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 40]
         count = 1
         while True:
             try:
                 stamp, image = get_last(inP)
-                print(f"Stream timedelta -> {time.time() - stamp}s")
+                # print(f"Stream timedelta -> {time.time() - stamp}s")
                 # image = np.array(self.frame_shm).copy()
                 # print(stamps, image)
                 result, image = cv2.imencode(".jpg", image, encode_param)

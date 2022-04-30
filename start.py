@@ -153,7 +153,7 @@ if config["enableSignDet"]:
     sDFzzR, sDFzzS = Pipe(duplex=False)
     if config["enableStream"]:
         sDStR, sDStS = Pipe(duplex=False)
-        sDProc = SignDetectionProcess([camsDR], [sDFzzS, sDStS])
+        sDProc = SignDetectionProcess([camsDR], [sDFzzS])
     else:
         sDProc = SignDetectionProcess([camsDR], [sDFzzS])
 
@@ -332,9 +332,9 @@ if config["enableStream"]:
         streamProc = CameraStreamerProcess([camStR], [], port=STREAM_PORT1)
         allProcesses.append(streamProc)
 
-    if config["enableSignDet"]:
-        streamProc2 = CameraStreamerProcess([sDStR], [], port=STREAM_PORT2)
-        allProcesses.append(streamProc2)
+    # if config["enableSignDet"]:
+    #     streamProc2 = CameraStreamerProcess([sDStR], [], port=STREAM_PORT2)
+    #     allProcesses.append(streamProc2)
 
 # ========================== Camera process ==============================================
 if config["enableCameraSpoof"]:

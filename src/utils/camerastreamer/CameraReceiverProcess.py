@@ -90,7 +90,6 @@ class CameraReceiverProcess(WorkerProcess):
         """Read the image from input stream, decode it and display it with the CV2 library."""
         try:
             while True:
-                print("here in read_stream")
 
                 # decode image
                 image_len = struct.unpack(
