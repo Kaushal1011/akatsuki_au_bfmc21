@@ -12,15 +12,16 @@ from loguru import logger
 
 # Extra because no path planning at start
 ####################################################################################
-data_path = pathlib.Path(                                                          #
+data_path = pathlib.Path(  #
     pathlib.Path(__file__).parent.parent.parent.resolve(), "data", "mid_course.z"  #
-)                                                                                  #
-data = joblib.load(data_path)                                                      #
+)  #
+data = joblib.load(data_path)  #
 # ptype = data["ptype"]                                                            #
 # etype = data["etype"]                                                            #
-ptype=data[1]                                                                      #
-etype=data[2]                                                                      #
+ptype = data[1]  #
+etype = data[2]  #
 ####################################################################################
+
 
 class BehaviourCallback:
     def __init__(self, **kwargs):
@@ -59,26 +60,26 @@ class PriorityBehaviour(BehaviourCallback):
     def set(self, **kwargs):
         pass
 
+
 class HighwayBehaviour(BehaviourCallback):
-
     def __init__(self, **kwargs):
-        self.exit_highway=False
-    
-    def __call__(self, car_state:CarState):
-        if car_state.detected_sign["highway_exit"]:
-            self.exit_highway=True
+        self.exit_highway = False
 
-        return {"speed":car_state.highway_speed}
-    
+    def __call__(self, car_state: CarState):
+        if car_state.detected_sign["highway_exit"]:
+            self.exit_highway = True
+
+        return {"speed": car_state.highway_speed}
+
     def out_condition(self, **kwargs) -> bool:
         return self.exit_highway
-    
-    def set(self,**kwargs):
-        self.exit_highway=False
+
+    def set(self, **kwargs):
+        self.exit_highway = False
 
     def reset(self, **kwargs):
-        
-        self.exit_highway=False
+
+        self.exit_highway = False
         return True
 
 
@@ -216,8 +217,6 @@ class OvertakeBehaviour(BehaviourCallback):
         # print("target and yaw :", tx,ty,state.yaw)
         # print("alpha and pts angle", alpha,alpha+state.yaw)
 
-        
-
         di = delta * 180 / math.pi
         if di > 23:
             di = 23
@@ -253,12 +252,12 @@ class OvertakeBehaviour(BehaviourCallback):
 
 class LaneKeepBehaviour(BehaviourCallback):
     def __call__(self, car_state):
-        print("Lanekeeping angle: ",car_state.lanekeeping_angle)
+        print("Lanekeeping angle: ", car_state.lanekeeping_angle)
         # return  {"steer":car_state.lanekeeping_angle}
         if abs(car_state.cs_steer - car_state.lanekeeping_angle) > 20:
             return None
         elif car_state.current_ptype == "lk":
-            return  {"steer":car_state.lanekeeping_angle}
+            return {"steer": car_state.lanekeeping_angle}
             # return None
 
     def set(self, **kwargs):
@@ -272,11 +271,13 @@ class ControlSystemBehaviour(BehaviourCallback):
 
     def __call__(self, car_state: CarState):
         ind, lf = self.cs.search_target_index(car_state)
-        logger.info(f"({car_state.x}, {car_state.y}) Target: {ind} ({self.cs.cx[ind]:.2f}, {self.cs.cy[ind]:.2f})")
+        logger.info(
+            f"({car_state.x}, {car_state.y}) Target: {ind} ({self.cs.cx[ind]:.2f}, {self.cs.cy[ind]:.2f})"
+        )
 
         car_state.target_x = self.cs.cx[ind]
         car_state.target_y = self.cs.cy[ind]
-        car_state.current_target=(car_state.target_x,car_state.target_y)
+        car_state.current_target = (car_state.target_x, car_state.target_y)
 
         car_state.current_ptype = ptype[ind]
         car_state.can_overtake = etype[ind]

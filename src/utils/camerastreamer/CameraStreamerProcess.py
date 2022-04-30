@@ -31,7 +31,6 @@ import socket
 import struct
 import time
 from threading import Thread
-import numpy as np
 
 # import SharedArray as sa
 import cv2

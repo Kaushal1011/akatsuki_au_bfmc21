@@ -95,7 +95,7 @@ posFusionInputPs = []
 posFusionInputName = []
 # =============================== RC CONTROL =================================================
 if config["enableRc"]:
-    # rc      ->  serial handler
+    # rc  ->  serial handler
     rcShR, rcShS = Pipe(duplex=False)
 
     rcProc = RemoteControlReceiverProcess([], [rcShS])
@@ -120,7 +120,7 @@ if config["enableLaneKeeping"]:
 
     if config["enableStream"]:
         lkStrR, lkStrS = Pipe(duplex=False)
-        lkProc = LaneKeeping([lkR], [lkFzzS, lkStrS], stream=True)
+        lkProc = LaneKeeping([lkR], [lkFzzS, lkStrS])
     else:
         lkProc = LaneKeeping([lkR], [lkFzzS])
 
@@ -177,7 +177,7 @@ if config["enableSIM"]:
 
 elif config["home_loc"]:
     # LocSys -> Position Fusion
-    print("\n\n\n Starting Home Localization process \n\n\n")
+    print(">>> Starting Home Localization process")
     lsPosR, lsPosS = Pipe(duplex=False)
     locsysProc = LocalisationProcess([], [lsPosS])
     allProcesses.append(locsysProc)

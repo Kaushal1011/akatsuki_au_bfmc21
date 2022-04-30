@@ -141,15 +141,15 @@ class LaneKeep:
         intersection_detected, cnts = self.intersection_det(preprocess_img)
         mask = np.ones(preprocess_img.shape, dtype="uint8") * 255
         if len(cnts) > 0:
-            print(type(cnts), type(cnts[0]))
+            # print(type(cnts), type(cnts[0]))
             cv2.drawContours(mask, cnts, -1, 0, -1)
         preprocess_img = cv2.bitwise_and(preprocess_img, preprocess_img, mask=mask)
 
         if self.computation_method == "hough":
             if get_image:
                 angle, outimg = self.houghlines_angle(preprocess_img, get_img=get_image)
-                if len(cnts) > 0:
-                    self.draw_intersection_bbox(outimg, cnts)
+                # if len(cnts) > 0:
+                #     self.draw_intersection_bbox(outimg, cnts)
                 return angle, intersection_detected, outimg
 
             else:

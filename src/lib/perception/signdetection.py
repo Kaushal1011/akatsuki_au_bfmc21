@@ -1,5 +1,6 @@
 from threading import Thread
 import time
+from typing import List
 
 from src.templates.workerprocess import WorkerProcess
 import platform
@@ -7,8 +8,10 @@ import cv2
 from multiprocessing.connection import Connection
 from src.lib.perception.detect_ov import Detection
 from loguru import logger
-device = platform.uname().processor
+from multiprocessing import Value
+import ctypes
 
+loaded_model = Value(ctypes.c_bool, False)
 # if device == "x86_64":
 #     print("Using x86 model")
 #     from src.lib.perception.detectts_x86 import setup, detect_signs, draw_box
@@ -27,7 +30,7 @@ def get_last(inP: Connection):
 
 class SignDetectionProcess(WorkerProcess):
     # ===================================== Worker process =========================================
-    def __init__(self, inPs, outPs):
+    def __init__(self, inPs: Connection, outPs: Connection):
         """Process used for the image processing needed for lane keeping and for computing the steering value.
 
         Parameters
@@ -59,7 +62,7 @@ class SignDetectionProcess(WorkerProcess):
         thr.daemon = True
         self.threads.append(thr)
 
-    def _the_thread(self, inP, outPs):
+    def _the_thread(self, inP: Connection, outPs: List[Connection]) -> None:
         """Obtains image, applies the required image processing and computes the steering angle value.
 
         Parameters
@@ -69,10 +72,11 @@ class SignDetectionProcess(WorkerProcess):
         outP : Pipe
             Output pipe to send the steering angle value to other process.
         """
-        print("Started Sign Detection")
         count = 0
         self.detection = Detection()
-
+        global loaded_model
+        loaded_model.value = True
+        print(">>> Starting Sign Detection")
         while True:
             try:
                 if inP[0].poll():
@@ -82,7 +86,11 @@ class SignDetectionProcess(WorkerProcess):
                     logger.log("PIPE", f"recv image {time.time() - recv_time}")
                     count += 1
                     start_time = time.time()
-                    classes = self.detection(img)
+                    if len(outPs) > 1:
+                        classes, area, outimage = self.detection(img, bbox=True)
+                    else:
+                        classes, area = self.detection(img)
+
                     print(f"sD compute time {time.time() - start_time:.2f}s")
                     # print("Model prediction {label}")
                     # box, label, location = out
@@ -95,11 +103,15 @@ class SignDetectionProcess(WorkerProcess):
 
                     # print(label, area)
                     # for outP in outPs:
-                    print((stamp, classes))
-                    # outPs[0].send((stamp, classes))
+                    # print((stamp, (classes, area)))
+                    outPs[0].send((stamp, classes))
 
                     if len(outPs) > 1:
-                        outPs[1].send((stamp, frame))
+                        if outimage is None:
+                            outPs[1].send((stamp, img))
+                        else:
+                            print("outimage shape", outimage.shape)
+                            outPs[1].send((stamp, outimage))
 
             except Exception as e:
                 print("Sign Detection error:")

@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import List, Optional, Tuple
 import cv2
 import numpy as np
 from openvino.runtime import Core
@@ -325,26 +325,33 @@ class Detection:
         ie = Core()
         model = ie.read_model(model=model_path)
         device = "MYRIAD" if "MYRIAD" in ie.available_devices else "CPU"
-        print(f">>> Loading model in {device}.")
         self.compiled_model = ie.compile_model(model=model, device_name=device)
+        print(f">>> Loaded model in {device}.")
         self.input_layer_ir = next(iter(self.compiled_model.inputs))
         N, C, H, W = self.input_layer_ir.shape
         assert H == 640 and W == 640, ""
 
-    def __call__(self, img: np.ndarray, bbox: bool = False) -> np.ndarray:
-        if not img.shape == (640, 640, 3):
-            img = cv2.resize(img, (640, 640))
+    def __call__(
+        self, img: np.ndarray, bbox: bool = False
+    ) -> Tuple[List[float], List[float], Optional[np.ndarray]]:
 
-        x: np.ndarray = img / 255
+        if not img.shape == (640, 640, 3):
+            img_resized = cv2.resize(img, (640, 640))
+
+        x: np.ndarray = img_resized / 255
         x = x.astype(np.float32)
         x = np.expand_dims(x.transpose(2, 0, 1), 0)
         request = self.compiled_model.create_infer_request()
         request.infer({self.input_layer_ir.any_name: x})
         pred = request.get_tensor("output").data
-        pred_nms = non_max_suppression_np(pred)[0]
+        pred_nms = non_max_suppression_np(pred)
         if len(pred_nms) == 0:
-            return []
+            print("Nothing Detected")
+            if bbox:
+                return [], [], None
+            return [], []
 
+        pred_nms = pred_nms[0]
         pred_nms[:, :4] = scale_coords(x.shape[2:], pred_nms[:, :4], img.shape).round()
         classes = np.unique(pred_nms[:, -1]).tolist()
         area = get_area(pred_nms[:, :4])
@@ -352,20 +359,21 @@ class Detection:
             out_image = self.draw_bbox(pred_nms, classes=classes, image=img)
             return (classes, area, out_image)
         else:
-            return classes, area
+            if classes:
+                return classes, area
+            return [], []
 
     def draw_bbox(
         self, pred_nms: np.ndarray, classes: Tuple[int], image: np.ndarray
     ) -> np.ndarray:
         """Draw bbox on image"""
-        for i, det in enumerate(pred_nms):  # per image
-            annotator = Annotator(image, line_width=2)
-            for c in classes:
-                n = (det[:, -1] == c).sum()  # detections per class
-                # s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
+        annotator = Annotator(image, line_width=2)
+        for c in classes:
+            n = (pred_nms[:, -1] == c).sum()  # detections per class
+            # s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
 
-            for *xyxy, conf, cls in reversed(det):
-                annotator.box_label(xyxy, "", colors(c, True))
+        for *xyxy, conf, cls in reversed(pred_nms):
+            annotator.box_label(xyxy, "", colors(c, True))
 
         im0 = annotator.result()
         # TODO: change channels if required

@@ -6,7 +6,6 @@ import pathlib
 from threading import Thread
 from time import time
 from typing import List, Optional
-
 from src.lib.cortex.pathplanning import (
     PathPlanning,
     Purest_Pursuit,
@@ -14,6 +13,7 @@ from src.lib.cortex.pathplanning import (
 )
 
 from src.lib.cortex.carstate import CarState
+from src.lib.perception.signdetection import loaded_model
 from src.templates.workerprocess import WorkerProcess
 from time import time
 from src.lib.cortex.action import (
@@ -158,7 +158,7 @@ class DecisionMakingProcess(WorkerProcess):
         # cx = data["x"]
         # cy = data["y"]
         # coord_list = [x for x in zip(cx, cy)]
-        coord_list=data[0]
+        coord_list = data[0]
         #################################################################
 
         # pass coordlist here from navigator config
@@ -308,7 +308,12 @@ class DecisionMakingProcess(WorkerProcess):
                 # speed, steer_angle = self.get_controls()
 
                 # print(f"Time taken {time() - start_time}s\n ========================")
+                # Start car if model if loaded
+                if not loaded_model.value:
+                    self.state.v = 0
+
                 for outP in outPs:
+                    print("Final -> ", (self.state.steering_angle, self.state.v))
                     outP.send((self.state.steering_angle, self.state.v))
 
             except Exception as e:
