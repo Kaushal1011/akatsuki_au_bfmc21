@@ -74,6 +74,7 @@ class SignDetectionProcess(WorkerProcess):
         """
         count = 0
         self.detection = Detection()
+        print("Compiled Model", self.detection.compiled_model)
         global loaded_model
         loaded_model.value = True
         print(">>> Starting Sign Detection")

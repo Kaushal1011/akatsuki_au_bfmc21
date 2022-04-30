@@ -310,6 +310,7 @@ class DecisionMakingProcess(WorkerProcess):
                 # print(f"Time taken {time() - start_time}s\n ========================")
                 # Start car if model if loaded
                 if not loaded_model.value:
+                    print("//////////////////// Waiting for Model")
                     self.state.v = 0
 
                 for outP in outPs:
@@ -320,4 +321,5 @@ class DecisionMakingProcess(WorkerProcess):
                 print("Decision Process error:")
                 raise e
             finally:
-                joblib.dump({"x": rx, "y": ry}, "real_coords.z")
+                pass
+                #joblib.dump({"x": rx, "y": ry}, "real_coords.z")

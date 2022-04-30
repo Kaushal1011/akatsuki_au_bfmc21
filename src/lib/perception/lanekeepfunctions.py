@@ -148,6 +148,7 @@ class LaneKeep:
         if self.computation_method == "hough":
             if get_image:
                 angle, outimg = self.houghlines_angle(preprocess_img, get_img=get_image)
+                print("LK Out angle", angle)
                 # if len(cnts) > 0:
                 #     self.draw_intersection_bbox(outimg, cnts)
                 return angle, intersection_detected, outimg
@@ -155,10 +156,11 @@ class LaneKeep:
             else:
                 angle = self.houghlines_angle(preprocess_img)
                 angle = self.get_lane_error(preprocess_img)
+                print("LK Out angle", angle)
                 # angle_roadarea = self.graph_road_search(preprocess_img)
                 # print(angle, " ", angle_roadarea)
                 #             angle = (angle*2 + angle_roadarea) / 3
-                return intersection_detected, angle
+                return angle, intersection_detected
 
     def roi_func(self, img: np.ndarray) -> np.ndarray:
         """Given image get Region of interest
@@ -333,7 +335,7 @@ def get_error_lane(mask_image):
     leftxBase = np.argmax(histogram[:midpoint])
     rightxBase = np.argmax(histogram[midpoint:]) + midpoint
     print(leftxBase, midpoint, rightxBase)
-    return (abs(rightxBase - midpoint) - abs(leftxBase - midpoint)) * 26.5 / (midpoint)
+    return ((abs(rightxBase - midpoint) - abs(leftxBase - midpoint)) * 26.5 / (midpoint)) + 90
 
 
 def get_road_ratio_angle(mask_img):

@@ -318,8 +318,8 @@ def non_max_suppression_np(
 if __name__ == "__main__":
     ##  Load Model
     ie = Core()
-    model = ie.read_model(model="best_openvino_model/best.xml")
-    compiled_model = ie.compile_model(model=model, device_name="MYRIAD")
+    model = ie.read_model(model="../best_openvino_model/best.xml")
+    compiled_model = ie.compile_model(model=model, device_name="CPU")
 
     input_layer_ir = next(iter(compiled_model.inputs))
 
