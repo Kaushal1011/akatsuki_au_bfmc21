@@ -38,7 +38,6 @@ class SignDetectionProcess(WorkerProcess):
             List of output pipes (0 - send steering data to the movvement control process)
         """
         super(SignDetectionProcess, self).__init__(inPs, outPs)
-        self.detection = Detection()
 
     def run(self):
         """Apply the initializing methods and start the threads."""
@@ -72,6 +71,8 @@ class SignDetectionProcess(WorkerProcess):
         """
         print("Started Sign Detection")
         count = 0
+        self.detection = Detection()
+
         while True:
             try:
                 if inP[0].poll():
