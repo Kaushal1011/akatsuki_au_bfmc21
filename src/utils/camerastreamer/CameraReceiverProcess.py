@@ -26,6 +26,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
+from multiprocessing.connection import Connection
 import sys
 
 sys.path.append(".")
@@ -42,7 +43,7 @@ from src.templates.workerprocess import WorkerProcess
 
 class CameraReceiverProcess(WorkerProcess):
     # ===================================== INIT =========================================
-    def __init__(self, inPs, outPs):
+    def __init__(self, inPs: Connection, outPs: Connection, port: int):
         """Process used for debugging. Can be used as a direct frame analyzer, instead of using the VNC
         It receives the images from the raspberry and displays them.
 
@@ -55,6 +56,7 @@ class CameraReceiverProcess(WorkerProcess):
         """
         super(CameraReceiverProcess, self).__init__(inPs, outPs)
         self.imgSize = (480, 640, 3)
+        self.port = port
 
     # ===================================== RUN ==========================================
     def run(self):
@@ -66,7 +68,7 @@ class CameraReceiverProcess(WorkerProcess):
     def _init_socket(self):
         """Initialize the socket server."""
 
-        self.port = 2244
+        # self.port = 2244
         self.serverIp = "0.0.0.0"
 
         self.server_socket = socket.socket()
@@ -74,7 +76,6 @@ class CameraReceiverProcess(WorkerProcess):
         self.server_socket.bind((self.serverIp, self.port))
 
         self.server_socket.listen(0)
-        print("socket init start")
         self.connection = self.server_socket.accept()[0].makefile("rb")
         print("socket init")
 

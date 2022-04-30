@@ -3,8 +3,6 @@ from multiprocessing import Event, Pipe
 
 
 import argparse
-
-import numpy as np
 from src import config as config_module
 
 parser = argparse.ArgumentParser()
@@ -155,7 +153,7 @@ if config["enableSignDet"]:
     sDFzzR, sDFzzS = Pipe(duplex=False)
     if config["enableStream"]:
         sDStR, sDStS = Pipe(duplex=False)
-        sDProc = SignDetectionProcess([camsDR], [sDFzzS])
+        sDProc = SignDetectionProcess([camsDR], [sDFzzS, sDStS])
     else:
         sDProc = SignDetectionProcess([camsDR], [sDFzzS])
 
@@ -326,16 +324,16 @@ else:
 # ========================= Streamer =====================================================
 if config["enableStream"]:
     if config["enableLaneKeeping"]:
-        streamProc = CameraStreamerProcess([lkStrR], [])
+        streamProc = CameraStreamerProcess([lkStrR], [], port=STREAM_PORT1)
         allProcesses.append(streamProc)
     else:
         camStR, camStS = Pipe(duplex=False)  # camera  ->  streamer
         camOutPs.append(camStS)
-        streamProc = CameraStreamerProcess([camStR], [])
+        streamProc = CameraStreamerProcess([camStR], [], port=STREAM_PORT1)
         allProcesses.append(streamProc)
 
     if config["enableSignDet"]:
-        streamProc2 = CameraStreamerProcess([sDStR], [])
+        streamProc2 = CameraStreamerProcess([sDStR], [], port=STREAM_PORT2)
         allProcesses.append(streamProc2)
 
 # ========================== Camera process ==============================================
