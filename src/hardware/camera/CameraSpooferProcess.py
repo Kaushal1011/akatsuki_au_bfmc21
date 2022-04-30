@@ -131,4 +131,3 @@ class CameraSpooferProcess(WorkerProcess):
                     else:
                         break
                 cap.release()
-                sa.delete("shared_frame1")
