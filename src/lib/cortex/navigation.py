@@ -129,6 +129,7 @@ class Navigator:
 
         d = np.hypot(dx, dy)
         idxs = np.argsort(d)
+        # print(idxs)
         for idx in idxs:
             try:
                 dyaw = np.array(self.node_dict[str(idx)]["yaw"]) - yaw

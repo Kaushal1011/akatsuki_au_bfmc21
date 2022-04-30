@@ -97,6 +97,8 @@ class OvertakeBehaviour(BehaviourCallback):
         self.last_update_time = None
         self.target_speed_array = []
         self.WB = 0.3
+        self.set_side=None
+
         # print("behaviour init")
 
     def reset(self, **kwargs):
@@ -128,30 +130,33 @@ class OvertakeBehaviour(BehaviourCallback):
             return {"None": None}
         # once target is determined
         # make new target points on the left lane
-        cx = car_state.x
-        cy = car_state.y
+        cx = car_state.rear_x
+        cy = car_state.rear_y
 
         # Use Of Inverted Yaw
 
         # print("cx,cy should be: ",car_state.navigator.get_nearest_node(cx,cy,car_state.yaw))
-        nn = car_state.navigator.get_nearest_node(cx, cy, car_state.yaw)
+        nn = car_state.navigator.get_nearest_node(cx, cy, -car_state.yaw)
 
         # have to uncomment this no idea why this doesnt work uncommented
-        # cx,cy=nn["x"],nn["y"]
+        cx,cy=nn["x"],nn["y"]
 
         tx = car_state.target_x
         ty = car_state.target_y
-
+        
+        try:
         # find m
-        m = -(tx - cx) / (ty - cy)
+            m = -(tx - cx) / (ty - cy)
+        except:
+            m = -(tx - cx) / 0.0001
 
         # print("m: ",m)
         # find c
         c = ty - m * tx
         # print("C: ",c)
 
-        x3 = tx + ((0.7 ** 2) / (m ** 2 + 1)) ** 0.5
-        x4 = tx - ((0.7 ** 2) / (m ** 2 + 1)) ** 0.5
+        x3 = tx + ((0.365 ** 2) / (m ** 2 + 1)) ** 0.5
+        x4 = tx - ((0.365 ** 2) / (m ** 2 + 1)) ** 0.5
         y3 = m * x3 + c
         y4 = m * x4 + c
 
@@ -164,23 +169,36 @@ class OvertakeBehaviour(BehaviourCallback):
         # determine which point to pick
 
         # how to determine -> find a point on the road with -yaw
-        on = car_state.navigator.get_nearest_node(cx, cy, -car_state.yaw)
-        ox,oy=on["x"],on["y"]
+        # on = car_state.navigator.get_nearest_node(cx, cy, car_state.yaw)
+        # ox, oy = on["x"], on["y"]
 
-        d3=math.sqrt((ox-x3)**2+(oy-y3)**2)
-        d4=math.sqrt((ox-x4)**2+(oy-y4)**2)
 
-        if d4 < d3:
+        # d3=math.sqrt((ox-x3)**2+(oy-y3)**2)
+        # d4=math.sqrt((ox-x4)**2+(oy-y4)**2)
+
+        # if d4 < d3 and self.set_side is None:
+        #     print("Current Point:" ,car_state.x,car_state.y)
+        #     print("Oncoming Point", ox,oy)
+        #     self.set_side=4
+        # elif self.set_side is None:
+        #     self.set_side=3
+        # else:
+        #     pass
+
+        self.set_side=4
+
+        if self.set_side==4:
             alpha = math.atan2(y4 - car_state.rear_y, x4 - car_state.rear_x) - (
-                -car_state.yaw
-            )
+                    -car_state.yaw
+                )
             delta = math.atan2(
-            2.0
-            * self.WB
-            * math.sin(alpha)
-            / math.sqrt((y4 - car_state.rear_y) ** 2 + (x4 - car_state.rear_x)),
-            1.0,
-        )
+                2.0
+                * self.WB
+                * math.sin(alpha)
+                / math.sqrt((y4 - car_state.rear_y) ** 2 + (x4 - car_state.rear_x)**2),
+                1.0,
+            )
+            print("In Overtake x4 y4 delta:", x4, y4, delta)
         else:
             alpha = math.atan2(y3 - car_state.rear_y, x3 - car_state.rear_x) - (
                 -car_state.yaw
@@ -189,9 +207,10 @@ class OvertakeBehaviour(BehaviourCallback):
             2.0
             * self.WB
             * math.sin(alpha)
-            / math.sqrt((y3 - car_state.rear_y) ** 2 + (x3 - car_state.rear_x)),
+            / math.sqrt((y3 - car_state.rear_y) ** 2 + (x3 - car_state.rear_x)**2),
             1.0,
         )
+            print("In Overtake x3 y3 delta:", x3, y3, delta)
 
         # print("rear pts: ",state.x,state.y)
         # print("target and yaw :", tx,ty,state.yaw)
@@ -212,7 +231,8 @@ class OvertakeBehaviour(BehaviourCallback):
         if car_state.side_distance > 0.9 and self.parallel_reach:
             self.parallel_out = True
 
-        print("In Overtake x3 y3 delta:", x3, y3, di)
+        print("In Overtake ",self.set_side)
+
 
         return {"steer": di, "speed": car_state.v}
 

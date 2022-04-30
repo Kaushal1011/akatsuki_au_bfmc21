@@ -154,6 +154,7 @@ class LaneKeep:
 
             else:
                 angle = self.houghlines_angle(preprocess_img)
+                angle = self.get_lane_error(preprocess_img)
                 # angle_roadarea = self.graph_road_search(preprocess_img)
                 # print(angle, " ", angle_roadarea)
                 #             angle = (angle*2 + angle_roadarea) / 3
