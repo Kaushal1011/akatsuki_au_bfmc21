@@ -5,37 +5,11 @@ from time import time
 from src.lib.cortex.navigation import Navigator
 
 
-class DetectedSign:
-    def init(self):
-        self.priority = False
-        self.crosswalk = False
-        self.stop = False
-        self.roundabout = False
-        self.parking = False
-        self.highway_exit = False
-        self.oneway = False
-        self.noentry = False
-        self.highway_entry = False
-
-    def asdict(self):
-        return {
-            "priority": self.priority,
-            "crosswalk": self.crosswalk,
-            "stop": self.stop,
-            "roundabout": self.roundabout,
-            "parking": self.parking,
-            "highway_exit": self.highway_exit,
-            "oneway": self.oneway,
-            "noentry": self.noentry,
-            "highway_entry": self.highway_entry,
-        }
-
-
 class CarState:
     def __init__(self, max_v=0.20, dt=0.13, car_len=0.365, **kwargs) -> None:
 
         self.max_v = max_v
-        self.highway_speed=0.25
+        self.highway_speed = 0.25
         # position data
         # 0.75, 4.8
         self.x = 0.8
@@ -46,9 +20,9 @@ class CarState:
         self.car_len = car_len
         self.rear_x = self.x - ((car_len / 2) * math.cos(-self.yaw))
         self.rear_y = self.y - ((car_len / 2) * math.sin(-self.yaw))
-        
-        self.target_x=None
-        self.target_y=None
+
+        self.target_x = None
+        self.target_y = None
 
         self.navigator = Navigator()
         # plan path -> self.navigator.plan_path(self.x,self.y,self.yaw)

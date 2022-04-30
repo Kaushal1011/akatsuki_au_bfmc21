@@ -325,8 +325,8 @@ class Detection:
         ie = Core()
         model = ie.read_model(model=model_path)
         device = "MYRIAD" if "MYRIAD" in ie.available_devices else "CPU"
-        print(f">>> Loading model in {device}.")
         self.compiled_model = ie.compile_model(model=model, device_name=device)
+        print(f">>> Loaded model in {device}.")
         self.input_layer_ir = next(iter(self.compiled_model.inputs))
         N, C, H, W = self.input_layer_ir.shape
         assert H == 640 and W == 640, ""

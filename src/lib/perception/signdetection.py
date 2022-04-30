@@ -8,9 +8,10 @@ import cv2
 from multiprocessing.connection import Connection
 from src.lib.perception.detect_ov import Detection
 from loguru import logger
+from multiprocessing import Value
+import ctypes
 
-device = platform.uname().processor
-
+loaded_model = Value(ctypes.c_bool, False)
 # if device == "x86_64":
 #     print("Using x86 model")
 #     from src.lib.perception.detectts_x86 import setup, detect_signs, draw_box
@@ -71,9 +72,11 @@ class SignDetectionProcess(WorkerProcess):
         outP : Pipe
             Output pipe to send the steering angle value to other process.
         """
-        print("Started Sign Detection")
         count = 0
         self.detection = Detection()
+        global loaded_model
+        loaded_model.value = True
+        print(">>> Starting Sign Detection")
         while True:
             try:
                 if inP[0].poll():
