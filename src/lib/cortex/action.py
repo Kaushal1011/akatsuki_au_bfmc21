@@ -12,14 +12,14 @@ from loguru import logger
 
 # Extra because no path planning at start
 ####################################################################################
-data_path = pathlib.Path(  #
-    pathlib.Path(__file__).parent.parent.parent.resolve(), "data", "mid_course.z"  #
-)  #
-data = joblib.load(data_path)  #
-# ptype = data["ptype"]                                                            #
-# etype = data["etype"]                                                            #
-ptype = data[1]  #
-etype = data[2]  #
+# data_path = pathlib.Path(  #
+#     pathlib.Path(__file__).parent.parent.parent.resolve(), "data", "mid_course.z"  #
+# )  #
+# data = joblib.load(data_path)  #
+# # ptype = data["ptype"]                                                            #
+# # etype = data["etype"]                                                            #
+# ptype = data[1]  #
+# etype = data[2]  #
 ####################################################################################
 
 
@@ -279,8 +279,9 @@ class ControlSystemBehaviour(BehaviourCallback):
         car_state.target_y = self.cs.cy[ind]
         car_state.current_target = (car_state.target_x, car_state.target_y)
 
-        car_state.current_ptype = ptype[ind]
-        car_state.can_overtake = etype[ind]
+        car_state.current_ptype = car_state.navigator.ptype[ind]
+        car_state.can_overtake = car_state.navigator.etype[ind]
+        car_state.activity_type = car_state.navigator.activity[ind]
 
         di = self.cs.purest_pursuit_steer_control(car_state, ind, lf)
         di = di * 180 / math.pi

@@ -41,7 +41,13 @@ config = get_config()
 HOST = config["pc_ip"]
 from src.templates.workerprocess import WorkerProcess
 
-
+def get_last(inP: Connection):
+    timestamp, data = inP.recv()
+    while inP.poll():
+        # print("lk: skipping frame")
+        # logger.log("SYNC", f"Skipping Frame delta - {time() - timestamp}")
+        timestamp, data = inP.recv()
+    return timestamp, data
 class CameraStreamerProcess(WorkerProcess):
     # ===================================== INIT =========================================
     def __init__(self, inPs, outPs, port: int = 2244):
@@ -121,7 +127,8 @@ class CameraStreamerProcess(WorkerProcess):
         count = 1
         while True:
             try:
-                _, image = inP.recv()
+                stamp, image = get_last(inP)
+                print(f"Stream timedelta -> {time.time() - stamp}s")
                 # image = np.array(self.frame_shm).copy()
                 # print(stamps, image)
                 result, image = cv2.imencode(".jpg", image, encode_param)

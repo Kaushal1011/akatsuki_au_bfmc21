@@ -346,7 +346,6 @@ class Detection:
         pred = request.get_tensor("output").data
         pred_nms = non_max_suppression_np(pred)
         if len(pred_nms) == 0:
-            print("Nothing Detected")
             if bbox:
                 return [], [], None
             return [], []

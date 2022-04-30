@@ -11,6 +11,8 @@ from src.config import get_config
 
 config = get_config()
 
+
+
 # from src.config import config
 
 target_idx = config["end_idx"]
@@ -68,7 +70,58 @@ def dijkstra(G, start, target):
 
     return fp, ptyperet, edgeret
 
+# TODO: smooth path
+def smooth_point_list(G, coord_list1, ptype,etype):
+        node_dict = deepcopy(dict(G.nodes(data=True)))
+        coord_list=[]
+        for i in coord_list1:
+            data=node_dict[i]
+            coord_list.append([data['x'],data['y']]) 
+        coordlist_new = []
+        count = 0
+        sizeincrease=0
+        countfinal = len(coord_list)
+        # print(countfinal)
+        ptype_new=[]
+        etype_new=[]
 
+        while count < countfinal:
+            if ptype[count] == "int":
+                
+                coordlist_new.append(coord_list[count])
+                ptype_new.append(ptype[count])
+                etype_new.append(etype[count])
+                try:
+                    xmidint = (coord_list[count][0] + coord_list[count + 2][0]) / 2
+                    ymidint = (coord_list[count][1] + coord_list[count + 2][1]) / 2
+
+                    xfinmid = (xmidint*14 + 10*coord_list[count + 1][0]) / 24
+                    yfinmid = (ymidint*14 + 10*coord_list[count + 1][1]) / 24
+                    
+                    coordlist_new.append((xfinmid,yfinmid))
+                    ptype_new.append(ptype[count+1])
+                    etype_new.append(etype[count+1])
+                    
+                except Exception as e:
+                    
+                    print("exception",e)
+                    pass
+                try:
+                    coordlist_new.append(coord_list[count+2])
+                    ptype_new.append(ptype[count+2])
+                    etype_new.append(etype[count+2])                
+                    count+=3
+                except:
+                    print("in exception")
+                    count+=1
+            else:
+                coordlist_new.append(coord_list[count])
+                ptype_new.append(ptype[count])
+                etype_new.append(etype[count])
+                count+=1
+
+        return coordlist_new,ptype_new,etype_new
+        
 def add_yaw(G):
     node_dict = deepcopy(dict(G.nodes(data=True)))
     for current_node in node_dict:
@@ -87,7 +140,7 @@ def add_yaw(G):
 
 
 class Navigator:
-    def __init__(self, test=False):
+    def __init__(self,config:dict,  test=False):
         if test:
             self.graph = nx.read_graphml(
                 "./src/lib/cortex/path_data/test_track.graphml"
@@ -99,9 +152,46 @@ class Navigator:
 
         self.node_dict = add_yaw(self.graph)
         self.cur_index = 0
-        self.path = []
+        self.coords = []
         self.ptype = []
         self.etype = []
+        self.activity = []
+        self.yaw = []
+        self.area_dict_list = []
+        self.config = config
+        self.create_path()
+
+    def create_path(self):
+        for i in range(len(self.config["nodes"])):
+            # print(config["nodes"][i],config["activity"][i])
+            c,p,e=smooth_point_list(self.graph, *dijkstra( self.graph, str(self.config["nodes"][i][0]),str(self.config["nodes"][i][1])))
+            
+            a=[self.config["activity"][i] for j in c]
+            assert len(c)==len(e)==len(p)==len(a)
+            pdict={
+                "c":c,
+                "p":p,
+                "e":e,
+                "a":a
+            }
+            self.coords.extend(c)
+            self.ptype.extend(p)
+            self.etype.extend(e)
+            self.activity.extend(a)
+            self.area_dict_list.append(pdict)
+
+        self.add_path_yaw()
+
+    def add_path_yaw(self):
+        for i in range(len(self.coords)):
+            # print(i)
+            try:
+                y=self.coords[i+1][1]-self.coords[i][1]
+                x=self.coords[i+1][0]-self.coords[i][0]
+                self.yaw.append(math.atan2(y,x))
+            except Exception as e:
+                print("in exception",e)
+                self.yaw.append(0)
 
     def plan_course(self, cofig_json):
         raise NotImplementedError

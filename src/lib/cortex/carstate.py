@@ -3,7 +3,10 @@ import math
 
 from time import time
 from src.lib.cortex.navigation import Navigator
-
+activity_config={
+    "nodes":[[86,99],[100,145],[61,168],[169,229],[230,104],[105,465],[466,85]],
+    "activity":["navigation","roadblocked","parking","overtaking","highway","oneway","finish"]
+}
 
 class CarState:
     def __init__(self, max_v=0.20, dt=0.13, car_len=0.365, **kwargs) -> None:
@@ -24,7 +27,7 @@ class CarState:
         self.target_x = None
         self.target_y = None
 
-        self.navigator = Navigator()
+        self.navigator = Navigator(activity_config)
         # plan path -> self.navigator.plan_path(self.x,self.y,self.yaw)
         # current node -> self.navigator.get_current_node(self.x, self.y, self.yaw)
         self.last_update_time = time()
@@ -75,6 +78,9 @@ class CarState:
         self.steering_angle = 0.0
         self.v = max_v
 
+        # activity type
+
+        self.activity_type = None
         self.car_len = car_len
 
     def calc_distance(self, point_x: float, point_y: float) -> float:

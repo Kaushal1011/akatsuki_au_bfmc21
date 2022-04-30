@@ -149,20 +149,20 @@ class DecisionMakingProcess(WorkerProcess):
         self.actman.set_action(lkaction)
 
         ##################################################################
-        data_path = pathlib.Path(
-            pathlib.Path(__file__).parent.parent.parent.resolve(),
-            "data",
-            "mid_course.z",
-        )
-        data = joblib.load(data_path)
-        # cx = data["x"]
-        # cy = data["y"]
-        # coord_list = [x for x in zip(cx, cy)]
-        coord_list = data[0]
+        # data_path = pathlib.Path(
+        #     pathlib.Path(__file__).parent.parent.parent.resolve(),
+        #     "data",
+        #     "mid_course.z",
+        # )
+        # data = joblib.load(data_path)
+        # # cx = data["x"]
+        # # cy = data["y"]
+        # # coord_list = [x for x in zip(cx, cy)]
+        # coord_list = data[0]
         #################################################################
 
         # pass coordlist here from navigator config
-        csobj = ControlSystemBehaviour(coord_list=coord_list)
+        csobj = ControlSystemBehaviour(coord_list=self.state.navigator.coords)
         csaction = ActionBehaviour(name="cs", callback=csobj)
         self.actman.set_action(csaction)
 
