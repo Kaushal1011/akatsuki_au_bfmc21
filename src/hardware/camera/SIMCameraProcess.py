@@ -96,6 +96,8 @@ class SIMCameraProcess(WorkerProcess):
         try:
             while True:
                 # decode image
+                stamp = struct.unpack("d", self.connection.read(struct.calcsize("d")))
+
                 image_len = struct.unpack(
                     "<L", self.connection.read(struct.calcsize("<L"))
                 )[0]
@@ -106,7 +108,7 @@ class SIMCameraProcess(WorkerProcess):
                 image = cv2.imdecode(image, cv2.IMREAD_COLOR)
                 image = np.reshape(image, self.imgSize)
                 image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-                stamp = time.time()
+                # stamp = time.time()
                 for outP in outPs:
                     outP.send((stamp, image))
         except Exception:
