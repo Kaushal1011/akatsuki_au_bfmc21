@@ -94,6 +94,7 @@ class LaneKeepingProcess(WorkerProcess):
                     "TIME",
                     f"Time taken to rec image {(t_r/count):.4f}s",
                 )
+                print(f"LK time delta {(time() - stamp):.4f}s")
                 # print("LK", stamps)
                 # img = self.frame_shm
                 # print(f"lk: Time taken to recv image {time() - image_recv_start}")
@@ -104,9 +105,7 @@ class LaneKeepingProcess(WorkerProcess):
                     val, intersection_detected, outimage = self.lk(img, True)
                 else:
                     val, intersection_detected = self.lk(img)
-                print("Speed", val)
                 angle = self.computeSteeringAnglePID(val)
-                print("Processed Speed", angle)
                 self.outPs[0].send((stamp, angle, intersection_detected))
                 t += time() - compute_time
                 logger.log(
