@@ -138,8 +138,8 @@ class CameraStreamerProcess(WorkerProcess):
                 data = image.tobytes()
                 size = len(data)
 
-                self.connection.write(struct.pack("d", time.time()))
-                print(f"Streaming | sending data size: {size}, timestamp:{stamp}")
+                self.connection.write(struct.pack("d", stamp))
+                # print(f"Streaming | sending data size: {size}, timestamp:{stamp}")
                 self.connection.write(struct.pack("<L", size))
                 self.connection.write(data)
             except Exception as e:

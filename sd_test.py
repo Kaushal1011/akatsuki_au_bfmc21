@@ -1,8 +1,51 @@
 import sys
 from multiprocessing import Event, Pipe
+import sys
+import argparse
+from src import config as config_module
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "config_path", help="Path to the config file.", default="./config_pc.json"
+)
+
+args = parser.parse_args()
+config_module.config_path = args.config_path
+config = config_module.get_config()
 from src.hardware.camera.cameraprocess import CameraProcess
 from src.lib.perception.signdetection import SignDetectionProcess
-import sys
+from src.utils.camerastreamer.CameraStreamerProcess import CameraStreamerProcess
+
+from loguru import logger
+from typing import List
+
+isPI = True
+try:
+    from src.utils.IMU.imuProc import IMUProcess
+except Exception as e:
+    print(e)
+    isPI = False
+# =================== CONFIG LOGGER ======================================
+
+logger.level("PIPE", no=12, icon="==")
+logger.level("SYNC", no=13, color="<yellow>")
+logger.level("XY", no=14)
+logger.level("TIME", no=15)
+
+
+def filter(level: List[int]):
+    return lambda r: r["level"].no in level or r["level"].no > 19
+
+
+TEST_PIPE = True
+logger.remove()
+# if TEST_PIPE:
+    # logger.add(sys.stderr, filter=filter([18]))
+
+# logger.add("file1.log", filter=lambda r: r["level"] == 14)
+# logger.level("LK", no=10, color="<blue>", icon='' )
+# logger.level("INT", no=10, color="<blue>", icon='' )
+
 
 # ========================================================================
 # SCRIPT USED FOR WIRING ALL COMPONENTS
@@ -34,11 +77,12 @@ sDStR, sDStS = Pipe(duplex=False)
 sDProc = SignDetectionProcess([camsDR], [sDStS], outPnames=["stream"])
 
 camOutPs.append(camsDS)
-
 allProcesses.append(sDProc)
 
-camProc = CameraProcess([], camOutPs)
+streamProc2 = CameraStreamerProcess([sDStR], [], port=STREAM_PORT2)
+allProcesses.append(streamProc2)
 
+camProc = CameraProcess([], camOutPs)
 allProcesses.append(camProc)
 
 

@@ -34,7 +34,7 @@ import numpy as np
 import time
 
 from src.templates.threadwithstop import ThreadWithStop
-
+from src.lib.perception.signdetection import loaded_model
 # import SharedArray as sa
 
 # from multiprocessing import shared_memory
@@ -131,6 +131,7 @@ class CameraThread(ThreadWithStop):
         while self._running:
 
             yield self._stream
+            print("Read cam image")
             self._stream.seek(0)
             data = self._stream.read()
 
@@ -143,8 +144,9 @@ class CameraThread(ThreadWithStop):
 
             # output image and time stamp
             # Note: The sending process can be blocked, when doesn't exist any consumer process and it reaches the limit size.
-            for outP in self.outPs:
-                outP.send((stamp, frame))
-
+            if loaded_model.value:
+                for outP in self.outPs:
+                    outP.send((stamp, frame))
+    
             self._stream.seek(0)
             self._stream.truncate()
