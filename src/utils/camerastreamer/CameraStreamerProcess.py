@@ -127,7 +127,6 @@ class CameraStreamerProcess(WorkerProcess):
             Input pipe to read the frames from CameraProcess or CameraSpooferProcess.
         """
         encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 40]
-        count = 1
         while True:
             try:
                 stamp, image = get_last(inP)
@@ -139,7 +138,7 @@ class CameraStreamerProcess(WorkerProcess):
                 data = image.tobytes()
                 size = len(data)
 
-                self.connection.write(struct.pack("d", stamp))
+                self.connection.write(struct.pack("d", time.time()))
                 print(f"Streaming | sending data size: {size}, timestamp:{stamp}")
                 self.connection.write(struct.pack("<L", size))
                 self.connection.write(data)

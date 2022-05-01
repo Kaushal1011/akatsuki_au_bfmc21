@@ -2,8 +2,6 @@ from threading import Thread
 import time
 from typing import List
 
-from isort import stream
-
 from src.templates.workerprocess import WorkerProcess
 import platform
 import cv2
@@ -112,11 +110,11 @@ class SignDetectionProcess(WorkerProcess):
                     # print((stamp, (classes, area)))
 
                     if "fzz" in self.outPnames:
-                        idx = self.outPnames.index("obj")
+                        idx = self.outPnames.index("fzz")
                         outPs[idx].send((stamp, classes))
 
                     if "stream" in self.outPnames:
-                        idx = self.outPnames.index("obj")
+                        idx = self.outPnames.index("stream")
                         if outimage is None:
                             outPs[idx].send((stamp, img))
                         else:

@@ -92,7 +92,7 @@ class CameraReceiverProcess(WorkerProcess):
             while True:
 
                 stamp = struct.unpack("d", self.connection.read(struct.calcsize("d")))
-                print(time.time(), stamp[0])
+                print(f"Time delta {(time.time()-stamp[0]):.4f}")
                 # decode image
                 image_len = struct.unpack(
                     "<L", self.connection.read(struct.calcsize("<L"))
@@ -104,7 +104,7 @@ class CameraReceiverProcess(WorkerProcess):
                 image = np.frombuffer(bts, np.uint8)
                 image = cv2.imdecode(image, cv2.IMREAD_COLOR)
                 image = np.reshape(image, self.imgSize)
-                print(f"Decode time {(time.time() - decode_time):.4f}s")
+                # print(f"Decode time {(time.time() - decode_time):.4f}s")
                 # image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
                 # image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
                 # ----------------------- show images -------------------

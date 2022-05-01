@@ -97,7 +97,8 @@ class SIMCameraProcess(WorkerProcess):
             while True:
                 # decode image
                 stamp = struct.unpack("d", self.connection.read(struct.calcsize("d")))
-
+                stamp = stamp[0]
+                print(f"SIMCamera {time.time():.4f} {stamp:.4f}")
                 image_len = struct.unpack(
                     "<L", self.connection.read(struct.calcsize("<L"))
                 )[0]
