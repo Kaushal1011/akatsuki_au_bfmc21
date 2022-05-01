@@ -153,9 +153,9 @@ if config["enableSignDet"]:
     sDFzzR, sDFzzS = Pipe(duplex=False)
     if config["enableStream"]:
         sDStR, sDStS = Pipe(duplex=False)
-        sDProc = SignDetectionProcess([camsDR], [sDFzzS, sDStS])
+        sDProc = SignDetectionProcess([camsDR], [sDFzzS, sDStS], ["fzz", "stream"])
     else:
-        sDProc = SignDetectionProcess([camsDR], [sDFzzS])
+        sDProc = SignDetectionProcess([camsDR], [sDFzzS], ["fzz"])
 
     camOutPs.append(camsDS)
     dataFusionInputPs.append(sDFzzR)

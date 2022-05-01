@@ -31,7 +31,7 @@ def get_last(inP: Connection):
 class SignDetectionProcess(WorkerProcess):
     # ===================================== Worker process =========================================
     def __init__(
-        self, inPs: Connection, outPs: Connection, outPnames=["fzz", "stream"]
+        self, inPs: Connection, outPs: Connection, outPnames:List[str]
     ):
         """Process used for the image processing needed for lane keeping and for computing the steering value.
 
@@ -90,7 +90,7 @@ class SignDetectionProcess(WorkerProcess):
                     logger.log("PIPE", f"recv image {time.time() - recv_time}")
                     count += 1
                     start_time = time.time()
-                    if len(outPs) > 1:
+                    if "stream" in self.outPnames:
                         classes, area, outimage = self.detection(img, bbox=True)
                     else:
                         classes, area = self.detection(img)

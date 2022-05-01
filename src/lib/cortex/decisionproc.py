@@ -25,6 +25,7 @@ from src.lib.cortex.action import (
     LaneKeepBehaviour,
     ControlSystemBehaviour,
     ObjectStopBehaviour,
+    ParkingBehaviour,
     StopBehvaiour,
     PriorityBehaviour,
     OvertakeBehaviour,
@@ -71,6 +72,7 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
     triggerparking=False
 
     if hasattr(carstate,"parkingcoords"):
+        print("Triggered Parking")
         d=math.sqrt((carstate.rear_x-carstate.parkingcoords[0])**2+(carstate.rear_y-carstate.parkingcoords[1])**2)
         if d<0.2:
             triggerparking=True
@@ -89,13 +91,15 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
 
     if carstate.detected_sign["parking"] or triggerparking:
         # Parking
-        pass
+        parkobj = ParkingBehaviour(car_state=carstate)
+        parkobjaction = ActionBehaviour(name="parking", callback=parkobj)
+        action_man.set_action(parkobjaction, action_time=None, car_state=carstate)
 
     if carstate.front_distance < 0.6 and carstate.detected_car and carstate.can_overtake:
         # print("Overtake Trigger")
         # overtake
         overtakeobj = OvertakeBehaviour(car_state=carstate)
-        overtakeobjaction = ActionBehaviour(name="overtaking", callback=overtakeobj)
+        overtakeobjaction = ActionBehaviour(name="parking", callback=overtakeobj)
         action_man.set_action(overtakeobjaction, action_time=None, car_state=carstate)
 
     if carstate.front_distance < 0.6 and carstate.detected_car and not carstate.can_overtake:
@@ -159,20 +163,20 @@ class DecisionMakingProcess(WorkerProcess):
         self.actman.set_action(lkaction)
 
         ##################################################################
-        # data_path = pathlib.Path(
-        #     pathlib.Path(__file__).parent.parent.parent.resolve(),
-        #     "data",
-        #     "mid_course.z",
-        # )
-        # data = joblib.load(data_path)
-        # # cx = data["x"]
-        # # cy = data["y"]
-        # # coord_list = [x for x in zip(cx, cy)]
-        # coord_list = data[0]
+        data_path = pathlib.Path(
+            pathlib.Path(__file__).parent.parent.parent.resolve(),
+            "data",
+            "mid_course.z",
+        )
+        data = joblib.load(data_path)
+        # cx = data["x"]
+        # cy = data["y"]
+        # coord_list = [x for x in zip(cx, cy)]
+        coord_list = data[0]
         #################################################################
 
         # pass coordlist here from navigator config
-        csobj = ControlSystemBehaviour(coord_list=self.state.navigator.coords)
+        csobj = ControlSystemBehaviour(coord_list=coord_list)
         csaction = ActionBehaviour(name="cs", callback=csobj)
         self.actman.set_action(csaction)
 
@@ -319,9 +323,9 @@ class DecisionMakingProcess(WorkerProcess):
 
                 # print(f"Time taken {time() - start_time}s\n ========================")
                 # Start car if model if loaded
-                if not loaded_model.value:
-                    print("//////////////////// Waiting for Model")
-                    self.state.v = 0
+                # if not loaded_model.value:
+                #     print("//////////////////// Waiting for Model")
+                #     self.state.v = 0
 
                 for outP in outPs:
                     print("Final -> ", (self.state.steering_angle, self.state.v))

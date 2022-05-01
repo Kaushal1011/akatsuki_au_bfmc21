@@ -94,16 +94,22 @@ class SIMCameraProcess(WorkerProcess):
     def _read_stream(self, outPs):
         """Read the image from input stream, decode it and display it with the CV2 library."""
         try:
+            start_time = time.time()
+            frames = 0
             while True:
                 # decode image
                 stamp = struct.unpack("d", self.connection.read(struct.calcsize("d")))
                 stamp = stamp[0]
-                print(f"SIMCamera {time.time():.4f} {stamp:.4f}")
+                #print(f"SIMCamera {(time.time() - stamp):.4f}")
+                
                 image_len = struct.unpack(
                     "<L", self.connection.read(struct.calcsize("<L"))
                 )[0]
                 bts = self.connection.read(image_len)
-
+                print(f"Got Frame delta {(time.time() - stamp):.4f}")
+                # if time.time() - stamp > 2:
+                #     print("Skipping frame")
+                #     continue
                 # ----------------------- read image -----------------------
                 image = np.frombuffer(bts, np.uint8)
                 image = cv2.imdecode(image, cv2.IMREAD_COLOR)
@@ -111,6 +117,8 @@ class SIMCameraProcess(WorkerProcess):
                 image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
                 # stamp = time.time()
                 for outP in outPs:
+                    frames += 1
+                    print(f"FPS {frames/(time.time() - start_time)}")
                     outP.send((stamp, image))
         except Exception:
             pass

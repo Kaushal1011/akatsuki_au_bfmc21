@@ -12,14 +12,14 @@ from loguru import logger
 
 # Extra because no path planning at start
 ####################################################################################
-# data_path = pathlib.Path(  #
-#     pathlib.Path(__file__).parent.parent.parent.resolve(), "data", "mid_course.z"  #
-# )  #
-# data = joblib.load(data_path)  #
-# # ptype = data["ptype"]                                                            #
-# # etype = data["etype"]                                                            #
-# ptype = data[1]  #
-# etype = data[2]  #
+data_path = pathlib.Path(  #
+    pathlib.Path(__file__).parent.parent.parent.resolve(), "data", "mid_course.z"  #
+)  #
+data = joblib.load(data_path)  #
+# ptype = data["ptype"]                                                            #
+# etype = data["etype"]                                                            #
+ptype = data[1]  #
+etype = data[2]  #
 ####################################################################################
 
 
@@ -279,9 +279,12 @@ class ControlSystemBehaviour(BehaviourCallback):
         car_state.target_y = self.cs.cy[ind]
         car_state.current_target = (car_state.target_x, car_state.target_y)
 
-        car_state.current_ptype = car_state.navigator.ptype[ind]
-        car_state.can_overtake = car_state.navigator.etype[ind]
-        car_state.activity_type = car_state.navigator.activity[ind]
+        # car_state.current_ptype = car_state.navigator.ptype[ind]
+        # car_state.can_overtake = car_state.navigator.etype[ind]
+        # car_state.activity_type = car_state.navigator.activity[ind]
+
+        car_state.current_ptype = ptype[ind]
+        car_state.can_overtake = etype[ind]
 
         di = self.cs.purest_pursuit_steer_control(car_state, ind, lf)
         di = di * 180 / math.pi
@@ -406,15 +409,19 @@ class ParkingBehaviour(BehaviourCallback):
                 self.phase=1
 
             if self.phase==1:
-                # go to check spot
-                d=math.sqrt((tx-car_state.rear_x)**2+(ty-car_state.rear_y)**2)
-                if d<0.1:
-                    self.phase=2
+                
                 tx=self.initx+0.5
                 ty=self.inity
+                print("In Phase 1",tx,ty)
+                # go to check spot
+                d=math.sqrt((tx-car_state.rear_x)**2+(ty-car_state.rear_y)**2)
+                if d<0.16:
+                    self.phase=2
+                
                 di = self.chase(car_state,tx,ty)
                 return {"steer": di, "speed": car_state.priority_speed}
             elif self.phase==2:
+                print("In Phase 2")
                 # check if empty
                 if car_state.side_distance<0.5:
                     print("Parking Spot full")
@@ -423,33 +430,51 @@ class ParkingBehaviour(BehaviourCallback):
                     print("Parking Empty, Trying to Park!!")
                     self.phase=3
             elif self.phase==3:
+                print("In Phase 3")
+                
                 # go to safe spot for reverse
-                tx = self.initx+0.8
-                ty = self.inity-0.4
+                tx = self.initx+1.0
+                ty = self.inity-0.2
+                print("In Phase 3",tx,ty)
                 d=math.sqrt((tx-car_state.rear_x)**2+(ty-car_state.rear_y)**2)
-                if d<0.1:
+                if d<0.16:
                     self.phase=4
                 di = self.chase(car_state,tx,ty)
                 return {"steer": di, "speed": car_state.priority_speed}
-
+            
             elif self.phase==4:
-                # reverse into parking
-                tx = self.initx+0.4
-                ty = self.inity+0.4
-                d=math.sqrt((tx-car_state.rear_x)**2+(ty-car_state.rear_y)**2)
-                if d<0.1:
+                tx = self.initx+0.5
+                ty = self.inity+0.2
+                print("In Phase 4",tx,ty)
+                d=math.sqrt((tx-car_state.rear_x)**2+((ty-car_state.rear_y)**2))
+                if d<0.15:
                     self.phase=5
                 di = self.reverse_chase(car_state,tx,ty)
                 return {"steer": di, "speed": -car_state.priority_speed}
-
             elif self.phase==5:
-                tx = self.initx+0.4
-                ty = self.inity-0.4
+                print("In Phase 5")
+                # reverse into parking
+                # tx = 3.3
+                # ty = 2.6
+                tx = self.initx+0.5
+                ty = self.inity+1.1
+                print("In Phase 5",tx,ty)
+                d=math.sqrt((tx-car_state.rear_x)**2+(ty-car_state.rear_y)**2)
+                print("curx,cury",car_state.rear_x,car_state.rear_y)
+                if d<0.25:
+                    self.phase=6
+                di = self.reverse_chase(car_state,tx,ty)
+                return {"steer": di, "speed": -car_state.priority_speed}
+
+            elif self.phase==6:
+                print("In Phase 5")
+                tx = self.initx+0.6
+                ty = self.inity
                 d=math.sqrt((tx-car_state.rear_x)**2+(ty-car_state.rear_y)**2)
                 if d<0.1:
                     self.over=True
                 di = self.chase(car_state,tx,ty)
-                return {"steer": di, "speed": -car_state.priority_speed}
+                return {"steer": di, "speed": +car_state.priority_speed}
             
             else:
                 print("Parking phase out of sync ")

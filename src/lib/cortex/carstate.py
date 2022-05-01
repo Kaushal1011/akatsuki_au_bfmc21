@@ -38,6 +38,8 @@ class CarState:
         # intersection detected
         self.detected_intersection = False
 
+        self.parkingcoords=(2.94,2.09)
+
         # sign detection
         self.detected_sign = {
             "priority": False,
