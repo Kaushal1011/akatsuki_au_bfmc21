@@ -22,8 +22,6 @@ loaded_model = Value(ctypes.c_bool, False)
 def get_last(inP: Connection):
     timestamp, data = inP.recv()
     while inP.poll():
-        # print("lk: skipping frame")
-        # logger.log("SYNC", f"Skipping Frame delta - {time() - timestamp}")
         timestamp, data = inP.recv()
     return timestamp, data
 
@@ -86,12 +84,14 @@ class SignDetectionProcess(WorkerProcess):
                 if inP[0].poll():
                     recv_time = time.time()
                     stamp, img = get_last(inP[0])
-                    print(f"recv image {time.time() - recv_time}")
+                    
+                    print(f"Sign Detection timedelta {time.time() - recv_time}")
                     logger.log("PIPE", f"recv image {time.time() - recv_time}")
                     count += 1
                     start_time = time.time()
                     if "stream" in self.outPnames:
                         classes, area, outimage = self.detection(img, bbox=True)
+                        print(classes, area)
                     else:
                         classes, area = self.detection(img)
 
@@ -118,7 +118,6 @@ class SignDetectionProcess(WorkerProcess):
                         if outimage is None:
                             outPs[idx].send((stamp, img))
                         else:
-                            print("outimage shape", outimage.shape)
                             outPs[idx].send((stamp, outimage))
 
             except Exception as e:
