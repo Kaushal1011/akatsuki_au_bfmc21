@@ -7,12 +7,6 @@ from threading import Thread
 from time import time
 from typing import List, Optional
 
-from zmq import has
-from src.lib.cortex.pathplanning import (
-    PathPlanning,
-    Purest_Pursuit,
-    give_perpendicular_park_pts,
-)
 
 from src.lib.cortex.carstate import CarState
 from src.lib.perception.signdetection import loaded_model
@@ -68,12 +62,15 @@ def get_last_distance(inP: Connection):
 
 
 def trigger_behaviour(carstate: CarState, action_man: ActionManager):
-    triggerparking=False
+    triggerparking = False
 
-    if hasattr(carstate,"parkingcoords"):
-        d=math.sqrt((carstate.rear_x-carstate.parkingcoords[0])**2+(carstate.rear_y-carstate.parkingcoords[1])**2)
-        if d<0.2:
-            triggerparking=True
+    if hasattr(carstate, "parkingcoords"):
+        d = math.sqrt(
+            (carstate.rear_x - carstate.parkingcoords[0]) ** 2
+            + (carstate.rear_y - carstate.parkingcoords[1]) ** 2
+        )
+        if d < 0.2:
+            triggerparking = True
 
     # print(carstate.side_distance)
     if carstate.detected_intersection and carstate.current_ptype == "int":
@@ -91,14 +88,22 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
         # Parking
         pass
 
-    if carstate.front_distance < 0.6 and carstate.detected_car and carstate.can_overtake:
+    if (
+        carstate.front_distance < 0.6
+        and carstate.detected_car
+        and carstate.can_overtake
+    ):
         # print("Overtake Trigger")
         # overtake
         overtakeobj = OvertakeBehaviour(car_state=carstate)
         overtakeobjaction = ActionBehaviour(name="overtaking", callback=overtakeobj)
         action_man.set_action(overtakeobjaction, action_time=None, car_state=carstate)
 
-    if carstate.front_distance < 0.6 and carstate.detected_car and not carstate.can_overtake:
+    if (
+        carstate.front_distance < 0.6
+        and carstate.detected_car
+        and not carstate.can_overtake
+    ):
         # tailing or stop
         pass
 
@@ -116,9 +121,11 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
 
     if carstate.detected_sign["priority"]:
         # slowdown for t secs
-        priorityobj=PriorityBehaviour()
-        priorityaction=ActionBehaviour(name="priority",release_time=6.0,callback=priorityobj)
-        action_man.set_action(priorityaction,action_time=9.0)
+        priorityobj = PriorityBehaviour()
+        priorityaction = ActionBehaviour(
+            name="priority", release_time=6.0, callback=priorityobj
+        )
+        action_man.set_action(priorityaction, action_time=9.0)
 
     if carstate.detected_sign["crosswalk"]:
         # stop detected pedestrain or crosswalk
@@ -248,13 +255,6 @@ class DecisionMakingProcess(WorkerProcess):
                         logger.log("PIPE", f"Recv -> SD {sign}")
 
                         # self.state.update_sign_detected()
-                # TODO
-                if "obj" in self.inPsnames:
-                    idx = self.inPsnames.index("obj")
-                    if inPs[idx].poll(timeout=0.01):
-                        obj_data = inPs[idx].recv()
-                        self.state.update_object_det(*obj_data)
-                        logger.log("PIPE", f"Recv->OBJ {obj_data}")
 
                 if "dis" in self.inPsnames:
                     idx = self.inPsnames.index("dis")
@@ -293,11 +293,12 @@ class DecisionMakingProcess(WorkerProcess):
                     else:
                         self.state.update_pos_noloc()
 
-                # TODO: add back
-                # # if trafficlight process is connected
-                # if len(inPs) > 3:
-                #     trafficlights = inPs[3].recv()
-                #     print(trafficlights)
+                # if trafficlight process is connected
+                if "tl" in self.inPsnames:
+                    idx = self.inPsnames.index("tl")
+                    if inPs[idx].poll():
+                        trafficlights = inPs[idx].recv()
+                        print(trafficlights)
 
                 # update car navigator, current ptype, current etype and current idx
 

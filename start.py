@@ -32,8 +32,6 @@ from src.lib.actuator.momentcontrol import MovementControl
 from src.lib.actuator.sim_connect import SimulatorConnector
 from src.lib.cortex.decisionproc import DecisionMakingProcess
 from src.lib.cortex.posfusproc import PositionFusionProcess
-from src.lib.cortex.object_proc import ObjectProcess
-from src.lib.perception.intersection_det import IntersectionDetProcess
 from src.lib.perception.lanekeep import LaneKeepingProcess as LaneKeeping
 from src.lib.perception.signdetection import SignDetectionProcess
 from src.utils.camerastreamer.CameraStreamerProcess import CameraStreamerProcess
@@ -195,7 +193,6 @@ elif config["using_server"]:
 
 
 # -------TrafficLightSemaphore----------
-# TODO: enable again when required
 # if config["enableSIM"]:
 #     # Traffic Semaphore -> Decision Making (data fusion)
 #     tlFzzR, tlFzzS = Pipe(duplex=False)
