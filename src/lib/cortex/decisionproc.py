@@ -240,8 +240,8 @@ class DecisionMakingProcess(WorkerProcess):
                         # self.state.update_sign_detected()
                 # TODO
                 if "obj" in self.inPsnames:
+                    idx = self.inPsnames.index("obj")
                     if inPs[idx].poll(timeout=0.01):
-                        idx = self.inPsnames.index("obj")
                         obj_data = inPs[idx].recv()
                         self.state.update_object_det(*obj_data)
                         logger.log("PIPE", f"Recv->OBJ {obj_data}")
@@ -322,4 +322,4 @@ class DecisionMakingProcess(WorkerProcess):
                 raise e
             finally:
                 pass
-                #joblib.dump({"x": rx, "y": ry}, "real_coords.z")
+                # joblib.dump({"x": rx, "y": ry}, "real_coords.z")
