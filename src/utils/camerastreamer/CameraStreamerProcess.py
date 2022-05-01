@@ -134,6 +134,7 @@ class CameraStreamerProcess(WorkerProcess):
                 # print(f"Stream timedelta -> {time.time() - stamp}s")
                 # image = np.array(self.frame_shm).copy()
                 # print(stamps, image)
+                print(f"Streamer timedelta {(time.time() - stamp):.4f}s")
                 result, image = cv2.imencode(".jpg", image, encode_param)
                 data = image.tobytes()
                 size = len(data)
