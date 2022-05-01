@@ -308,6 +308,160 @@ class ObjectStopBehaviour(BehaviourCallback):
     def set(self, **kwargs):
         pass
 
+class CrosswalkBehavior(BehaviourCallback):
+    def __init__(self, **kwargs):
+        self.active=None
+        self.initx=None
+        self.inity=None
+
+    def __call__(self, car_state:CarState):
+        if self.active==None:
+            self.active=True
+        
+        if self.initx is None and self.inity is None:
+            self.initx=car_state.rear_x
+            self.inity=car_state.rear_y
+        
+        d=math.sqrt((self.initx-car_state.rear_x)**2+(self.inity-car_state.rear_y)**2)
+
+        if d>0.8:
+            self.active=False
+        
+        if car_state.front_distance<0.3:
+            return {"speed":0.0}
+        
+        if self.active:
+            return {"speed":car_state.priority_speed}
+        else:
+            return {"speed":car_state.max_v}
+    
+    def out_condition(self, **kwargs) -> bool:
+        if self.active==False:
+            return True
+
+    def set(self,**kwargs):
+        pass
+
+class ParkingBehaviour(BehaviourCallback):
+    def __init__(self, **kwargs):
+        if "parkingtype" in kwargs.keys():
+            self.type=kwargs["parkingtype"]
+        else:
+            self.type="perpendicular"
+        self.initx=None
+        self.inity=None
+        self.phase=0
+        self.over=False
+        self.WB = 0.3
+        # 0 init 1 reach empty 2 check empty 3 reach comfortable park spot 4 park 5 out of park 
+    
+    def out_condition(self, **kwargs) -> bool:
+        return self.over
+    
+    def chase(self,car_state:CarState,tx,ty):
+        
+        alpha = math.atan2(ty - car_state.rear_y, tx - car_state.rear_x) - (
+                -car_state.yaw
+            )
+        delta = math.atan2(
+            2.0
+            * self.WB
+            * math.sin(alpha)
+            / math.sqrt((ty - car_state.rear_y) ** 2 + (tx - car_state.rear_x)**2),
+            1.0,
+        )
+        di = delta * 180 / math.pi
+        if di > 23:
+            di = 23
+        elif di < -23:
+            di = -23
+        car_state.cs_steer = di
+        return di
+    
+    def reverse_chase(self,car_state:CarState,tx,ty):
+        alpha = math.atan2(ty - car_state.rear_y, tx - car_state.rear_x) - (
+                car_state.yaw
+            )
+        delta = math.atan2(
+            2.0
+            * self.WB
+            * math.sin(alpha)
+            / math.sqrt((ty - car_state.rear_y) ** 2 + (tx - car_state.rear_x)**2),
+            1.0,
+        )
+        di = delta * 180 / math.pi
+        if di > 23:
+            di = 23
+        elif di < -23:
+            di = -23
+        car_state.cs_steer = di
+        return di
+    
+    def __call__(self, car_state:CarState):
+
+        if self.type=="perpendicular":
+            if self.initx is None and self.inity is None:
+                self.initx=car_state.rear_x
+                self.inity=car_state.rear_y 
+                self.phase=1
+
+            if self.phase==1:
+                # go to check spot
+                d=math.sqrt((tx-car_state.rear_x)**2+(ty-car_state.rear_y)**2)
+                if d<0.1:
+                    self.phase=2
+                tx=self.initx+0.5
+                ty=self.inity
+                di = self.chase(car_state,tx,ty)
+                return {"steer": di, "speed": car_state.priority_speed}
+            elif self.phase==2:
+                # check if empty
+                if car_state.side_distance<0.5:
+                    print("Parking Spot full")
+                    self.over=True   
+                else:
+                    print("Parking Empty, Trying to Park!!")
+                    self.phase=3
+            elif self.phase==3:
+                # go to safe spot for reverse
+                tx = self.initx+0.8
+                ty = self.inity-0.4
+                d=math.sqrt((tx-car_state.rear_x)**2+(ty-car_state.rear_y)**2)
+                if d<0.1:
+                    self.phase=4
+                di = self.chase(car_state,tx,ty)
+                return {"steer": di, "speed": car_state.priority_speed}
+
+            elif self.phase==4:
+                # reverse into parking
+                tx = self.initx+0.4
+                ty = self.inity+0.4
+                d=math.sqrt((tx-car_state.rear_x)**2+(ty-car_state.rear_y)**2)
+                if d<0.1:
+                    self.phase=5
+                di = self.reverse_chase(car_state,tx,ty)
+                return {"steer": di, "speed": -car_state.priority_speed}
+
+            elif self.phase==5:
+                tx = self.initx+0.4
+                ty = self.inity-0.4
+                d=math.sqrt((tx-car_state.rear_x)**2+(ty-car_state.rear_y)**2)
+                if d<0.1:
+                    self.over=True
+                di = self.chase(car_state,tx,ty)
+                return {"steer": di, "speed": -car_state.priority_speed}
+            
+            else:
+                print("Parking phase out of sync ")
+                self.over=True
+                return {"speed":car_state.max_v}
+        
+        if self.type=="parallel":
+            raise NotImplementedError
+    
+    def set(self,**kwargs):
+        pass
+
 
 class ActionBehaviour:
     def __init__(self, name, release_time=0.0, callback=None):
@@ -451,8 +605,8 @@ class ActionManager:
             or action.name == "priority"
             or action.name == "crosswalk"
         ) and (
-            self.l3_ab is None or self.l3_ab.check_cooldown()
-        ):  # or action.name!=self.l3_ab.name):
+            self.l3_ab is None or self.l3_ab.check_cooldown() or action.name!=self.l3_ab.name
+        ):  # ):
             self.l3_ab = action
             self.l3_ab.set(action_time=action_time, **kwargs)
             return True

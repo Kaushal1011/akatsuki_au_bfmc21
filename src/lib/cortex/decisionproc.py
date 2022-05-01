@@ -6,6 +6,8 @@ import pathlib
 from threading import Thread
 from time import time
 from typing import List, Optional
+
+from zmq import has
 from src.lib.cortex.pathplanning import (
     PathPlanning,
     Purest_Pursuit,
@@ -19,6 +21,7 @@ from time import time
 from src.lib.cortex.action import (
     ActionBehaviour,
     ActionManager,
+    CrosswalkBehavior,
     LaneKeepBehaviour,
     ControlSystemBehaviour,
     ObjectStopBehaviour,
@@ -65,6 +68,13 @@ def get_last_distance(inP: Connection):
 
 
 def trigger_behaviour(carstate: CarState, action_man: ActionManager):
+    triggerparking=False
+
+    if hasattr(carstate,"parkingcoords"):
+        d=math.sqrt((carstate.rear_x-carstate.parkingcoords[0])**2+(carstate.rear_y-carstate.parkingcoords[1])**2)
+        if d<0.2:
+            triggerparking=True
+
     # print(carstate.side_distance)
     if carstate.detected_intersection and carstate.current_ptype == "int":
         # intersection
@@ -77,22 +87,18 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
         stopaction = ActionBehaviour(name="stop", release_time=6.0, callback=stopobj)
         action_man.set_action(stopaction, action_time=3.0)
 
-    if carstate.detected_sign["parking"]:
+    if carstate.detected_sign["parking"] or triggerparking:
         # Parking
         pass
 
-    # if carstate.detected_car and carstate.can_overtake:
-    #     # overtake
-    #     pass
-
-    if carstate.front_distance < 0.6 and carstate.detected_car:
+    if carstate.front_distance < 0.6 and carstate.detected_car and carstate.can_overtake:
         # print("Overtake Trigger")
         # overtake
         overtakeobj = OvertakeBehaviour(car_state=carstate)
         overtakeobjaction = ActionBehaviour(name="overtaking", callback=overtakeobj)
         action_man.set_action(overtakeobjaction, action_time=None, car_state=carstate)
 
-    if carstate.detected_car and not carstate.can_overtake:
+    if carstate.front_distance < 0.6 and carstate.detected_car and not carstate.can_overtake:
         # tailing or stop
         pass
 
@@ -110,11 +116,15 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
 
     if carstate.detected_sign["priority"]:
         # slowdown for t secs
-        pass
+        priorityobj=PriorityBehaviour()
+        priorityaction=ActionBehaviour(name="priority",release_time=6.0,callback=priorityobj)
+        action_man.set_action(priorityaction,action_time=9.0)
 
-    if carstate.detected_pedestrian or carstate.detected_sign["crosswalk"]:
+    if carstate.detected_sign["crosswalk"]:
         # stop detected pedestrain or crosswalk
-        pass
+        cwobj = CrosswalkBehavior(car_state=carstate)
+        cwobjaction = ActionBehaviour(name="crosswalk", callback=cwobj)
+        action_man.set_action(cwobjaction, action_time=None, car_state=carstate)
 
     if carstate.pitch > 0.2:
         # incline trigger ramp
