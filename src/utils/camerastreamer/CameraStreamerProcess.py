@@ -41,6 +41,7 @@ config = get_config()
 HOST = config["pc_ip"]
 from src.templates.workerprocess import WorkerProcess
 
+
 def get_last(inP: Connection):
     timestamp, data = inP.recv()
     while inP.poll():
@@ -48,6 +49,8 @@ def get_last(inP: Connection):
         # logger.log("SYNC", f"Skipping Frame delta - {time() - timestamp}")
         timestamp, data = inP.recv()
     return timestamp, data
+
+
 class CameraStreamerProcess(WorkerProcess):
     # ===================================== INIT =========================================
     def __init__(self, inPs, outPs, port: int = 2244):
@@ -135,7 +138,9 @@ class CameraStreamerProcess(WorkerProcess):
                 result, image = cv2.imencode(".jpg", image, encode_param)
                 data = image.tobytes()
                 size = len(data)
-                print(f"Streaming | sending data size: {size}")
+
+                self.connection.write(struct.pack("d", stamp))
+                print(f"Streaming | sending data size: {size}, timestamp:{stamp}")
                 self.connection.write(struct.pack("<L", size))
                 self.connection.write(data)
             except Exception as e:

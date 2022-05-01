@@ -2,6 +2,8 @@ from threading import Thread
 import time
 from typing import List
 
+from isort import stream
+
 from src.templates.workerprocess import WorkerProcess
 import platform
 import cv2
@@ -30,7 +32,9 @@ def get_last(inP: Connection):
 
 class SignDetectionProcess(WorkerProcess):
     # ===================================== Worker process =========================================
-    def __init__(self, inPs: Connection, outPs: Connection):
+    def __init__(
+        self, inPs: Connection, outPs: Connection, outPnames=["fzz", "stream"]
+    ):
         """Process used for the image processing needed for lane keeping and for computing the steering value.
 
         Parameters
@@ -41,6 +45,7 @@ class SignDetectionProcess(WorkerProcess):
             List of output pipes (0 - send steering data to the movvement control process)
         """
         super(SignDetectionProcess, self).__init__(inPs, outPs)
+        self.outPnames: List[str] = outPnames
 
     def run(self):
         """Apply the initializing methods and start the threads."""
@@ -105,14 +110,18 @@ class SignDetectionProcess(WorkerProcess):
                     # print(label, area)
                     # for outP in outPs:
                     # print((stamp, (classes, area)))
-                    outPs[0].send((stamp, classes))
 
-                    if len(outPs) > 1:
+                    if "fzz" in self.outPnames:
+                        idx = self.outPnames.index("obj")
+                        outPs[idx].send((stamp, classes))
+
+                    if "stream" in self.outPnames:
+                        idx = self.outPnames.index("obj")
                         if outimage is None:
-                            outPs[1].send((stamp, img))
+                            outPs[idx].send((stamp, img))
                         else:
                             print("outimage shape", outimage.shape)
-                            outPs[1].send((stamp, outimage))
+                            outPs[idx].send((stamp, outimage))
 
             except Exception as e:
                 print("Sign Detection error:")
