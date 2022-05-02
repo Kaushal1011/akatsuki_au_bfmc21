@@ -63,7 +63,7 @@ class CameraStreamerProcess(WorkerProcess):
         if self._blocker.is_set():
             return
         streamTh = Thread(
-            name="StreamSendingThread", target=self._send_thread, args=(self.inPs[0],)
+            name="StreamSendingThread", target=self._send_thread, args=(self.inPs,)
         )
         streamTh.daemon = True
         self.threads.append(streamTh)
@@ -82,7 +82,7 @@ class CameraStreamerProcess(WorkerProcess):
         context = zmq.Context()
         footage_socket = context.socket(zmq.PUB)
         print("Connecting to ", self.addr)
-        footage_socket.bind(self.addr)
+        footage_socket.connect(self.addr)
 
         context_sub = zmq.Context()
 
