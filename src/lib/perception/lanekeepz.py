@@ -85,7 +85,7 @@ class LaneKeepingProcess(WorkerProcess):
         footage_socket = context.socket(zmq.SUB)
         footage_socket.setsockopt(zmq.CONFLATE, 1)
         # print("Binding Socket to", self.addr)
-        footage_socket.bind("tcp://*:8011")
+        footage_socket.connect("tcp://*:8011")
         footage_socket.setsockopt_string(zmq.SUBSCRIBE, np.unicode(''))
 
         try:

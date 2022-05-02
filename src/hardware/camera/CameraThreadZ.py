@@ -132,7 +132,7 @@ class CameraThread(ThreadWithStop):
         context = zmq.Context()
         footage_socket = context.socket(zmq.PUB)
         # print("Connecting to ", self.addr)
-        footage_socket.connect("tcp://*:1011")
+        footage_socket.bind("tcp://*:8011")
 
 
         while self._running:

@@ -16,24 +16,10 @@ config = config_module.get_config()
 
 
 from src.hardware.camera.CameraSpooferProcess import CameraSpooferProcess
-from src.data.localisationssystem.locsysProc import LocalisationSystemProcess
-from src.data.server_sim import ServerSIM as LocSysSIM
-from src.data.server_sim import ServerSIM as TrafficSIM
-from src.data.server_sim import ServerSIM as IMUSIM
-from src.data.server_sim import ServerSIM as DistanceSIM
-
-from src.data.localisationssystem.home_locProc import LocalisationProcess
-from src.data.trafficlights.trafficProc import TrafficProcess
 from src.hardware.camera.cameraprocess import CameraProcess
 from src.hardware.camera.SIMCameraProcess import SIMCameraProcess
-from src.hardware.serialhandler.SerialHandlerProcess import SerialHandlerProcess
-from src.hardware.ultrasonic.distanceProc import DistanceProcess
-from src.lib.actuator.momentcontrol import MovementControl
-from src.lib.actuator.sim_connect import SimulatorConnector
-from src.lib.cortex.decisionproc import DecisionMakingProcess
-from src.lib.cortex.posfusproc import PositionFusionProcess
-from src.lib.perception.lanekeep import LaneKeepingProcess as LaneKeeping
-from src.lib.perception.signdetection import SignDetectionProcess
+from src.lib.perception.lanekeepz import LaneKeepingProcess as LaneKeeping
+# from src.lib.perception.signdetection import SignDetectionProcess
 from src.utils.camerastreamer.CameraStreamerProcess import CameraStreamerProcess
 from src.utils.remotecontrol.RemoteControlReceiverProcess import (
     RemoteControlReceiverProcess,
@@ -103,7 +89,7 @@ if config["enableRc"]:
 
 
     # Camera process -> Lane keeping
-# lkR, lkS = Pipe(duplex=False)
+lkR, lkS = Pipe(duplex=False)
 
     # Lane keeping -> Data Fusion
     # lkFzzR, lkFzzS = Pipe(duplex=False)
@@ -119,7 +105,7 @@ if config["enableRc"]:
     #    lkStrR, lkStrS = Pipe(duplex=False)
     #    lkProc = LaneKeeping([lkR], [lkFzzS, lkStrS])
     #else:
-# lkProc = LaneKeeping([lkR], [])
+lkProc = LaneKeeping([lkR], [])
 
 # allProcesses.append(lkProc)
 
