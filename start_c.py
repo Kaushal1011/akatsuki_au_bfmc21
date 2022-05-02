@@ -140,7 +140,7 @@ allProcesses.append(lkProc)
 #         sDStR, sDStS = Pipe(duplex=False)
 #         sDProc = SignDetectionProcess([camsDR], [sDFzzS,sDStS], ["fzz", "stream"])
 #     else:
-sDProc = SignDetectionProcess([],[],[])
+sDProc = SignDetectionProcess([],[],[], True)
 allProcesses.append(sDProc)
 # 
 #     camOutPs.append(camsDS)

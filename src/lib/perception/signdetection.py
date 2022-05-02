@@ -11,7 +11,7 @@ import numpy as np
 class SignDetectionProcess(WorkerProcess):
     # ===================================== Worker process =========================================
     def __init__(
-        self, inPs: Connection, outPs: Connection, outPnames:List[str]
+        self, inPs: Connection, outPs: Connection, outPnames:List[str], enable_stream:bool = True
     ):
         """Process used for the image processing needed for lane keeping and for computing the steering value.
 
@@ -24,6 +24,7 @@ class SignDetectionProcess(WorkerProcess):
         """
         super(SignDetectionProcess, self).__init__(inPs, outPs)
         self.outPnames: List[str] = outPnames
+        self.enable_steam = enable_stream
 
     def run(self):
         """Apply the initializing methods and start the threads."""
@@ -80,16 +81,16 @@ class SignDetectionProcess(WorkerProcess):
                 data = sub_cam.recv()
                 data = np.frombuffer(data, dtype=np.uint8)
                 img = np.reshape(data, (480, 640, 3))
-                print("sD img recv")
+                # print("sD img recv")
                 # print(f"Sign Detection timedelta {time.time() - recv_time}")
                 logger.log("PIPE", f"recv image {time.time() - recv_time}")
                 count += 1
                 start_time = time.time()
-                if "stream" in self.outPnames:
+                if self.enable_steam:
                     classes, area, outimage = self.detection(img, bbox=True)
                     pub_sd.send_json((classes,area), flags=zmq.NOBLOCK)
+                    print("sending outiamge", outimage.shape)
                     pub_sd_img.send(outimage.tobytes(), flags=zmq.NOBLOCK)
-
                 else:
                     classes, area = self.detection(img)
                     pub_sd.send_json((classes,area), flags=zmq.NOBLOCK)

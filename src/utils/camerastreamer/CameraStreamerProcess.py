@@ -51,7 +51,7 @@ def get_last(inP: Connection):
     return timestamp, data
 
 connect2file = {
-    "cam":"41",
+    "cam":"4l",
     "sd":"62",
 }
 class CameraStreamerProcess(WorkerProcess):
