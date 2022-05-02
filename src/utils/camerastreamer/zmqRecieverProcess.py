@@ -48,9 +48,10 @@ class CameraReceiverProcess(WorkerProcess):
         context = zmq.Context()
         footage_socket = context.socket(zmq.SUB)
         print("Binding Socket to", self.addr)
-        footage_socket.bind(self.addr)
-        footage_socket.setsockopt_string(zmq.SUBSCRIBE, np.unicode(''))
-
+        footage_socket.setsockopt(zmq.CONFLATE, 1)
+        footage_socket.connect(self.addr)
+        footage_socket.setsockopt_string(zmq.SUBSCRIBE, '')
+        
         while True:
             try:
                 frame = footage_socket.recv_string()
