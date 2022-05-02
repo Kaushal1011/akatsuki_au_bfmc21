@@ -26,29 +26,12 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-from copy import deepcopy
 import io
 from multiprocessing import Queue
 from typing import List
-import numpy as np
 import time
 import zmq
 from src.templates.threadwithstop import ThreadWithStop
-from src.lib.perception.signdetection import loaded_model
-import base64
-
-# import SharedArray as sa
-
-# from multiprocessing import shared_memory
-
-# shm = shared_memory.SharedMemory(name="shared_frame", create=True, size=921600)
-# try:
-#     sa.delete("shared_frame1")
-# except FileNotFoundError as e:
-#     print(e)
-
-# shared_frame = sa.create("shm://shared_frame1", (480, 640, 3), dtype=np.uint8)
-
 
 # ================================ CAMERA PROCESS =========================================
 class CameraThread(ThreadWithStop):
@@ -131,25 +114,14 @@ class CameraThread(ThreadWithStop):
         """
         context = zmq.Context()
         pub_cam = context.socket(zmq.PUB)
-        # print("Connecting to ", self.addr)
-        # sub_cam.setsockopt(zmq.CONFLATE, 1)
         pub_cam.bind("ipc:///tmp/v4l")
 
         while self._running:
 
             yield self._stream
-            print("Read cam image")
             self._stream.seek(0)
             data = self._stream.read()
             pub_cam.send(data, flags=zmq.NOBLOCK)
-            print("Camera send")
-            
-            # output image and time stamp
-            # Note: The sending process can be blocked, when doesn't exist any consumer process and it reaches the limit size.
-            # if loaded_model.value:
-            #     for outP in self.outPs:
-            #         outP.send((stamp, frame))
-    
-
+            print("Camera Send")
             self._stream.seek(0)
             self._stream.truncate()

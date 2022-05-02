@@ -19,7 +19,7 @@ from src.hardware.camera.CameraSpooferProcess import CameraSpooferProcess
 from src.hardware.camera.cameraprocess import CameraProcess
 from src.hardware.camera.SIMCameraProcess import SIMCameraProcess
 from src.lib.perception.lanekeepz import LaneKeepingProcess as LaneKeeping
-# from src.lib.perception.signdetection import SignDetectionProcess
+from src.lib.perception.signdetection import SignDetectionProcess
 from src.utils.camerastreamer.CameraStreamerProcess import CameraStreamerProcess
 from src.utils.remotecontrol.RemoteControlReceiverProcess import (
     RemoteControlReceiverProcess,
@@ -139,14 +139,14 @@ allProcesses.append(lkProc)
 #         sDStR, sDStS = Pipe(duplex=False)
 #         sDProc = SignDetectionProcess([camsDR], [sDFzzS,sDStS], ["fzz", "stream"])
 #     else:
-# sDProc = SignDetectionProcess([camsDR],[],[])
+sDProc = SignDetectionProcess([],[],[])
+allProcesses.append(sDProc)
 # 
 #     camOutPs.append(camsDS)
 #     dataFusionInputPs.append(sDFzzR)
 #     dataFusionInputName.append("sD")
 # 
 #     # TODO: To Streamer / Dashboard
-#     allProcesses.append(sDProc)
 
 # =============================== DATA ===================================================
 

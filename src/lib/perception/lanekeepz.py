@@ -1,16 +1,12 @@
-# from multiprocessing import shared_memory
 from multiprocessing.connection import Connection
 from threading import Thread
 import time
 from typing import List
 import numpy as np
 
-# import SharedArray as sa
 from loguru import logger
 import zmq
 import numpy as np
-import base64
-# from simple_pid import PID
 from src.lib.perception.lanekeepfunctions import LaneKeep as LaneKeepMethod
 from src.templates.workerprocess import WorkerProcess
 
@@ -84,7 +80,6 @@ class LaneKeepingProcess(WorkerProcess):
         context = zmq.Context()
 
         sub_cam = context.socket(zmq.SUB)
-        # print("Binding Socket to", self.addr)
         sub_cam.setsockopt(zmq.CONFLATE, 1)
         sub_cam.connect("ipc:///tmp/v4l")
         sub_cam.setsockopt_string(zmq.SUBSCRIBE, '')
@@ -92,7 +87,6 @@ class LaneKeepingProcess(WorkerProcess):
             while True:
                 # Obtain image
                 image_recv_start = time.time()
-                # stamps, img = inP.recv()
                 data = sub_cam.recv()
                 data = np.frombuffer(data, dtype=np.uint8)
                 img = np.reshape(data, (480, 640, 3))
@@ -105,11 +99,6 @@ class LaneKeepingProcess(WorkerProcess):
                     "TIME",
                     f"Time taken to rec image {(t_r/count):.4f}s",
                 )
-                # print(f"LK time delta {(time() - stamp):.4f}s")
-                # print("LK", stamps)
-                # img = self.frame_shm
-                # print(f"lk: Time taken to recv image {time() - image_recv_start}")
-                # print("Time taken to recieve image", time()- i)
                 compute_time = time.time()
                 # Apply image processing
                 if len(outPs) > 1:
@@ -118,7 +107,7 @@ class LaneKeepingProcess(WorkerProcess):
                     val, intersection_detected = self.lk(img)
                 angle = self.computeSteeringAnglePID(val)
                 print(f"LK {angle}")
-                # self.outPs[0].send((1, angle, intersection_detected))
+                self.outPs[0].send((1, angle, intersection_detected))
                 t += time.time() - compute_time
                 logger.log(
                     "TIME",
