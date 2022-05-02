@@ -29,13 +29,7 @@ class CameraReceiverProcess(WorkerProcess):
             List of output pipes
         """
         super(CameraReceiverProcess, self).__init__(inPs, outPs)
-        context = zmq.Context()
-        self.footage_socket = context.socket(zmq.SUB)
-        addr = f'tcp://0.0.0.0:{port}'
-        print("Binding Socket to", addr)
-        self.footage_socket.bind(addr)
-        self.footage_socket.setsockopt_string(zmq.SUBSCRIBE, np.unicode(''))
-
+        self.addr = f'tcp://*:{port}'
 
     # ===================================== RUN ==========================================
     def run(self):
@@ -51,9 +45,16 @@ class CameraReceiverProcess(WorkerProcess):
     # ===================================== READ STREAM ==================================
     def _read_stream(self):
         """Read the image from input stream, decode it and display it with the CV2 library."""
+        context = zmq.Context()
+        footage_socket = context.socket(zmq.SUB)
+        print("Binding Socket to", self.addr)
+        footage_socket.bind(self.addr)
+        footage_socket.setsockopt_string(zmq.SUBSCRIBE, np.unicode(''))
+
         while True:
             try:
-                frame = self.footage_socket.recv_string()
+                frame = footage_socket.recv_string()
+                print("Here in read stream")
                 img = base64.b64decode(frame)
                 npimg = np.fromstring(img, dtype=np.uint8)
                 source = cv2.imdecode(npimg, 1)

@@ -44,12 +44,7 @@ class CameraStreamerProcess(WorkerProcess):
         """
         super(CameraStreamerProcess, self).__init__(inPs, outPs)
         self.port = port
-        context = zmq.Context()
-        self.footage_socket = context.socket(zmq.PUB)
-        addr = f'tcp://{HOST}:{port}'
-        print("Connecting to ", addr)
-        self.footage_socket.connect(addr)
-
+        self.addr = f'tcp://localhost:{port}'
 
     #         self.frame_shm = sa.attach("shm://shared_frame1")
 
@@ -81,12 +76,17 @@ class CameraStreamerProcess(WorkerProcess):
             Input pipe to read the frames from CameraProcess or CameraSpooferProcess.
         """
         encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 40]
+        context = zmq.Context()
+        footage_socket = context.socket(zmq.PUB)
+        print("Connecting to ", self.addr)
+        footage_socket.connect(self.addr)
+
         while True:
             try:
                 stamp, frame = get_last(inP)
                 encoded, buffer = cv2.imencode('.jpg', frame, encode_param)
                 jpg_as_text = base64.b64encode(buffer)
-                self.footage_socket.send(jpg_as_text)
+                footage_socket.send(jpg_as_text)
 
             except Exception as e:
                 print("CameraStreamer failed to stream images:", e, "\n")
