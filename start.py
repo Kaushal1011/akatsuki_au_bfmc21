@@ -116,7 +116,7 @@ if config["enableLaneKeeping"]:
     dataFusionInputPs.append(lkFzzR)
     dataFusionInputName.append("lk")
 
-    if config["enableStream"]:
+    if config["enableStream"] and False:
         lkStrR, lkStrS = Pipe(duplex=False)
         lkProc = LaneKeeping([lkR], [lkFzzS, lkStrS])
     else:
@@ -151,7 +151,7 @@ if config["enableSignDet"]:
     sDFzzR, sDFzzS = Pipe(duplex=False)
     if config["enableStream"]:
         sDStR, sDStS = Pipe(duplex=False)
-        sDProc = SignDetectionProcess([camsDR], [sDFzzS, sDStS], ["fzz", "stream"])
+        sDProc = SignDetectionProcess([camsDR], [sDFzzS], ["fzz"])
     else:
         sDProc = SignDetectionProcess([camsDR], [sDFzzS], ["fzz"])
 
@@ -320,18 +320,21 @@ else:
 
 # ========================= Streamer =====================================================
 if config["enableStream"]:
-    if config["enableLaneKeeping"]:
-        streamProc = CameraStreamerProcess([lkStrR], [], port=STREAM_PORT1)
-        allProcesses.append(streamProc)
-    else:
-        camStR, camStS = Pipe(duplex=False)  # camera  ->  streamer
-        camOutPs.append(camStS)
-        streamProc = CameraStreamerProcess([camStR], [], port=STREAM_PORT1)
-        allProcesses.append(streamProc)
+#     if config["enableLaneKeeping"]:
+#         pass
+# #         streamProc = CameraStreamerProcess([lkStrR], [], port=STREAM_PORT1)
+# #         allProcesses.append(streamProc)
+#     else:
+#         camStR, camStS = Pipe(duplex=False)  # camera  ->  streamer
+#         camOutPs.append(camStS)
+#         streamProc = CameraStreamerProcess([camStR], [], port=STREAM_PORT1)
+#         allProcesses.append(streamProc)
 
-    if config["enableSignDet"]:
-        streamProc2 = CameraStreamerProcess([sDStR], [], port=STREAM_PORT2)
-        allProcesses.append(streamProc2)
+#     if config["enableSignDet"]:
+    camStR, camStS = Pipe(duplex=False)  # camera  ->  streamer
+    camOutPs.append(camStS)
+    streamProc2 = CameraStreamerProcess([camStR], [], port=STREAM_PORT2)
+    allProcesses.append(streamProc2)
 
 # ========================== Camera process ==============================================
 if config["enableCameraSpoof"]:

@@ -133,15 +133,20 @@ class CameraStreamerProcess(WorkerProcess):
                 # print(f"Stream timedelta -> {time.time() - stamp}s")
                 # image = np.array(self.frame_shm).copy()
                 # print(stamps, image)
+                # cv2.imshow("Image", image)
+                # cv2.waitKey(1)
+                
+                pack_time = time.time()
                 print(f"Streamer timedelta {(time.time() - stamp):.4f}s")
                 result, image = cv2.imencode(".jpg", image, encode_param)
                 data = image.tobytes()
                 size = len(data)
-
+            
                 self.connection.write(struct.pack("d", stamp))
                 # print(f"Streaming | sending data size: {size}, timestamp:{stamp}")
                 self.connection.write(struct.pack("<L", size))
                 self.connection.write(data)
+                print(f"Pack Time -> {(time.time() - pack_time):.4f}")
             except Exception as e:
                 print("CameraStreamer failed to stream images:", e, "\n")
                 # Reinitialize the socket for reconnecting to client.
