@@ -22,6 +22,20 @@ ptype = data[1]  #
 etype = data[2]  #
 ####################################################################################
 
+def isLeft(A,B,isleftpoint):
+    yd=math.atan2(B[1]-A[1],B[0]-A[0])
+    yd2=math.atan2(isleftpoint[1]-A[1],isleftpoint[0]-A[0])
+    compute=yd-yd2
+    # print(compute)
+    if abs(compute)>math.pi:
+        if compute >0:
+            compute=abs(compute)-2*math.pi
+        else:
+            compute=2*math.pi-abs(compute)
+    if compute >= 0:
+        return True
+    else:
+        return False
 
 class BehaviourCallback:
     def __init__(self, **kwargs):
@@ -137,10 +151,10 @@ class OvertakeBehaviour(BehaviourCallback):
         # Use Of Inverted Yaw
 
         # print("cx,cy should be: ",car_state.navigator.get_nearest_node(cx,cy,car_state.yaw))
-        nn = car_state.navigator.get_nearest_node(cx, cy, -car_state.yaw)
+        # nn = car_state.navigator.get_nearest_node(cx, cy, -car_state.yaw)
 
         # have to uncomment this no idea why this doesnt work uncommented
-        cx,cy=nn["x"],nn["y"]
+        # cx,cy=nn["x"],nn["y"]
 
         tx = car_state.target_x
         ty = car_state.target_y
@@ -156,13 +170,13 @@ class OvertakeBehaviour(BehaviourCallback):
         c = ty - m * tx
         # print("C: ",c)
 
-        x3 = tx + ((0.365 ** 2) / (m ** 2 + 1)) ** 0.5
-        x4 = tx - ((0.365 ** 2) / (m ** 2 + 1)) ** 0.5
+        x3 = tx + ((0.765 ** 2) / (m ** 2 + 1)) ** 0.5
+        x4 = tx - ((0.765 ** 2) / (m ** 2 + 1)) ** 0.5
         y3 = m * x3 + c
         y4 = m * x4 + c
 
-        yaw3 = math.atan2(y3, x3)
-        yaw4 = math.atan2(y4, x4)
+        # yaw3 = math.atan2(y3, x3)
+        # yaw4 = math.atan2(y4, x4)
 
         # print("x3 , y3",x3,y3)
         # print("x4, y4", x4,y4)
@@ -173,20 +187,10 @@ class OvertakeBehaviour(BehaviourCallback):
         # on = car_state.navigator.get_nearest_node(cx, cy, car_state.yaw)
         # ox, oy = on["x"], on["y"]
 
-
-        # d3=math.sqrt((ox-x3)**2+(oy-y3)**2)
-        # d4=math.sqrt((ox-x4)**2+(oy-y4)**2)
-
-        # if d4 < d3 and self.set_side is None:
-        #     print("Current Point:" ,car_state.x,car_state.y)
-        #     print("Oncoming Point", ox,oy)
-        #     self.set_side=4
-        # elif self.set_side is None:
-        #     self.set_side=3
-        # else:
-        #     pass
-
-        self.set_side=4
+        if isLeft((cx,cy),(tx,ty),(x3,y3)):
+            self.set_side=3
+        else:
+            self.set_side=4
 
         if self.set_side==4:
             alpha = math.atan2(y4 - car_state.rear_y, x4 - car_state.rear_x) - (

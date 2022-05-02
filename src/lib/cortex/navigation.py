@@ -225,8 +225,13 @@ class Navigator:
             try:
                 dyaw: np.ndarray = abs(np.array(self.node_dict[str(idx)]["yaw"]) - yaw)
                 dyaw = dyaw.min()
-                if dyaw > 3.141592:
-                    dyaw = abs(dyaw - 6.283185)
+   
+                if abs(dyaw) > 3.141592:
+                    if dyaw>0:
+                        dyaw=abs(dyaw)-2*math.pi
+                    else:
+                        dyaw=2*math.pi-abs(dyaw)
+                
                 if dyaw > min_dyaw:
                     min_dyaw = dyaw
                     min_dyaw_idx = idx

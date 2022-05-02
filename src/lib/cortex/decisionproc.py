@@ -84,20 +84,21 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
         action_man.set_action(stopaction, action_time=3.0)
 
     if carstate.detected_sign["parking"] or triggerparking:
+        print("In parking trigger: ",triggerparking,carstate.detected_sign["parking"])
         # Parking
-        parkobj = ParkingBehaviour(car_state=carstate)
-        parkobjaction = ActionBehaviour(name="parking", callback=parkobj)
-        action_man.set_action(parkobjaction, action_time=None, car_state=carstate)
+        # parkobj = ParkingBehaviour(car_state=carstate)
+        # parkobjaction = ActionBehaviour(name="parking", callback=parkobj)
+        # action_man.set_action(parkobjaction, action_time=None, car_state=carstate)
 
     if (
-        carstate.front_distance < 0.6
-        and carstate.detected_car
-        and carstate.can_overtake
+        carstate.front_distance < 0.5
+        # and carstate.detected_car
+        # and carstate.can_overtake
     ):
         # print("Overtake Trigger")
         # overtake
         overtakeobj = OvertakeBehaviour(car_state=carstate)
-        overtakeobjaction = ActionBehaviour(name="parking", callback=overtakeobj)
+        overtakeobjaction = ActionBehaviour(name="overtaking", callback=overtakeobj)
         action_man.set_action(overtakeobjaction, action_time=None, car_state=carstate)
 
     if (
