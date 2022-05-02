@@ -139,11 +139,12 @@ class LaneKeep:
     ) -> Tuple[float, bool, Optional[np.ndarray]]:
         preprocess_img: np.ndarray = self.preprocess_pipeline(img)
         intersection_detected, cnts = self.intersection_det(preprocess_img)
-        mask = np.ones(preprocess_img.shape, dtype="uint8") * 255
-        if len(cnts) > 0:
-            # print(type(cnts), type(cnts[0]))
-            cv2.drawContours(mask, cnts, -1, 0, -1)
-        preprocess_img = cv2.bitwise_and(preprocess_img, preprocess_img, mask=mask)
+        # mask = np.ones(preprocess_img.shape, dtype="uint8") * 255
+        cv2.imwrite("mask.png", preprocess_img)
+        # if len(cnts) > 0:
+        #     # print(type(cnts), type(cnts[0]))
+        #     cv2.drawContours(mask, cnts, -1, 0, -1)
+        # preprocess_img = cv2.bitwise_and(preprocess_img, preprocess_img, mask=mask)
 
         if self.computation_method == "hough":
             if get_image:
@@ -214,11 +215,11 @@ class LaneKeep:
         mask = cv2.inRange(imgn, lower, upper)
         return mask
 
-    def intersection_det(self, img: np.ndarray, area_threshold=6_500):
+    def intersection_det(self, img: np.ndarray, area_threshold=5_500):
         # detect horizontal lines
-        horizontal_size = img.shape[1] // 4
+        horizontal_size = img.shape[1] // 6
         horizontal_kernel = cv2.getStructuringElement(
-            cv2.MORPH_RECT, (horizontal_size, 10)
+            cv2.MORPH_RECT, (horizontal_size, 5)
         )
         detect_horizontal = cv2.morphologyEx(
             img, cv2.MORPH_OPEN, horizontal_kernel, iterations=2
@@ -236,6 +237,7 @@ class LaneKeep:
                 detected = True
                 final_contours.append(c)
                 # cv2.drawContours(result, [c], -1, (255, 0, 0), 5)
+            print("Intersection Area -> ", area)
 
         return detected, final_contours
 
