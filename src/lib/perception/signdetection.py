@@ -57,13 +57,23 @@ class SignDetectionProcess(WorkerProcess):
         """
         count = 0
         self.detection = Detection()
-        context = zmq.Context()
+        print(">>> Starting Sign Detection")
+        context_recv = zmq.Context()
 
-        sub_cam = context.socket(zmq.SUB)
+        sub_cam = context_recv.socket(zmq.SUB)
         sub_cam.setsockopt(zmq.CONFLATE, 1)
         sub_cam.connect("ipc:///tmp/v4l")
         sub_cam.setsockopt_string(zmq.SUBSCRIBE, '')
-        print(">>> Starting Sign Detection")
+        
+        context_send = zmq.Context()
+        pub_sd = context_send.socket(zmq.PUB)
+        pub_sd.bind("ipc:///tmp/v61")
+
+        if self.enable_steam:
+            context_send_img = zmq.Context()
+            pub_sd_img = context_send_img.socket(zmq.PUB)
+            pub_sd_img.bind("ipc:///tmp/v62")
+
         while True:
             try:
                 recv_time = time.time()
@@ -77,22 +87,12 @@ class SignDetectionProcess(WorkerProcess):
                 start_time = time.time()
                 if "stream" in self.outPnames:
                     classes, area, outimage = self.detection(img, bbox=True)
+                    pub_sd.send_json((classes,area), flags=zmq.NOBLOCK)
+                    pub_sd_img.send(outimage.tobytes(), flags=zmq.NOBLOCK)
+
                 else:
                     classes, area = self.detection(img)
-                    
-                print(classes, area)
-                # print(f"sD compute time {time.time() - start_time:.2f}s")
-
-                if "fzz" in self.outPnames:
-                    idx = self.outPnames.index("fzz")
-                    outPs[idx].send((1.0, classes))
-
-                if "stream" in self.outPnames:
-                    idx = self.outPnames.index("stream")
-                    if outimage is None:
-                        outPs[idx].send((1.0, img))
-                    else:
-                        outPs[idx].send((1.0, outimage))
+                    pub_sd.send_json((classes,area), flags=zmq.NOBLOCK)
 
             except Exception as e:
                 print("Sign Detection error:")

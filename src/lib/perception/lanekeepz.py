@@ -126,19 +126,6 @@ class LaneKeepingProcess(WorkerProcess):
                     angle = self.computeSteeringAnglePID(val)
                     pub_lk.send_json((angle, intersection_detected), flags=zmq.NOBLOCK)
 
-                
-                # print(f"LK {angle}")
-                # # self.outPs[0].send((1, angle, intersection_detected))
-                # t += time.time() - compute_time
-                # logger.log(
-                #     "TIME",
-                #     f"Process Time -> {(t/count):.4f}s",
-                # )
-                # print(f"LK compute time {(time() - compute_time):.4f}s")
-                # if len(outPs) > 1:
-                #     self.outPs[1].send((1, outimage))
-
-
                 # print("Timetaken by LK: ", time() - a)
         except Exception as e:
             raise e

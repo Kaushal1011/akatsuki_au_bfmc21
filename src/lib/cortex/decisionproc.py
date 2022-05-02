@@ -147,7 +147,7 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
 
 class DecisionMakingProcess(WorkerProcess):
     # ===================================== Worker process =========================================
-    def __init__(self, inPs, outPs, inPsnames=[], lk:bool = True, sd:bool = False):
+    def __init__(self, inPs, outPs, inPsnames=[], lk:bool = True, sd:bool = True):
         """Process used for the image processing needed for lane keeping and for computing the steering value.
 
         Parameters
@@ -228,7 +228,13 @@ class DecisionMakingProcess(WorkerProcess):
             sub_lk.setsockopt(zmq.CONFLATE, 1)
             sub_lk.connect("ipc:///tmp/v51")
             sub_lk.setsockopt_string(zmq.SUBSCRIBE, '')
-            
+        
+        if self.sd:
+            context_recv_sd = zmq.Context()
+            sub_sd = context_recv_sd.socket(zmq.SUB)
+            sub_sd.setsockopt(zmq.CONFLATE, 1)
+            sub_sd.connect("ipc:///tmp/v61")
+            sub_sd.setsockopt_string(zmq.SUBSCRIBE, '')
         while True:
             try:
                 c = time()
@@ -245,11 +251,9 @@ class DecisionMakingProcess(WorkerProcess):
                 # sign Detection
                 # TODO
                 # t_sD = time()
-                # if self.sd:
-                #     idx = self.inPsnames.index("sD")
-                #     if inPs[idx].poll():
-                #         # TODO : get sign detection for all signs
-                #         sd_timestamp, sign = inPs[idx].recv()
+                if self.sd:
+                    signs_data = sub_sd.recv_json()
+                    print("fzz", signs_data)
                 #         print("SD <-<", sign)
                 #         logger.log("SYNC", f"SD timedelta {time() - sd_timestamp}")
                 #         logger.log("PIPE", f"Recv -> SD {sign}")

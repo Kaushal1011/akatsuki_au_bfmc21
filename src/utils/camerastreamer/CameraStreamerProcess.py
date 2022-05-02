@@ -50,10 +50,13 @@ def get_last(inP: Connection):
         timestamp, data = inP.recv()
     return timestamp, data
 
-
+connect2file = {
+    "cam":"41",
+    "sd":"62",
+}
 class CameraStreamerProcess(WorkerProcess):
     # ===================================== INIT =========================================
-    def __init__(self, inPs, outPs, port: int = 2244):
+    def __init__(self, inPs, outPs, connect:str="sd",  port: int = 2244):
         """Process used for sending images over the network to a targeted IP via UDP protocol
         (no feedback required). The image is compressed before sending it.
 
@@ -68,6 +71,7 @@ class CameraStreamerProcess(WorkerProcess):
         """
         super(CameraStreamerProcess, self).__init__(inPs, outPs)
         self.port = port
+        self.file_id = connect2file[connect]
 
     #         self.frame_shm = sa.attach("shm://shared_frame1")
 
@@ -129,12 +133,12 @@ class CameraStreamerProcess(WorkerProcess):
         encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 40]
         context = zmq.Context()
 
-        sub_cam = context.socket(zmq.SUB)
+        sub_stream = context.socket(zmq.SUB)
         # print("Binding Socket to", self.addr)
-        sub_cam.setsockopt(zmq.CONFLATE, 1)
+        sub_stream.setsockopt(zmq.CONFLATE, 1)
         
-        sub_cam.connect("ipc:///tmp/v4l")
-        sub_cam.setsockopt_string(zmq.SUBSCRIBE, '')
+        sub_stream.connect(f"ipc:///tmp/v{self.file_id}")
+        sub_stream.setsockopt_string(zmq.SUBSCRIBE, '')
         while True:
             try:
                 # stamp, image = get_last(inP)
@@ -144,7 +148,7 @@ class CameraStreamerProcess(WorkerProcess):
                 # cv2.imshow("Image", image)
                 # cv2.waitKey(1)
                 
-                data = sub_cam.recv()
+                data = sub_stream.recv()
                 data = np.frombuffer(data, dtype=np.uint8)
                 image = np.reshape(data, (480, 640, 3))
                 print("Stream", image.shape)
