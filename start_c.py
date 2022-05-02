@@ -107,7 +107,7 @@ if config["enableRc"]:
     #    lkStrR, lkStrS = Pipe(duplex=False)
     #    lkProc = LaneKeeping([lkR], [lkFzzS, lkStrS])
     #else:
-lkProc = LaneKeeping([], [])
+lkProc = LaneKeeping([], [], False)
 
 allProcesses.append(lkProc)
 
@@ -266,7 +266,7 @@ allProcesses.append(sDProc)
 datafzzProc = DecisionMakingProcess(
      [], [], inPsnames=[]
 )
-# allProcesses.append(datafzzProc)
+allProcesses.append(datafzzProc)
 # movementControlR.append(FzzMcR)
 # 
 

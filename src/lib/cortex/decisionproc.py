@@ -9,7 +9,6 @@ from typing import List, Optional
 
 
 from src.lib.cortex.carstate import CarState
-from src.lib.perception.signdetection import loaded_model
 from src.templates.workerprocess import WorkerProcess
 from time import time
 from src.lib.cortex.action import (
@@ -236,23 +235,12 @@ class DecisionMakingProcess(WorkerProcess):
                 start_time = time()
                 t_lk = time()
                 if self.lk:
-                    recv_lk = sub_lk.recv_json()
-                    print(recv_lk)
-
-                # self.state.update_lk_angle(lk_angle)
-                # self.state.update_intersection(detected_intersection)
+                    lk_angle, detected_intersection = sub_lk.recv_json()
+                    self.state.update_lk_angle(lk_angle)
+                    self.state.update_intersection(detected_intersection)
                 # logger.log("PIPE", f"Recv->LK {lk_angle}")
                 # logger.log("SYNC", f"LK timedelta {time()- lk_timestamp}")
                 # # print(f"Time taken lk {(time() - t_lk):.4f}s {lk_angle}")
-
-                # t_id = time()
-                # idx = self.inPsnames.index("iD")
-                # id_timestamp, detected_intersection = get_last_value(inPs[idx])
-                # logger.log("PIPE", f"Recv->ID {detected_intersection}")
-                # logger.log("SYNC", f"iD delta {time()- id_timestamp}")
-
-                # print("id: ", detected_intersection)
-                # print(f"TIme taken iD {(time()- t_id):.4f}s")
 
                 # sign Detection
                 # TODO
