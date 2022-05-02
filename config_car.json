@@ -4,14 +4,14 @@
   "enableRc": false,
   "enableLaneKeeping": true,
   "enableIntersectionDet": false,
-  "enableSignDet": false,
+  "enableSignDet": true,
   "enableSIM": false,
   "using_server": false,
   "test_track": false,
   "start_idx": "86",
   "end_idx": "40",
-  "pc_ip": "192.168.186.18",
-  "pi_ip": "192.168.186.89",
+  "pc_ip": "192.168.43.61",
+  "pi_ip": "192.168.43.225",
   "home_loc": false,
   "preplan": false
 }

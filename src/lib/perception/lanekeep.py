@@ -106,7 +106,8 @@ class LaneKeepingProcess(WorkerProcess):
                 else:
                     val, intersection_detected = self.lk(img)
                 angle = self.computeSteeringAnglePID(val)
-                self.outPs[0].send((stamp, angle, intersection_detected))
+                if len(self.outPs) > 0:
+                    self.outPs[0].send((stamp, angle, intersection_detected))
                 t += time() - compute_time
                 logger.log(
                     "TIME",

@@ -319,13 +319,13 @@ if __name__ == "__main__":
     ##  Load Model
     ie = Core()
     model = ie.read_model(model="../best_openvino_model/best.xml")
-    compiled_model = ie.compile_model(model=model, device_name="CPU")
+    compiled_model = ie.compile_model(model=model, device_name="MYRIAD")
 
     input_layer_ir = next(iter(compiled_model.inputs))
 
     ##  Load Image
     # Text detection models expects image in BGR format
-    image = cv2.imread("test.jpeg")
+    image = cv2.imread("img.jpg")
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     # N,C,H,W = batch size, number of channels, height, width
     N, C, H, W = input_layer_ir.shape

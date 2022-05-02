@@ -44,7 +44,7 @@ class CameraStreamerProcess(WorkerProcess):
         """
         super(CameraStreamerProcess, self).__init__(inPs, outPs)
         self.port = port
-        self.addr = f'tcp://localhost:{port}'
+        self.addr = f'tcp://{HOST}:{port}'
 
     #         self.frame_shm = sa.attach("shm://shared_frame1")
 
