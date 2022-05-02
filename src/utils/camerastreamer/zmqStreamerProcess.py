@@ -47,6 +47,7 @@ class CameraStreamerProcess(WorkerProcess):
         context = zmq.Context()
         self.footage_socket = context.socket(zmq.PUB)
         addr = f'tcp://{HOST}:{port}'
+        print("Connecting to ", addr)
         self.footage_socket.connect(addr)
 
 

@@ -31,7 +31,9 @@ class CameraReceiverProcess(WorkerProcess):
         super(CameraReceiverProcess, self).__init__(inPs, outPs)
         context = zmq.Context()
         self.footage_socket = context.socket(zmq.SUB)
-        self.footage_socket.bind('tcp://*:5555')
+        addr = f'tcp://0.0.0.0:{port}'
+        print("Binding Socket to", addr)
+        self.footage_socket.bind(addr)
         self.footage_socket.setsockopt_string(zmq.SUBSCRIBE, np.unicode(''))
 
 
