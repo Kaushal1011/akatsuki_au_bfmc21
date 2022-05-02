@@ -28,6 +28,8 @@ import joblib
 from loguru import logger
 import math
 
+import zmq
+
 rx = []
 ry = []
 
@@ -146,7 +148,7 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
 
 class DecisionMakingProcess(WorkerProcess):
     # ===================================== Worker process =========================================
-    def __init__(self, inPs, outPs, inPsnames=[]):
+    def __init__(self, inPs, outPs, inPsnames=[], lk:bool = True, sd:bool = False):
         """Process used for the image processing needed for lane keeping and for computing the steering value.
 
         Parameters
@@ -160,7 +162,8 @@ class DecisionMakingProcess(WorkerProcess):
         # pass navigator config
         self.state = CarState(navigator_config=None)
         self.inPsnames = inPsnames
-
+        self.lk = lk
+        self.sd = sd
         self.actman = ActionManager()
 
         lkobj = LaneKeepBehaviour()
@@ -220,20 +223,27 @@ class DecisionMakingProcess(WorkerProcess):
         outP : Pipe
             Output pipe to send the steering angle value to other process.
         """
+        if self.lk:
+            context_recv_lk = zmq.Context()
+            sub_lk = context_recv_lk.socket(zmq.SUB)
+            sub_lk.setsockopt(zmq.CONFLATE, 1)
+            sub_lk.connect("ipc:///tmp/v51")
+            sub_lk.setsockopt_string(zmq.SUBSCRIBE, '')
+            
         while True:
             try:
                 c = time()
                 start_time = time()
                 t_lk = time()
-                idx = self.inPsnames.index("lk")
-                lk_timestamp, lk_angle, detected_intersection = get_last_lk_id(
-                    inPs[idx]
-                )
-                self.state.update_lk_angle(lk_angle)
-                self.state.update_intersection(detected_intersection)
-                logger.log("PIPE", f"Recv->LK {lk_angle}")
-                logger.log("SYNC", f"LK timedelta {time()- lk_timestamp}")
-                # print(f"Time taken lk {(time() - t_lk):.4f}s {lk_angle}")
+                if self.lk:
+                    recv_lk = sub_lk.recv_json()
+                    print(recv_lk)
+
+                # self.state.update_lk_angle(lk_angle)
+                # self.state.update_intersection(detected_intersection)
+                # logger.log("PIPE", f"Recv->LK {lk_angle}")
+                # logger.log("SYNC", f"LK timedelta {time()- lk_timestamp}")
+                # # print(f"Time taken lk {(time() - t_lk):.4f}s {lk_angle}")
 
                 # t_id = time()
                 # idx = self.inPsnames.index("iD")
@@ -246,89 +256,89 @@ class DecisionMakingProcess(WorkerProcess):
 
                 # sign Detection
                 # TODO
-                t_sD = time()
-                if "sD" in self.inPsnames:
-                    idx = self.inPsnames.index("sD")
-                    if inPs[idx].poll():
-                        # TODO : get sign detection for all signs
-                        sd_timestamp, sign = inPs[idx].recv()
-                        print("SD <-<", sign)
-                        logger.log("SYNC", f"SD timedelta {time() - sd_timestamp}")
-                        logger.log("PIPE", f"Recv -> SD {sign}")
+                # t_sD = time()
+                # if self.sd:
+                #     idx = self.inPsnames.index("sD")
+                #     if inPs[idx].poll():
+                #         # TODO : get sign detection for all signs
+                #         sd_timestamp, sign = inPs[idx].recv()
+                #         print("SD <-<", sign)
+                #         logger.log("SYNC", f"SD timedelta {time() - sd_timestamp}")
+                #         logger.log("PIPE", f"Recv -> SD {sign}")
 
-                        # self.state.update_sign_detected()
+                #         # self.state.update_sign_detected()
 
-                if "dis" in self.inPsnames:
-                    idx = self.inPsnames.index("dis")
-                    distance_data = get_last_distance(inPs[idx])
-                    final_data = (
-                        distance_data["sonar1"],
-                        distance_data["sonar2"],
-                        False,
-                        False,
-                        False,
-                    )
-                    # print("distance", distance_data["sonar1"], distance_data["sonar1"])
-                    logger.log("PIPE", f"Recv->DIS {final_data[0]},{final_data[1]}")
-                    logger.log(
-                        "SYNC", f"dis delta {time()- distance_data['timestamp']}"
-                    )
+                # if "dis" in self.inPsnames:
+                #     idx = self.inPsnames.index("dis")
+                #     distance_data = get_last_distance(inPs[idx])
+                #     final_data = (
+                #         distance_data["sonar1"],
+                #         distance_data["sonar2"],
+                #         False,
+                #         False,
+                #         False,
+                #     )
+                #     # print("distance", distance_data["sonar1"], distance_data["sonar1"])
+                #     logger.log("PIPE", f"Recv->DIS {final_data[0]},{final_data[1]}")
+                #     logger.log(
+                #         "SYNC", f"dis delta {time()- distance_data['timestamp']}"
+                #     )
 
-                    self.state.update_object_det(*final_data)
+                #     self.state.update_object_det(*final_data)
 
-                if "pos" in self.inPsnames:
-                    idx = self.inPsnames.index("pos")
-                    if inPs[idx].poll():
-                        pos_timestamp, pos = get_last_value(inPs[idx])
-                        logger.log(
-                            "PIPE",
-                            f"Recv->POS {pos[0]:.2f} {pos[1]:.2f} {pos[2]:.2f} {pos[3]:.2f} {pos[4]:.2f}",
-                        )
-                        logger.log("SYNC", f"pos delta {time()- pos_timestamp}")
-                        print(f"({pos[0]:.3f}, {pos[1]:.3f}) YAW {pos[2]:.3f}")
-                        # print("pos")
-                        # print("Position: ",pos)
-                        if pos[0] == 0 and pos[1] == 0:
-                            pass
-                        else:
-                            self.state.update_pos(*pos)
-                    else:
-                        self.state.update_pos_noloc()
+                # if "pos" in self.inPsnames:
+                #     idx = self.inPsnames.index("pos")
+                #     if inPs[idx].poll():
+                #         pos_timestamp, pos = get_last_value(inPs[idx])
+                #         logger.log(
+                #             "PIPE",
+                #             f"Recv->POS {pos[0]:.2f} {pos[1]:.2f} {pos[2]:.2f} {pos[3]:.2f} {pos[4]:.2f}",
+                #         )
+                #         logger.log("SYNC", f"pos delta {time()- pos_timestamp}")
+                #         print(f"({pos[0]:.3f}, {pos[1]:.3f}) YAW {pos[2]:.3f}")
+                #         # print("pos")
+                #         # print("Position: ",pos)
+                #         if pos[0] == 0 and pos[1] == 0:
+                #             pass
+                #         else:
+                #             self.state.update_pos(*pos)
+                #     else:
+                #         self.state.update_pos_noloc()
 
-                # if trafficlight process is connected
-                if "tl" in self.inPsnames:
-                    idx = self.inPsnames.index("tl")
-                    if inPs[idx].poll():
-                        trafficlights = inPs[idx].recv()
-                        print(trafficlights)
+                # # if trafficlight process is connected
+                # if "tl" in self.inPsnames:
+                #     idx = self.inPsnames.index("tl")
+                #     if inPs[idx].poll():
+                #         trafficlights = inPs[idx].recv()
+                #         print(trafficlights)
 
-                # update car navigator, current ptype, current etype and current idx
+                # # update car navigator, current ptype, current etype and current idx
 
-                trigger_behaviour(self.state, self.actman)
+                # trigger_behaviour(self.state, self.actman)
 
-                speed, steer = self.actman(self.state)
-                self.state.v = speed
-                self.state.steering_angle = steer
-                rx.append(self.state.x)
-                ry.append(self.state.y)
-                logger.log("XY", f"{self.state.x}, {self.state.y},")
-                logger.debug(f"Sonar Front: {self.state.front_distance}")
-                logger.debug(f"Sonar Side: {self.state.side_distance}")
-                # print("speed: ", self.state.v)
-                # print("steer: ", self.state.steering_angle)
+                # speed, steer = self.actman(self.state)
+                # self.state.v = speed
+                # self.state.steering_angle = steer
+                # rx.append(self.state.x)
+                # ry.append(self.state.y)
+                # logger.log("XY", f"{self.state.x}, {self.state.y},")
+                # logger.debug(f"Sonar Front: {self.state.front_distance}")
+                # logger.debug(f"Sonar Side: {self.state.side_distance}")
+                # # print("speed: ", self.state.v)
+                # # print("steer: ", self.state.steering_angle)
 
-                # TODO
-                # speed, steer_angle = self.get_controls()
+                # # TODO
+                # # speed, steer_angle = self.get_controls()
 
-                # print(f"Time taken {time() - start_time}s\n ========================")
-                # Start car if model if loaded
-                # if not loaded_model.value:
-                #     print("//////////////////// Waiting for Model")
-                #     self.state.v = 0
+                # # print(f"Time taken {time() - start_time}s\n ========================")
+                # # Start car if model if loaded
+                # # if not loaded_model.value:
+                # #     print("//////////////////// Waiting for Model")
+                # #     self.state.v = 0
 
-                for outP in outPs:
-                    print("Final -> ", (self.state.steering_angle, self.state.v))
-                    outP.send((self.state.steering_angle, self.state.v))
+                # for outP in outPs:
+                #     print("Final -> ", (self.state.steering_angle, self.state.v))
+                #     outP.send((self.state.steering_angle, self.state.v))
 
             except Exception as e:
                 print("Decision Process error:")

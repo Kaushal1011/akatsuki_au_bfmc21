@@ -24,7 +24,7 @@ def get_last(inP: Connection):
 
 class LaneKeepingProcess(WorkerProcess):
     # ===================================== Worker process =========================================
-    def __init__(self, inPs: List[Connection], outPs: List[Connection]):
+    def __init__(self, inPs: List[Connection], outPs: List[Connection],  enable_steam:bool):
         """Process used for the image processing needed for lane keeping and for computing the steering value.
 
         Parameters
@@ -36,7 +36,7 @@ class LaneKeepingProcess(WorkerProcess):
         """
         super(LaneKeepingProcess, self).__init__(inPs, outPs)
         self.lk = LaneKeepMethod(use_perspective=False, computation_method="hough")
-        # self.frame_shm = sa.attach("shm://shared_frame1")
+        self.enable_steam = enable_steam
 
     def run(self):
         """Apply the initializing methods and start the threads."""
@@ -77,12 +77,22 @@ class LaneKeepingProcess(WorkerProcess):
         count = 0
         t = 0.0
         t_r = 0.1
-        context = zmq.Context()
+        context_recv = zmq.Context()
 
-        sub_cam = context.socket(zmq.SUB)
+        sub_cam = context_recv.socket(zmq.SUB)
         sub_cam.setsockopt(zmq.CONFLATE, 1)
         sub_cam.connect("ipc:///tmp/v4l")
         sub_cam.setsockopt_string(zmq.SUBSCRIBE, '')
+        
+        context_send = zmq.Context()
+        pub_lk = context_send.socket(zmq.PUB)
+        pub_lk.bind("ipc:///tmp/v51")
+
+        if self.enable_steam:
+            context_send_img = zmq.Context()
+            pub_lk_img = context_send_img.socket(zmq.PUB)
+            pub_lk_img.bind("ipc:///tmp/v52")
+
         try:
             while True:
                 # Obtain image
@@ -90,6 +100,7 @@ class LaneKeepingProcess(WorkerProcess):
                 data = sub_cam.recv()
                 data = np.frombuffer(data, dtype=np.uint8)
                 img = np.reshape(data, (480, 640, 3))
+                
                 print("lk img recv")
                 logger.log("PIPE", "recv image")
                 t_r += time.time() - image_recv_start
@@ -101,21 +112,27 @@ class LaneKeepingProcess(WorkerProcess):
                 )
                 compute_time = time.time()
                 # Apply image processing
-                if len(outPs) > 1:
+                if self.enable_steam:
                     val, intersection_detected, outimage = self.lk(img, True)
+                    angle = self.computeSteeringAnglePID(val)
+                    pub_lk.send_json((angle, intersection_detected), flags=zmq.NOBLOCK)
+                    pub_lk_img.send(outimage.tobytes(), flags=zmq.NOBLOCK)
                 else:
                     val, intersection_detected = self.lk(img)
-                angle = self.computeSteeringAnglePID(val)
-                print(f"LK {angle}")
-                self.outPs[0].send((1, angle, intersection_detected))
-                t += time.time() - compute_time
-                logger.log(
-                    "TIME",
-                    f"Process Time -> {(t/count):.4f}s",
-                )
+                    angle = self.computeSteeringAnglePID(val)
+                    pub_lk.send_json((angle, intersection_detected), flags=zmq.NOBLOCK)
+
+                
+                # print(f"LK {angle}")
+                # # self.outPs[0].send((1, angle, intersection_detected))
+                # t += time.time() - compute_time
+                # logger.log(
+                #     "TIME",
+                #     f"Process Time -> {(t/count):.4f}s",
+                # )
                 # print(f"LK compute time {(time() - compute_time):.4f}s")
-                if len(outPs) > 1:
-                    self.outPs[1].send((1, outimage))
+                # if len(outPs) > 1:
+                #     self.outPs[1].send((1, outimage))
 
 
                 # print("Timetaken by LK: ", time() - a)

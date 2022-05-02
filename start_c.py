@@ -24,6 +24,7 @@ from src.utils.camerastreamer.CameraStreamerProcess import CameraStreamerProcess
 from src.utils.remotecontrol.RemoteControlReceiverProcess import (
     RemoteControlReceiverProcess,
 )
+from src.lib.cortex.decisionproc import DecisionMakingProcess
 
 import sys
 from loguru import logger
@@ -262,9 +263,9 @@ allProcesses.append(sDProc)
 
 
 # ======================= Decision Making =========================================
-# datafzzProc = DecisionMakingProcess(
-#     dataFusionInputPs, [FzzMcS], inPsnames=dataFusionInputName
-# )
+datafzzProc = DecisionMakingProcess(
+     [], [], inPsnames=[]
+)
 # allProcesses.append(datafzzProc)
 # movementControlR.append(FzzMcR)
 # 
