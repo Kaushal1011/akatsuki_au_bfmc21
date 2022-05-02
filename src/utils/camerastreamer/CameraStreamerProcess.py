@@ -31,10 +31,10 @@ import socket
 import struct
 import time
 from threading import Thread
-
+import zmq
 # import SharedArray as sa
 import cv2
-
+import base64
 from src.config import get_config
 
 config = get_config()
@@ -127,21 +127,35 @@ class CameraStreamerProcess(WorkerProcess):
             Input pipe to read the frames from CameraProcess or CameraSpooferProcess.
         """
         encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 40]
+        context = zmq.Context()
+
+        footage_socket = context.socket(zmq.SUB)
+        footage_socket.setsockopt(zmq.CONFLATE, 1)
+        # print("Binding Socket to", self.addr)
+        footage_socket.connect("tcp://*:8011")
+        footage_socket.setsockopt_string(zmq.SUBSCRIBE, np.unicode(''))
+
         while True:
             try:
-                stamp, image = get_last(inP)
+                # stamp, image = get_last(inP)
                 # print(f"Stream timedelta -> {time.time() - stamp}s")
                 # image = np.array(self.frame_shm).copy()
                 # print(stamps, image)
-                print(f"Streamer timedelta {(time.time() - stamp):.4f}s")
+                # cv2.imshow("Image", image)
+                # cv2.waitKey(1)
+                data = footage_socket.recv_string()
+                img = base64.b64decode(data)
+                pack_time = time.time()
+                # print(f"Streamer timedelta {(time.time() - stamp):.4f}s")
                 result, image = cv2.imencode(".jpg", image, encode_param)
                 data = image.tobytes()
                 size = len(data)
-
-                self.connection.write(struct.pack("d", stamp))
+            
+                self.connection.write(struct.pack("d", 1.0))
                 # print(f"Streaming | sending data size: {size}, timestamp:{stamp}")
                 self.connection.write(struct.pack("<L", size))
                 self.connection.write(data)
+                print(f"Pack Time -> {(time.time() - pack_time):.4f}")
             except Exception as e:
                 print("CameraStreamer failed to stream images:", e, "\n")
                 # Reinitialize the socket for reconnecting to client.

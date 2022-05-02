@@ -320,6 +320,21 @@ def get_area(bbox: np.ndarray) -> np.ndarray:
     return ((bbox[:, 2] - bbox[:, 0]) * (bbox[:, 3] - bbox[:, 1])).tolist()
 
 
+map2label = {
+    0:"car",
+    1:"crosswalk",
+    2:"highway_entry",
+    3:"highway_exit",
+    4:"no_entry",
+    5:"onewayroad",
+    6:"parking",
+    7:"pedestrian",
+    8:"priority",
+    9:"roadblock",
+    10:"roundabout",
+    11:"stop",
+    12:"trafficlight",
+    }
 class Detection:
     def __init__(self, model_path: str = "best_openvino_model/best.xml") -> None:
         ie = Core()
@@ -337,7 +352,7 @@ class Detection:
 
         if not img.shape == (640, 640, 3):
             img_resized = cv2.resize(img, (640, 640))
-
+        cv2.imwrite("img.jpg", img)
         x: np.ndarray = img_resized / 255
         x = x.astype(np.float32)
         x = np.expand_dims(x.transpose(2, 0, 1), 0)
@@ -356,9 +371,12 @@ class Detection:
         area = get_area(pred_nms[:, :4])
         if bbox:
             out_image = self.draw_bbox(pred_nms, classes=classes, image=img)
+            classes = [map2label[x] for x in classes]
             return (classes, area, out_image)
         else:
             if classes:
+                print("Detected Something")
+                classes = [map2label[x] for x in classes]
                 return classes, area
             return [], []
 

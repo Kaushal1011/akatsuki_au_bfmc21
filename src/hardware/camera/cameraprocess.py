@@ -27,7 +27,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 from src.templates.workerprocess            import WorkerProcess
-from src.hardware.camera.CameraThread       import CameraThread
+from src.hardware.camera.CameraThreadZ       import CameraThread
 
 class CameraProcess(WorkerProcess):
     #================================ CAMERA PROCESS =====================================
