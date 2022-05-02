@@ -330,7 +330,7 @@ def get_error_lane(mask_image):
     # plt.plot(img_new)
     print(img_new.shape)
     histogram = np.sum(img_new[img_new.shape[0] // 2 :, :], axis=0)  # noqa
-    plt.plot(histogram)
+    # plt.plot(histogram)
     midpoint = np.int(histogram.shape[0] / 2)
     leftxBase = np.argmax(histogram[:midpoint])
     rightxBase = np.argmax(histogram[midpoint:]) + midpoint

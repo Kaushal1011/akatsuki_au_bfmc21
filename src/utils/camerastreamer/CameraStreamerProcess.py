@@ -36,7 +36,7 @@ import zmq
 import cv2
 import base64
 from src.config import get_config
-
+import numpy as np
 config = get_config()
 HOST = config["pc_ip"]
 from src.templates.workerprocess import WorkerProcess
@@ -84,7 +84,7 @@ class CameraStreamerProcess(WorkerProcess):
         if self._blocker.is_set():
             return
         streamTh = Thread(
-            name="StreamSendingThread", target=self._send_thread, args=(self.inPs[0],)
+            name="StreamSendingThread", target=self._send_thread, args=(self.inPs,)
         )
         streamTh.daemon = True
         self.threads.append(streamTh)
@@ -129,12 +129,12 @@ class CameraStreamerProcess(WorkerProcess):
         encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 40]
         context = zmq.Context()
 
-        footage_socket = context.socket(zmq.SUB)
-        footage_socket.setsockopt(zmq.CONFLATE, 1)
+        sub_cam = context.socket(zmq.SUB)
         # print("Binding Socket to", self.addr)
-        footage_socket.connect("tcp://*:8011")
-        footage_socket.setsockopt_string(zmq.SUBSCRIBE, np.unicode(''))
-
+        sub_cam.setsockopt(zmq.CONFLATE, 1)
+        
+        sub_cam.connect("ipc:///tmp/v4l")
+        sub_cam.setsockopt_string(zmq.SUBSCRIBE, '')
         while True:
             try:
                 # stamp, image = get_last(inP)
@@ -143,8 +143,11 @@ class CameraStreamerProcess(WorkerProcess):
                 # print(stamps, image)
                 # cv2.imshow("Image", image)
                 # cv2.waitKey(1)
-                data = footage_socket.recv_string()
-                img = base64.b64decode(data)
+                
+                data = sub_cam.recv()
+                data = np.frombuffer(data, dtype=np.uint8)
+                image = np.reshape(data, (480, 640, 3))
+                print("Stream", image.shape)
                 pack_time = time.time()
                 # print(f"Streamer timedelta {(time.time() - stamp):.4f}s")
                 result, image = cv2.imencode(".jpg", image, encode_param)

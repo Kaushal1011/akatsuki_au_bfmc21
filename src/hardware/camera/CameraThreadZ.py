@@ -130,10 +130,10 @@ class CameraThread(ThreadWithStop):
         processing(reshape) is done to the image format.
         """
         context = zmq.Context()
-        footage_socket = context.socket(zmq.PUB)
+        pub_cam = context.socket(zmq.PUB)
         # print("Connecting to ", self.addr)
-        footage_socket.bind("tcp://*:8011")
-
+        # sub_cam.setsockopt(zmq.CONFLATE, 1)
+        pub_cam.bind("ipc:///tmp/v4l")
 
         while self._running:
 
@@ -141,15 +141,9 @@ class CameraThread(ThreadWithStop):
             print("Read cam image")
             self._stream.seek(0)
             data = self._stream.read()
-
-            # read and reshape from bytes to np.array
-            data = np.frombuffer(data, dtype=np.uint8)
-            frame = np.reshape(data, (480, 640, 3))
-            # print(data)
-            # assert (data == shared_frame).all()
-            # stamp = time.time()
-            img_text = base64.b64encode(frame)
-            footage_socket.send(img_text)
+            pub_cam.send(data, flags=zmq.NOBLOCK)
+            print("Camera send")
+            
             # output image and time stamp
             # Note: The sending process can be blocked, when doesn't exist any consumer process and it reaches the limit size.
             # if loaded_model.value:

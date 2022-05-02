@@ -24,6 +24,7 @@ from src.utils.camerastreamer.CameraStreamerProcess import CameraStreamerProcess
 from src.utils.remotecontrol.RemoteControlReceiverProcess import (
     RemoteControlReceiverProcess,
 )
+
 import sys
 from loguru import logger
 from typing import List
@@ -89,7 +90,7 @@ if config["enableRc"]:
 
 
     # Camera process -> Lane keeping
-lkR, lkS = Pipe(duplex=False)
+# lkR, lkS = Pipe(duplex=False)
 
     # Lane keeping -> Data Fusion
     # lkFzzR, lkFzzS = Pipe(duplex=False)
@@ -105,9 +106,9 @@ lkR, lkS = Pipe(duplex=False)
     #    lkStrR, lkStrS = Pipe(duplex=False)
     #    lkProc = LaneKeeping([lkR], [lkFzzS, lkStrS])
     #else:
-lkProc = LaneKeeping([lkR], [])
+lkProc = LaneKeeping([], [])
 
-# allProcesses.append(lkProc)
+allProcesses.append(lkProc)
 
 # if config["enableIntersectionDet"]:
 #     # Camera process -> Intersection Detection
@@ -310,9 +311,9 @@ lkProc = LaneKeeping([lkR], [])
 # #         streamProc = CameraStreamerProcess([lkStrR], [], port=STREAM_PORT1)
 # #         allProcesses.append(streamProc)
 #     else:
-camStR, camStS = Pipe(duplex=False)  # camera  ->  streamer
-camOutPs.append(camStS)
-streamProc = CameraStreamerProcess([camStR], [], port=STREAM_PORT1)
+# camStR, camStS = Pipe(duplex=False)  # camera  ->  streamer
+# camOutPs.append(camStS)
+streamProc = CameraStreamerProcess([], [], port=STREAM_PORT1)
 allProcesses.append(streamProc)
 
 #     if config["enableSignDet"]:
