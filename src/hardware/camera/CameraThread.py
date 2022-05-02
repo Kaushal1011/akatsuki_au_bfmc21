@@ -35,6 +35,7 @@ import time
 
 from src.templates.threadwithstop import ThreadWithStop
 from src.lib.perception.signdetection import loaded_model
+import cv2
 # import SharedArray as sa
 
 # from multiprocessing import shared_memory
@@ -131,22 +132,22 @@ class CameraThread(ThreadWithStop):
         while self._running:
 
             yield self._stream
-            print("Read cam image")
             self._stream.seek(0)
             data = self._stream.read()
 
             # read and reshape from bytes to np.array
             data = np.frombuffer(data, dtype=np.uint8)
             frame = np.reshape(data, (480, 640, 3))
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             # print(data)
             # assert (data == shared_frame).all()
             stamp = time.time()
 
             # output image and time stamp
             # Note: The sending process can be blocked, when doesn't exist any consumer process and it reaches the limit size.
-            if loaded_model.value:
-                for outP in self.outPs:
-                    outP.send((stamp, frame))
+            # if loaded_model.value:
+            for outP in self.outPs:
+                outP.send((stamp, frame))
     
             self._stream.seek(0)
             self._stream.truncate()
