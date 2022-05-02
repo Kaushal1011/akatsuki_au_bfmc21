@@ -81,9 +81,11 @@ class LaneKeepingProcess(WorkerProcess):
         t = 0.0
         t_r = 0.1
         context = zmq.Context()
+
         footage_socket = context.socket(zmq.SUB)
-        print("Binding Socket to", self.addr)
-        footage_socket.bind(self.addr)
+        footage_socket.setsockopt(zmq.CONFLATE, 1)
+        # print("Binding Socket to", self.addr)
+        footage_socket.bind("tcp://*:8011")
         footage_socket.setsockopt_string(zmq.SUBSCRIBE, np.unicode(''))
 
         try:
@@ -102,7 +104,7 @@ class LaneKeepingProcess(WorkerProcess):
                     "TIME",
                     f"Time taken to rec image {(t_r/count):.4f}s",
                 )
-                print(f"LK time delta {(time() - stamp):.4f}s")
+                # print(f"LK time delta {(time() - stamp):.4f}s")
                 # print("LK", stamps)
                 # img = self.frame_shm
                 # print(f"lk: Time taken to recv image {time() - image_recv_start}")
@@ -114,7 +116,7 @@ class LaneKeepingProcess(WorkerProcess):
                 else:
                     val, intersection_detected = self.lk(img)
                 angle = self.computeSteeringAnglePID(val)
-                self.outPs[0].send((stamp, angle, intersection_detected))
+                self.outPs[0].send((1, angle, intersection_detected))
                 t += time() - compute_time
                 logger.log(
                     "TIME",
@@ -122,7 +124,7 @@ class LaneKeepingProcess(WorkerProcess):
                 )
                 # print(f"LK compute time {(time() - compute_time):.4f}s")
                 if len(outPs) > 1:
-                    self.outPs[1].send((stamp, outimage))
+                    self.outPs[1].send((1, outimage))
 
                     # print("Sending from Lane Keeping")
 
