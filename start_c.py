@@ -195,9 +195,12 @@ elif isPI:
 
 
 # ======================= Decision Making =========================================
-datafzzProc = DecisionMakingProcess([], [], inPsnames=dataFusionInputName)
+# Decision Process -> Movement control
+FzzMcR, FzzMcS = Pipe(duplex=False)
+
+datafzzProc = DecisionMakingProcess([], [FzzMcS], inPsnames=dataFusionInputName)
 allProcesses.append(datafzzProc)
-# movementControlR.append(FzzMcR)
+movementControlR.append(FzzMcR)
 #
 
 # ======================= Actuator =================================================
