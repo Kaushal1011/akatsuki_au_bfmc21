@@ -339,7 +339,7 @@ class DecisionMakingProcess(WorkerProcess):
                 #     self.state.v = 0
 
                 for outP in outPs:
-                    print("Final -> ", (self.state.steering_angle, self.state.v))
+                    # print("Final -> ", (self.state.steering_angle, self.state.v))
                     outP.send((self.state.steering_angle, self.state.v))
 
             except Exception as e:

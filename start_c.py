@@ -61,12 +61,12 @@ def filter(level: List[int]):
     return lambda r: r["level"].no in level or r["level"].no > 19
 
 
-TEST_PIPE = False
+TEST_PIPE = True
 logger.remove()
 if TEST_PIPE:
     logger.add(sys.stderr, filter=filter([18]))
 
-# logger.add("file1.log", filter=lambda r: r["level"] == 14)
+logger.add("file1.log", filter=lambda r: r["level"] == 14)
 # logger.level("LK", no=10, color="<blue>", icon='' )
 # logger.level("INT", no=10, color="<blue>", icon='' )
 

@@ -55,7 +55,6 @@ class CameraReceiverProcess(WorkerProcess):
         while True:
             try:
                 frame = footage_socket.recv_string()
-                print("Here in read stream")
                 img = base64.b64decode(frame)
                 npimg = np.fromstring(img, dtype=np.uint8)
                 source = cv2.imdecode(npimg, 1)
