@@ -134,12 +134,10 @@ class PositionFusionProcess(WorkerProcess):
                     # gyaw = 2 * math.pi - (gyaw + math.pi)
 
                 if (iyaw is not None) or (gx is not None):
-                    pos_data = (
-                        pos_timestamp,
-                        self.localize.update(
+                    pos_data = self.localize.update(
                             iyaw, ipitch, iroll, ax, ay, az, gx, gy, gyaw
-                        ),
-                    )
+                        )
+                    
                     # print("pos_data", pos_data)
                     pub_pos.send_json(pos_data)
 

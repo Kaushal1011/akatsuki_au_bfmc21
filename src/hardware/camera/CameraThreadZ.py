@@ -136,12 +136,15 @@ class CameraThread(ThreadWithStop):
 
             if "lk" in self.outPsname:
                 pub_cam_lk.send(data, flags=zmq.NOBLOCK)
+                print("cam -> lk")
 
             if "stream" in self.outPsname:
                 pub_cam_stream.send(data, flags=zmq.NOBLOCK)
+                print("cam -> stream")
 
             if "sd" in self.outPsname:
                 pub_cam_sd.send(data, flags=zmq.NOBLOCK)
+                print("cam -> sd")
             # print("Camera Send")
             self._stream.seek(0)
             self._stream.truncate()
