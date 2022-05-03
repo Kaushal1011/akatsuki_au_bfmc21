@@ -67,7 +67,7 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
     triggerparking = False
 
     if hasattr(carstate, "parkingcoords"):
-        print("Triggered Parking")
+        # print("Triggered Parking")
         d = math.sqrt(
             (carstate.rear_x - carstate.parkingcoords[0]) ** 2
             + (carstate.rear_y - carstate.parkingcoords[1]) ** 2
