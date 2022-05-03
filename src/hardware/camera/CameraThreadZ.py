@@ -122,6 +122,6 @@ Camera
             self._stream.seek(0)
             data = self._stream.read()
             pub_cam.send(data, flags=zmq.NOBLOCK)
-            print("Camera Send")
+            # print("Camera Send")
             self._stream.seek(0)
             self._stream.truncate()

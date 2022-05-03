@@ -140,7 +140,7 @@ class LaneKeep:
         preprocess_img: np.ndarray = self.preprocess_pipeline(img)
         intersection_detected, cnts = self.intersection_det(preprocess_img)
         # mask = np.ones(preprocess_img.shape, dtype="uint8") * 255
-        cv2.imwrite("mask.png", preprocess_img)
+        # cv2.imwrite("mask.png", preprocess_img)
         # if len(cnts) > 0:
         #     # print(type(cnts), type(cnts[0]))
         #     cv2.drawContours(mask, cnts, -1, 0, -1)
@@ -149,7 +149,6 @@ class LaneKeep:
         if self.computation_method == "hough":
             if get_image:
                 angle, outimg = self.houghlines_angle(preprocess_img, get_img=get_image)
-                print("LK Out angle", angle)
                 # if len(cnts) > 0:
                 #     self.draw_intersection_bbox(outimg, cnts)
                 return angle, intersection_detected, outimg
@@ -157,7 +156,6 @@ class LaneKeep:
             else:
                 angle = self.houghlines_angle(preprocess_img)
                 angle = self.get_lane_error(preprocess_img)
-                print("LK Out angle", angle)
                 # angle_roadarea = self.graph_road_search(preprocess_img)
                 # print(angle, " ", angle_roadarea)
                 #             angle = (angle*2 + angle_roadarea) / 3
@@ -330,13 +328,13 @@ def get_error_lane(mask_image):
         img_new, None, fx=0.35, fy=0.35, interpolation=cv2.INTER_NEAREST
     )
     # plt.plot(img_new)
-    print(img_new.shape)
+    # print(img_new.shape)
     histogram = np.sum(img_new[img_new.shape[0] // 2 :, :], axis=0)  # noqa
     # plt.plot(histogram)
     midpoint = np.int(histogram.shape[0] / 2)
     leftxBase = np.argmax(histogram[:midpoint])
     rightxBase = np.argmax(histogram[midpoint:]) + midpoint
-    print(leftxBase, midpoint, rightxBase)
+    # print(leftxBase, midpoint, rightxBase)
     return ((abs(rightxBase - midpoint) - abs(leftxBase - midpoint)) * 26.5 / (midpoint)) + 90
 
 

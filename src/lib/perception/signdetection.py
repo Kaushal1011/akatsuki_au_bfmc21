@@ -89,7 +89,6 @@ class SignDetectionProcess(WorkerProcess):
                 if self.enable_steam:
                     classes, area, outimage = self.detection(img, bbox=True)
                     pub_sd.send_json((classes,area), flags=zmq.NOBLOCK)
-                    print("sending outiamge", outimage.shape)
                     pub_sd_img.send(outimage.tobytes(), flags=zmq.NOBLOCK)
                 else:
                     classes, area = self.detection(img)

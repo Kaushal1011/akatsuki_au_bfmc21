@@ -110,8 +110,8 @@ class PositionFusionProcess(WorkerProcess):
 
                 pos = list()
                 if "imu" in self.inPsnames:
-                    imu = sub_imu.recv_json(flags=zmq.NOBLOCK)
-                    print(f'imu delta {time()-imu["timestamp"]}')
+                    imu = sub_imu.recv_json()
+                    # print(f'imu delta {time()-imu["timestamp"]}')
                     logger.log("PIPE", f"imu {imu}")
                     # print("IMU", time(), imu["timestamp"])
                     pos_timestamp = imu["timestamp"]

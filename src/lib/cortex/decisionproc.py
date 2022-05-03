@@ -287,7 +287,7 @@ class DecisionMakingProcess(WorkerProcess):
                         False,
                         False,
                     )
-                    print("distance", distance_data["sonar1"], distance_data["sonar1"])
+                    print("DIS -> ", distance_data["sonar1"], distance_data["sonar1"])
                     logger.log("PIPE", f"Recv->DIS {final_data[0]},{final_data[1]}")
                     logger.log(
                         "SYNC", f"dis delta {time()- distance_data['timestamp']}"
@@ -297,15 +297,11 @@ class DecisionMakingProcess(WorkerProcess):
 
                 if "pos" in self.inPsnames:
                     pos = sub_pos.recv_json()
-                    logger.log(
-                        "PIPE",
-                        f"Recv->POS {pos[0]:.2f} {pos[1]:.2f} {pos[2]:.2f} {pos[3]:.2f} {pos[4]:.2f}",
-                    )
-                    print(f"POS -> ({pos[0]:.3f}, {pos[1]:.3f}) YAW {pos[2]:.3f}")
+                    print(f"POS -> {pos}")
                     if pos[0] == 0 and pos[1] == 0:
                         pass
-                    else:
-                        self.state.update_pos(*pos)
+                    # else:
+                    #     self.state.update_pos(*pos)
                 # else:
                 #     self.state.update_pos_noloc()
 

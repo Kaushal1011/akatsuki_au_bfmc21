@@ -28,7 +28,7 @@ def get_last(inP: Connection):
 
 class LaneKeepingProcess(WorkerProcess):
     # ===================================== Worker process =========================================
-    def __init__(self, inPs: List[Connection], outPs: List[Connection],  enable_steam:bool):
+    def __init__(self, inPs: List[Connection], outPs: List[Connection],  enable_stream:bool):
         """Process used for the image processing needed for lane keeping and for computing the steering value.
 
         Parameters
@@ -40,7 +40,7 @@ class LaneKeepingProcess(WorkerProcess):
         """
         super(LaneKeepingProcess, self).__init__(inPs, outPs)
         self.lk = LaneKeepMethod(use_perspective=False, computation_method="hough")
-        self.enable_steam = enable_steam
+        self.enable_stream = enable_stream
 
     def run(self):
         """Apply the initializing methods and start the threads."""
@@ -91,7 +91,7 @@ class LaneKeepingProcess(WorkerProcess):
         pub_lk = context_send.socket(zmq.PUB)
         pub_lk.bind("ipc:///tmp/v51")
 
-        if self.enable_steam:
+        if self.enable_stream:
             context_send_img = zmq.Context()
             pub_lk_img = context_send_img.socket(zmq.PUB)
             pub_lk_img.bind("ipc:///tmp/v52")
@@ -105,7 +105,7 @@ class LaneKeepingProcess(WorkerProcess):
                 data = np.frombuffer(data, dtype=np.uint8)
                 img = np.reshape(data, (480, 640, 3))
                 
-                print("lk img recv")
+                # print("lk img recv")
                 logger.log("PIPE", "recv image")
                 t_r += time.time() - image_recv_start
                 count += 1
@@ -116,7 +116,7 @@ class LaneKeepingProcess(WorkerProcess):
                 )
                 compute_time = time.time()
                 # Apply image processing
-                if self.enable_steam:
+                if self.enable_stream:
                     val, intersection_detected, outimage = self.lk(img, True)
                     angle = self.computeSteeringAnglePID(val)
                     pub_lk.send_json((angle, intersection_detected), flags=zmq.NOBLOCK)
