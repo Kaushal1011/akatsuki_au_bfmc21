@@ -101,7 +101,7 @@ class imu(threading.Thread):
                     "accely": self.accely,
                     "accelz": self.accelz,
                 }
-                pub_imu.send_json(data, flags=zmq.NOBLOCK)
+                pub_imu.send_json(data)
 
                 # time.sleep(self.poll_interval * 1.0 / 1000.0)
 

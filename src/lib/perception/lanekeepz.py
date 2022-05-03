@@ -10,6 +10,7 @@ from loguru import logger
 import zmq
 import numpy as np
 import base64
+
 # from simple_pid import PID
 from src.lib.perception.lanekeepfunctions import LaneKeep as LaneKeepMethod
 from src.templates.workerprocess import WorkerProcess
@@ -28,7 +29,9 @@ def get_last(inP: Connection):
 
 class LaneKeepingProcess(WorkerProcess):
     # ===================================== Worker process =========================================
-    def __init__(self, inPs: List[Connection], outPs: List[Connection],  enable_stream:bool):
+    def __init__(
+        self, inPs: List[Connection], outPs: List[Connection], enable_stream: bool
+    ):
         """Process used for the image processing needed for lane keeping and for computing the steering value.
 
         Parameters
@@ -85,8 +88,8 @@ class LaneKeepingProcess(WorkerProcess):
         sub_cam = context_recv.socket(zmq.SUB)
         sub_cam.setsockopt(zmq.CONFLATE, 1)
         sub_cam.connect("ipc:///tmp/v4l")
-        sub_cam.setsockopt_string(zmq.SUBSCRIBE, '')
-        
+        sub_cam.setsockopt_string(zmq.SUBSCRIBE, "")
+
         context_send = zmq.Context()
         pub_lk = context_send.socket(zmq.PUB)
         pub_lk.bind("ipc:///tmp/v51")
@@ -104,7 +107,7 @@ class LaneKeepingProcess(WorkerProcess):
                 data = sub_cam.recv()
                 data = np.frombuffer(data, dtype=np.uint8)
                 img = np.reshape(data, (480, 640, 3))
-                
+
                 # print("lk img recv")
                 logger.log("PIPE", "recv image")
                 t_r += time.time() - image_recv_start
@@ -120,7 +123,7 @@ class LaneKeepingProcess(WorkerProcess):
                     val, intersection_detected, outimage = self.lk(img, True)
                     angle = self.computeSteeringAnglePID(val)
                     pub_lk.send_json((angle, intersection_detected), flags=zmq.NOBLOCK)
-                    pub_lk_img.send(outimage.tobytes(), flags=zmq.NOBLOCK)
+                    pub_lk_img.send(img.tobytes(), flags=zmq.NOBLOCK)
                 else:
                     val, intersection_detected = self.lk(img)
                     angle = self.computeSteeringAnglePID(val)
