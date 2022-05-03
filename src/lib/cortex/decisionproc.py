@@ -258,7 +258,7 @@ class DecisionMakingProcess(WorkerProcess):
                 start_time = time()
                 t_lk = time()
                 if "lk" in self.inPsnames:
-                    if sub_lk.poll(timeout=0.1):
+                    if sub_lk.poll(timeout=0.05):
                         lk_angle, detected_intersection = sub_lk.recv_json()
                         print("LK -> ", lk_angle, detected_intersection)
                         self.state.update_lk_angle(lk_angle)
@@ -271,7 +271,7 @@ class DecisionMakingProcess(WorkerProcess):
                 # TODO
                 # t_sD = time()
                 if "sd" in self.inPsnames:
-                    if sub_sd.poll(timeout=0.1):
+                    if sub_sd.poll(timeout=0.05):
                         signs_data = sub_sd.recv_json()
                         print("SD ->", signs_data)
                 #         print("SD <-<", sign)
@@ -300,7 +300,7 @@ class DecisionMakingProcess(WorkerProcess):
                         self.state.update_object_det(*final_data)
 
                 if "pos" in self.inPsnames:
-                    if sub_pos.poll(timeout=0.1):
+                    if sub_pos.poll(timeout=0.05):
                         pos = sub_pos.recv_json()
                         print(f"POS -> {pos}")
                         if pos[0] == 0 and pos[1] == 0:

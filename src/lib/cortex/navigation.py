@@ -8,7 +8,7 @@ import networkx as nx
 import numpy as np
 from copy import deepcopy
 from src.config import get_config
-import cubic_spline_planner
+from src.lib.cortex import cubic_spline_planner
 
 config = get_config()
 
