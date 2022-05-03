@@ -27,7 +27,7 @@ from src.data.server_sim import ServerSIM as LocSysSIM
 from src.data.server_sim import ServerSIM as IMUSIM
 from src.lib.cortex.posfusproc import PositionFusionProcess
 
-from src.data.server_sim import ServerSIM as DistanceSIM
+from src.data.distance_sim import DistanceSIM
 from src.hardware.ultrasonic.distanceProc import DistanceProcess
 from src.lib.actuator.momentcontrol import MovementControl
 from src.lib.actuator.sim_connect import SimulatorConnector
@@ -184,7 +184,7 @@ if len(posFusionInputName) > 0:
 # Distance Sensor -> Decision Making (data fusion)
 
 if config["enableSIM"]:
-    disProc = DistanceSIM([], [], "dis", 6666)
+    disProc = DistanceSIM([], [], 6666, log=True)
     allProcesses.append(disProc)
     dataFusionInputName.append("dis")
 
