@@ -258,10 +258,11 @@ class DecisionMakingProcess(WorkerProcess):
                 start_time = time()
                 t_lk = time()
                 if "lk" in self.inPsnames:
-                    lk_angle, detected_intersection = sub_lk.recv_json()
-                    print("LK -> ", lk_angle, detected_intersection)
-                    self.state.update_lk_angle(lk_angle)
-                    self.state.update_intersection(detected_intersection)
+                    if sub_lk.poll(timeout=0.001):
+                        lk_angle, detected_intersection = sub_lk.recv_json()
+                        print("LK -> ", lk_angle, detected_intersection)
+                        self.state.update_lk_angle(lk_angle)
+                        self.state.update_intersection(detected_intersection)
                 # logger.log("PIPE", f"Recv->LK {lk_angle}")
                 # logger.log("SYNC", f"LK timedelta {time()- lk_timestamp}")
                 # # print(f"Time taken lk {(time() - t_lk):.4f}s {lk_angle}")
@@ -270,8 +271,9 @@ class DecisionMakingProcess(WorkerProcess):
                 # TODO
                 # t_sD = time()
                 if "sd" in self.inPsnames:
-                    signs_data = sub_sd.recv_json()
-                    print("SD ->", signs_data)
+                    if sub_sd.poll(timeout=0.001):
+                        signs_data = sub_sd.recv_json()
+                        print("SD ->", signs_data)
                 #         print("SD <-<", sign)
                 #         logger.log("SYNC", f"SD timedelta {time() - sd_timestamp}")
                 #         logger.log("PIPE", f"Recv -> SD {sign}")
@@ -279,31 +281,32 @@ class DecisionMakingProcess(WorkerProcess):
                 #         # self.state.update_sign_detected()
 
                 if "dis" in self.inPsnames:
-                    distance_data = sub_dis.recv_json()
-                    final_data = (
-                        distance_data["sonar1"],
-                        distance_data["sonar2"],
-                        False,
-                        False,
-                        False,
-                    )
-                    print("DIS -> ", distance_data["sonar1"], distance_data["sonar1"])
-                    logger.log("PIPE", f"Recv->DIS {final_data[0]},{final_data[1]}")
-                    logger.log(
+                    if sub_sd.poll(timeout=0.01):
+                        distance_data = sub_dis.recv_json()
+                        final_data = (
+                            distance_data["sonar1"],
+                            distance_data["sonar2"],
+                            False,
+                            False,
+                            False,
+                        )
+                        print("DIS -> ", distance_data["sonar1"], distance_data["sonar1"])
+                        logger.log("PIPE", f"Recv->DIS {final_data[0]},{final_data[1]}")
+                        logger.log(
                         "SYNC", f"dis delta {time()- distance_data['timestamp']}"
-                    )
-
-                    self.state.update_object_det(*final_data)
+                        )
+                        self.state.update_object_det(*final_data)
 
                 if "pos" in self.inPsnames:
-                    pos = sub_pos.recv_json()
-                    print(f"POS -> {pos}")
-                    if pos[0] == 0 and pos[1] == 0:
-                        pass
-                    # else:
-                    #     self.state.update_pos(*pos)
-                # else:
-                #     self.state.update_pos_noloc()
+                    if sub_sd.poll(timeout=0.01):
+                        pos = sub_pos.recv_json()
+                        print(f"POS -> {pos}")
+                        if pos[0] == 0 and pos[1] == 0:
+                            pass
+                        else:
+                            self.state.update_pos(*pos)
+                    else:
+                        self.state.update_pos_noloc()
 
                 # # if trafficlight process is connected
                 # if "tl" in self.inPsnames:
