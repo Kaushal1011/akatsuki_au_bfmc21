@@ -61,7 +61,7 @@ class CarState:
         self.detected_car = False
         self.detected_closed_road = False
         self.detected_pedestrian = False
-
+        self.target_ind=None
         # traffic light semaphore
         self.tl = {}
 

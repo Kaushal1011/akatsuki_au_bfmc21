@@ -8,6 +8,7 @@ import networkx as nx
 import numpy as np
 from copy import deepcopy
 from src.config import get_config
+import cubic_spline_planner
 
 config = get_config()
 
@@ -70,6 +71,24 @@ def dijkstra(G, start, target):
 
     return fp, ptyperet, edgeret
 
+def isLeft(A,B,isleftpoint):
+    yd=math.atan2(B[1]-A[1],B[0]-A[0])
+    yd2=math.atan2(isleftpoint[1]-A[1],isleftpoint[0]-A[0])
+    compute=yd-yd2
+    
+    if abs(compute)>math.pi:
+        if compute >0:
+            compute=abs(compute)-2*math.pi
+        else:
+            compute=2*math.pi-abs(compute)
+    # print(compute)
+    if compute >= 0:
+        # print("True")
+        return True,compute
+    else:
+        # print("False")
+        return False,compute
+
 # TODO: smooth path
 def smooth_point_list(G, coord_list1, ptype,etype):
         node_dict = deepcopy(dict(G.nodes(data=True)))
@@ -82,43 +101,55 @@ def smooth_point_list(G, coord_list1, ptype,etype):
         sizeincrease=0
         countfinal = len(coord_list)
         # print(countfinal)
-        ptype_new=[]
-        etype_new=[]
+        ptype_new=ptype.copy()
+        etype_new=etype.copy()
 
         while count < countfinal:
             if ptype[count] == "int":
-                
+                # append first point
                 coordlist_new.append(coord_list[count])
-                ptype_new.append(ptype[count])
-                etype_new.append(etype[count])
-                try:
-                    xmidint = (coord_list[count][0] + coord_list[count + 2][0]) / 2
-                    ymidint = (coord_list[count][1] + coord_list[count + 2][1]) / 2
+                # find midpoint of intersection start and end
+                xmidint = (coord_list[count][0] + coord_list[count + 2][0]) / 2
+                ymidint = (coord_list[count][1] + coord_list[count + 2][1]) / 2
+                
+                
+                
+                flag,value=isLeft(coord_list[count],coord_list[count+1],coord_list[count+2])
+                
+                if flag and abs(value)>0.3:
+                    xfinmid = (xmidint + coord_list[count + 1][0]*5) / 6
+                    yfinmid = (ymidint + coord_list[count + 1][1]*5) / 6
+                    pts=[coord_list[count],(xfinmid,yfinmid),coord_list[count+2]]
+                elif not flag and abs(value)>0.3:
+                    xfinmid = (xmidint*2 + coord_list[count + 1][0]) / 3
+                    yfinmid = (ymidint*2 + coord_list[count + 1][1]) / 3
+                    pts=[coord_list[count],(xfinmid,yfinmid),coord_list[count+2]]
+                    
+                else:
+                    pts=[coord_list[count],coord_list[count+2]]
+                    
+                
+                
 
-                    xfinmid = (xmidint*14 + 10*coord_list[count + 1][0]) / 24
-                    yfinmid = (ymidint*14 + 10*coord_list[count + 1][1]) / 24
-                    
-                    coordlist_new.append((xfinmid,yfinmid))
-                    ptype_new.append(ptype[count+1])
-                    etype_new.append(etype[count+1])
-                    
-                except Exception as e:
-                    
-                    print("exception",e)
-                    pass
-                try:
-                    coordlist_new.append(coord_list[count+2])
-                    ptype_new.append(ptype[count+2])
-                    etype_new.append(etype[count+2])                
-                    count+=3
-                except:
-                    print("in exception")
-                    count+=1
+                x,y=zip(*pts)
+                
+                i = np.arange(len(x))
+
+                cx,cy,_,_,_=cubic_spline_planner.calc_spline_course(x,y,0.15)
+
+                for i in range(len(cx)):
+                    coordlist_new.append((cx[i],cy[i]))
+                    ptype_new.insert(count+sizeincrease,"int")
+                    etype_new.insert(count+sizeincrease,False)
+                    sizeincrease+=1
+                
+                
+                coordlist_new.append(coord_list[count+2])
+                coordlist_new.append(coord_list[count+2])
+                count+=3
             else:
                 coordlist_new.append(coord_list[count])
-                ptype_new.append(ptype[count])
-                etype_new.append(etype[count])
-                count+=1
+                count += 1
 
         return coordlist_new,ptype_new,etype_new
         

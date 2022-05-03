@@ -145,8 +145,9 @@ class OvertakeBehaviour(BehaviourCallback):
             return {"None": None}
         # once target is determined
         # make new target points on the left lane
-        cx = car_state.rear_x
-        cy = car_state.rear_y
+        # cx = car_state.rear_x
+        # cy = car_state.rear_y
+        cx,cy=car_state.navigator.coords[car_state.target_ind-1]
 
         # Use Of Inverted Yaw
 
@@ -175,17 +176,6 @@ class OvertakeBehaviour(BehaviourCallback):
         y3 = m * x3 + c
         y4 = m * x4 + c
 
-        # yaw3 = math.atan2(y3, x3)
-        # yaw4 = math.atan2(y4, x4)
-
-        # print("x3 , y3",x3,y3)
-        # print("x4, y4", x4,y4)
-
-        # determine which point to pick
-
-        # how to determine -> find a point on the road with -yaw
-        # on = car_state.navigator.get_nearest_node(cx, cy, car_state.yaw)
-        # ox, oy = on["x"], on["y"]
 
         if isLeft((cx,cy),(tx,ty),(x3,y3)):
             self.set_side=3
@@ -282,6 +272,7 @@ class ControlSystemBehaviour(BehaviourCallback):
         car_state.target_x = self.cs.cx[ind]
         car_state.target_y = self.cs.cy[ind]
         car_state.current_target = (car_state.target_x, car_state.target_y)
+        car_state.target_ind=ind
 
         # car_state.current_ptype = car_state.navigator.ptype[ind]
         # car_state.can_overtake = car_state.navigator.etype[ind]
@@ -490,6 +481,85 @@ class ParkingBehaviour(BehaviourCallback):
     
     def set(self,**kwargs):
         pass
+
+
+class RoadBlocked(BehaviourCallback):
+    
+    def __init__(self, **kwargs):
+        self.initx=None
+        self.inity=None
+        self.over=False
+        self.WB = 0.3
+        self.set_side=None
+    
+    def out_condition(self, **kwargs) -> bool:
+        return self.over
+    
+    def chase(self,car_state:CarState,tx,ty):
+        
+        alpha = math.atan2(ty - car_state.rear_y, tx - car_state.rear_x) - (
+                -car_state.yaw
+            )
+        delta = math.atan2(
+            2.0
+            * self.WB
+            * math.sin(alpha)
+            / math.sqrt((ty - car_state.rear_y) ** 2 + (tx - car_state.rear_x)**2),
+            1.0,
+        )
+        di = delta * 180 / math.pi
+        if di > 23:
+            di = 23
+        elif di < -23:
+            di = -23
+        car_state.cs_steer = di
+        return di
+    
+    def __call__(self, car_state:CarState):
+
+        if self.initx is None and self.inity is None:
+            self.initx=car_state.rear_x
+            self.inity=car_state.rear_y 
+            self.phase=1
+        
+        if car_state.current_ptype=="int":
+            self.over=True
+        
+        cx,cy=car_state.navigator.coords[car_state.target_ind-1]
+        tx = car_state.target_x
+        ty = car_state.target_y
+        
+        try:
+        # find m
+            m = -(tx - cx) / (ty - cy)
+        except:
+            m = -(tx - cx) / 0.0001
+
+        # print("m: ",m)
+        # find c
+        c = ty - m * tx
+        # print("C: ",c)
+
+        x3 = tx + ((0.765 ** 2) / (m ** 2 + 1)) ** 0.5
+        x4 = tx - ((0.765 ** 2) / (m ** 2 + 1)) ** 0.5
+        y3 = m * x3 + c
+        y4 = m * x4 + c
+
+
+        if not isLeft((cx,cy),(tx,ty),(x3,y3)):
+            self.set_side=3
+        else:
+            self.set_side=4
+        
+        if self.set_side==4:
+            di = self.chase(car_state,x4,y4)
+            return {"steer": di, "speed": +car_state.priority_speed}
+        elif self.set_side==3:
+            di = self.chase(car_state,x3,y3)
+            return {"steer": di, "speed": +car_state.priority_speed}
+        else:
+            return None
+        
 
 
 class ActionBehaviour:
