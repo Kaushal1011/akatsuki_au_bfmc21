@@ -28,6 +28,7 @@ def get_last(inP: Connection):
 connect2file = {
     "cam":"4l",
     "sd":"62",
+    "lk":"52"
 }
 class CameraStreamerProcess(WorkerProcess):
     # ===================================== INIT =========================================

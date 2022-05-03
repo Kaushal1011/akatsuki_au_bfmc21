@@ -40,7 +40,7 @@ class CameraThread(ThreadWithStop):
     def __init__(self, outPs: List[Queue]):
         """The purpose of this thread is to setup the camera parameters and send the result to the CameraProcess.
         It is able also to record videos and save them locally. You can do so by setting the self.RecordMode = True.
-
+Camera
         Parameters
         ----------
         outPs : list(Pipes)
