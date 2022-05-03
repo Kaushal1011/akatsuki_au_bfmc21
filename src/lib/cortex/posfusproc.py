@@ -110,30 +110,28 @@ class PositionFusionProcess(WorkerProcess):
 
                 pos = list()
                 if "imu" in self.inPsnames:
-                    if sub_imu.poll():
-                        imu = sub_imu.recv_json()
-                        print("IMU -> ", imu)
-                        # print(f'imu delta {time()-imu["timestamp"]}')
-                        logger.log("PIPE", f"imu {imu}")
-                        # print("IMU", time(), imu["timestamp"])
-                        pos_timestamp = imu["timestamp"]
-                        iroll = imu["roll"]
-                        ipitch = imu["pitch"]
-                        iyaw = imu["yaw"]
-                        # iyaw = 2 * math.pi - (iyaw + math.pi)
-                        ax = imu["accelx"]
-                        ay = imu["accely"]
-                        az = imu["accelz"]
+                    imu = sub_imu.recv_json()
+                    print("IMU -> ", imu)
+                    # print(f'imu delta {time()-imu["timestamp"]}')
+                    logger.log("PIPE", f"imu {imu}")
+                    # print("IMU", time(), imu["timestamp"])
+                    pos_timestamp = imu["timestamp"]
+                    iroll = imu["roll"]
+                    ipitch = imu["pitch"]
+                    iyaw = imu["yaw"]
+                    # iyaw = 2 * math.pi - (iyaw + math.pi)
+                    ax = imu["accelx"]
+                    ay = imu["accely"]
+                    az = imu["accelz"]
 
                 if "loc" in self.inPsnames:
-                    if sub_loc.poll():
-                        loc: dict = sub_loc.recv(flags=zmq.NOBLOCK)
-                        print("LOC", loc)
-                        pos_timestamp = loc["timestamp"]
-                        gx = loc["posA"]
-                        gy = loc["posB"]
-                        gyaw = loc["rotA"] if "rotA" in loc.keys() else loc["radA"]
-                        # gyaw = 2 * math.pi - (gyaw + math.pi)
+                    loc: dict = sub_loc.recv(flags=zmq.NOBLOCK)
+                    print("LOC", loc)
+                    pos_timestamp = loc["timestamp"]
+                    gx = loc["posA"]
+                    gy = loc["posB"]
+                    gyaw = loc["rotA"] if "rotA" in loc.keys() else loc["radA"]
+                    # gyaw = 2 * math.pi - (gyaw + math.pi)
 
                 if (iyaw is not None) or (gx is not None):
                     pos_data = (
@@ -142,7 +140,7 @@ class PositionFusionProcess(WorkerProcess):
                             iyaw, ipitch, iroll, ax, ay, az, gx, gy, gyaw
                         ),
                     )
-                    print("pos_data", pos_data)
+                    # print("pos_data", pos_data)
                     pub_pos.send_json(pos_data)
 
         except Exception as e:

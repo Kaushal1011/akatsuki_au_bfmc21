@@ -37,14 +37,14 @@ from src.templates.threadwithstop import ThreadWithStop
 class CameraThread(ThreadWithStop):
 
     # ================================ CAMERA =============================================
-    def __init__(self, outPs: List[Queue]):
+    def __init__(self, outPs: List[Queue], outPsname: List[str] = []):
         """The purpose of this thread is to setup the camera parameters and send the result to the CameraProcess.
-        It is able also to record videos and save them locally. You can do so by setting the self.RecordMode = True.
-Camera
-        Parameters
-        ----------
-        outPs : list(Pipes)
-            the list of pipes were the images will be sent
+                It is able also to record videos and save them locally. You can do so by setting the self.RecordMode = True.
+        Camera
+                Parameters
+                ----------
+                outPs : list(Pipes)
+                    the list of pipes were the images will be sent
         """
         super(CameraThread, self).__init__()
         self.daemon = True
@@ -56,6 +56,7 @@ Camera
 
         # output
         self.outPs = outPs
+        self.outPsname = outPsname
 
     # ================================ RUN ================================================
     def run(self):
@@ -112,16 +113,35 @@ Camera
         """Stream function that actually published the frames into the pipes. Certain
         processing(reshape) is done to the image format.
         """
-        context = zmq.Context()
-        pub_cam = context.socket(zmq.PUB)
-        pub_cam.bind("ipc:///tmp/v4l")
+        if "lk" in self.outPsname:
+            context_lk = zmq.Context()
+            pub_cam_lk = context_lk.socket(zmq.PUB)
+            pub_cam_lk.bind("ipc:///tmp/v4l")
+
+        if "sd" in self.outPsname:
+            context_sd = zmq.Context()
+            pub_cam_sd = context_sd.socket(zmq.PUB)
+            pub_cam_sd.bind("ipc:///tmp/v4ls")
+
+        if "stream" in self.outPsname:
+            context_stream = zmq.Context()
+            pub_cam_stream = context_stream.socket(zmq.PUB)
+            pub_cam_stream.bind("ipc:///tmp/v4lc")
 
         while self._running:
 
             yield self._stream
             self._stream.seek(0)
             data = self._stream.read()
-            pub_cam.send(data, flags=zmq.NOBLOCK)
+
+            if "lk" in self.outPsname:
+                pub_cam_lk.send(data, flags=zmq.NOBLOCK)
+
+            if "stream" in self.outPsname:
+                pub_cam_stream.send(data, flags=zmq.NOBLOCK)
+
+            if "sd" in self.outPsname:
+                pub_cam_sd.send(data, flags=zmq.NOBLOCK)
             # print("Camera Send")
             self._stream.seek(0)
             self._stream.truncate()

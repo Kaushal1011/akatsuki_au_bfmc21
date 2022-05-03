@@ -227,28 +227,28 @@ class DecisionMakingProcess(WorkerProcess):
         if "lk" in self.inPsnames:
             context_recv_lk = zmq.Context()
             sub_lk = context_recv_lk.socket(zmq.SUB)
-            sub_lk.setsockopt(zmq.CONFLATE, 1)
+            # sub_lk.setsockopt(zmq.CONFLATE, 1)
             sub_lk.connect("ipc:///tmp/v51")
             sub_lk.setsockopt_string(zmq.SUBSCRIBE, "")
 
         if "sd" in self.inPsnames:
             context_recv_sd = zmq.Context()
             sub_sd = context_recv_sd.socket(zmq.SUB)
-            sub_sd.setsockopt(zmq.CONFLATE, 1)
+            # sub_sd.setsockopt(zmq.CONFLATE, 1)
             sub_sd.connect("ipc:///tmp/v61")
             sub_sd.setsockopt_string(zmq.SUBSCRIBE, "")
 
         if "pos" in self.inPsnames:
             context_recv_pos = zmq.Context()
             sub_pos = context_recv_pos.socket(zmq.SUB)
-            sub_pos.setsockopt(zmq.CONFLATE, 1)
+            # sub_pos.setsockopt(zmq.CONFLATE, 1)
             sub_pos.connect("ipc:///tmp/v42")
             sub_pos.setsockopt_string(zmq.SUBSCRIBE, "")
 
         if "dis" in self.inPsnames:
             context_recv_dis = zmq.Context()
             sub_dis = context_recv_dis.socket(zmq.SUB)
-            sub_dis.setsockopt(zmq.CONFLATE, 1)
+            # sub_dis.setsockopt(zmq.CONFLATE, 1)
             sub_dis.connect("ipc:///tmp/v11")
             sub_dis.setsockopt_string(zmq.SUBSCRIBE, "")
 
@@ -258,7 +258,7 @@ class DecisionMakingProcess(WorkerProcess):
                 start_time = time()
                 t_lk = time()
                 if "lk" in self.inPsnames:
-                    if sub_lk.poll(timeout=0.01):
+                    if sub_lk.poll(timeout=0.1):
                         lk_angle, detected_intersection = sub_lk.recv_json()
                         print("LK -> ", lk_angle, detected_intersection)
                         self.state.update_lk_angle(lk_angle)
@@ -271,7 +271,7 @@ class DecisionMakingProcess(WorkerProcess):
                 # TODO
                 # t_sD = time()
                 if "sd" in self.inPsnames:
-                    if sub_sd.poll(timeout=0.001):
+                    if sub_sd.poll(timeout=0.1):
                         signs_data = sub_sd.recv_json()
                         print("SD ->", signs_data)
                 #         print("SD <-<", sign)
@@ -281,7 +281,7 @@ class DecisionMakingProcess(WorkerProcess):
                 #         # self.state.update_sign_detected()
 
                 if "dis" in self.inPsnames:
-                    if sub_sd.poll(timeout=0.01):
+                    if sub_dis.poll(timeout=0.1):
                         distance_data = sub_dis.recv_json()
                         final_data = (
                             distance_data["sonar1"],
@@ -300,7 +300,7 @@ class DecisionMakingProcess(WorkerProcess):
                         self.state.update_object_det(*final_data)
 
                 if "pos" in self.inPsnames:
-                    if sub_sd.poll(timeout=0.01):
+                    if sub_pos.poll(timeout=0.1):
                         pos = sub_pos.recv_json()
                         print(f"POS -> {pos}")
                         if pos[0] == 0 and pos[1] == 0:

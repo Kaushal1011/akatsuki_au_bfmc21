@@ -8,10 +8,16 @@ from src.lib.perception.detect_ov import Detection
 from loguru import logger
 import zmq
 import numpy as np
+
+
 class SignDetectionProcess(WorkerProcess):
     # ===================================== Worker process =========================================
     def __init__(
-        self, inPs: Connection, outPs: Connection, outPnames:List[str], enable_stream:bool = True
+        self,
+        inPs: Connection,
+        outPs: Connection,
+        outPnames: List[str],
+        enable_stream: bool = True,
     ):
         """Process used for the image processing needed for lane keeping and for computing the steering value.
 
@@ -63,9 +69,9 @@ class SignDetectionProcess(WorkerProcess):
 
         sub_cam = context_recv.socket(zmq.SUB)
         sub_cam.setsockopt(zmq.CONFLATE, 1)
-        sub_cam.connect("ipc:///tmp/v4l")
-        sub_cam.setsockopt_string(zmq.SUBSCRIBE, '')
-        
+        sub_cam.connect("ipc:///tmp/v4ls")
+        sub_cam.setsockopt_string(zmq.SUBSCRIBE, "")
+
         context_send = zmq.Context()
         pub_sd = context_send.socket(zmq.PUB)
         pub_sd.bind("ipc:///tmp/v61")
@@ -88,11 +94,11 @@ class SignDetectionProcess(WorkerProcess):
                 start_time = time.time()
                 if self.enable_steam:
                     classes, area, outimage = self.detection(img, bbox=True)
-                    pub_sd.send_json((classes,area), flags=zmq.NOBLOCK)
+                    pub_sd.send_json((classes, area), flags=zmq.NOBLOCK)
                     pub_sd_img.send(outimage.tobytes(), flags=zmq.NOBLOCK)
                 else:
                     classes, area = self.detection(img)
-                    pub_sd.send_json((classes,area), flags=zmq.NOBLOCK)
+                    pub_sd.send_json((classes, area), flags=zmq.NOBLOCK)
 
             except Exception as e:
                 print("Sign Detection error:")

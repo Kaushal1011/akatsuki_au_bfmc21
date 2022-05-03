@@ -3,6 +3,8 @@ from multiprocessing import Event, Pipe
 
 
 import argparse
+
+from isort import stream
 from src import config as config_module
 
 parser = argparse.ArgumentParser()
@@ -90,6 +92,7 @@ allProcesses = []
 movementControlR = []
 dataFusionInputName = []
 posFusionInputName = []
+camOutNames = []
 # =============================== RC CONTROL =================================================
 if config["enableRc"]:
     # rc  ->  serial handler
@@ -103,6 +106,7 @@ if config["enableRc"]:
 lkProc = LaneKeeping([], [], enable_stream=("lk" in streams))
 allProcesses.append(lkProc)
 dataFusionInputName.append("lk")
+camOutNames.append("lk")
 
 if not config["enableSignDet"]:
     if "sd" in streams:
@@ -112,6 +116,7 @@ if config["enableSignDet"]:
     sDProc = SignDetectionProcess([], [], [], enable_stream=("sd" in streams))
     allProcesses.append(sDProc)
     dataFusionInputName.append("sd")
+    camOutNames.append("sd")
 
 
 # =============================== DATA ===================================================
@@ -232,6 +237,9 @@ else:
 
 
 # ========================= Streamer =====================================================
+if "cam" in streams:
+    camOutNames.append("stream")
+
 if config["enableStream"]:
     streamProc = CameraStreamerProcess([], [], streams[0], port=STREAM_PORT1)
     allProcesses.append(streamProc)
@@ -249,7 +257,7 @@ else:
     if config["enableSIM"]:
         camProc = SIMCameraProcess([], [])
     else:
-        camProc = CameraProcess([], [])
+        camProc = CameraProcess([], [], camOutNames)
 
     allProcesses.append(camProc)
 
