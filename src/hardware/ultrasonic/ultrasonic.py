@@ -9,9 +9,8 @@ except ModuleNotFoundError as e:
 
 from multiprocessing.connection import Connection
 import time
-import functools
 import threading
-
+import zmq
 
 # set GPIO Pins
 GPIO_TRIGGER_FRONT = 20
@@ -65,14 +64,16 @@ class Ultrasonic(threading.Thread):
         return distance
 
     def run(self):
-        while self.running is True:
-            for outP in self.outPs:
-                sonar2 = self.get_distance(GPIO_TRIGGER_FRONT, GPIO_ECHO_FRONT)
-                sonar1 = self.get_distance(GPIO_TRIGGER_SIDE, GPIO_ECHO_SIDE)
-                outP.send(
-                    {"timestamp": time.time(), "sonar1": sonar1, "sonar2": sonar2}
-                )
-            time.sleep(0.5)
+        context_send = zmq.Context()
+        pub_dis = context_send.socket(zmq.PUB)
+        pub_dis.bind(f"ipc:///tmp/v11")
+
+        while True:
+            sonar2 = self.get_distance(GPIO_TRIGGER_FRONT, GPIO_ECHO_FRONT)
+            sonar1 = self.get_distance(GPIO_TRIGGER_SIDE, GPIO_ECHO_SIDE)
+            data = {"timestamp": time.time(), "sonar1": sonar1, "sonar2": sonar2}
+            pub_dis.send_json(data)
+            time.sleep(0.05)
 
     def stop(self):
         self.running = False

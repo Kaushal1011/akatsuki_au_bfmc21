@@ -3,12 +3,12 @@ from multiprocessing.connection import Connection
 from threading import Thread
 from time import time
 from typing import List
-
+import base64
 import numpy as np
 
 # import SharedArray as sa
 from loguru import logger
-
+import zmq
 # from simple_pid import PID
 from src.lib.perception.lanekeepfunctions import LaneKeep as LaneKeepMethod
 from src.templates.workerprocess import WorkerProcess
@@ -27,9 +27,7 @@ def get_last(inP: Connection):
 
 class LaneKeepingProcess(WorkerProcess):
     # ===================================== Worker process =========================================
-    def __init__(
-        self, inPs: List[Connection], outPs: List[Connection], stream: bool = True
-    ):
+    def __init__(self, inPs: List[Connection], outPs: List[Connection]):
         """Process used for the image processing needed for lane keeping and for computing the steering value.
 
         Parameters
@@ -42,7 +40,6 @@ class LaneKeepingProcess(WorkerProcess):
         super(LaneKeepingProcess, self).__init__(inPs, outPs)
         self.lk = LaneKeepMethod(use_perspective=False, computation_method="hough")
         # self.frame_shm = sa.attach("shm://shared_frame1")
-        self.stream = stream
 
     def run(self):
         """Apply the initializing methods and start the threads."""
@@ -83,12 +80,20 @@ class LaneKeepingProcess(WorkerProcess):
         count = 0
         t = 0.0
         t_r = 0.1
+        context = zmq.Context()
+        footage_socket = context.socket(zmq.SUB)
+        print("Binding Socket to", self.addr)
+        footage_socket.bind(self.addr)
+        footage_socket.setsockopt_string(zmq.SUBSCRIBE, np.unicode(''))
+
         try:
             while True:
                 # Obtain image
                 image_recv_start = time()
                 # stamps, img = inP.recv()
-                stamp, img = get_last(inP)
+                data = footage_socket.recv_string()
+                img = base64.b64decode(data)
+                
                 logger.log("PIPE", "recv image")
                 t_r += time() - image_recv_start
                 count += 1
@@ -103,20 +108,20 @@ class LaneKeepingProcess(WorkerProcess):
                 # print("Time taken to recieve image", time()- i)
                 compute_time = time()
                 # Apply image processing
-                if self.stream:
-                    val, intersection_detected, outimage = self.lk(img, self.stream)
+                if len(outPs) > 1:
+                    val, intersection_detected, outimage = self.lk(img, True)
                 else:
                     val, intersection_detected = self.lk(img)
-
                 angle = self.computeSteeringAnglePID(val)
-                self.outPs[0].send((stamp, angle, intersection_detected))
+                if len(self.outPs) > 0:
+                    self.outPs[0].send((stamp, angle, intersection_detected))
                 t += time() - compute_time
                 logger.log(
                     "TIME",
                     f"Process Time -> {(t/count):.4f}s",
                 )
                 # print(f"LK compute time {(time() - compute_time):.4f}s")
-                if len(outPs) > 1 and outimage:
+                if len(outPs) > 1:
                     self.outPs[1].send((stamp, outimage))
 
                     # print("Sending from Lane Keeping")

@@ -27,11 +27,11 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 from src.templates.workerprocess            import WorkerProcess
-from src.hardware.camera.CameraThread       import CameraThread
+from src.hardware.camera.CameraThreadZ       import CameraThread
 
 class CameraProcess(WorkerProcess):
     #================================ CAMERA PROCESS =====================================
-    def __init__(self, inPs, outPs, daemon = True):
+    def __init__(self, inPs, outPs,outPsname, daemon = True):
         """Process that start the raspicam and pipes it to the output pipe, to another process.
 
         Parameters
@@ -43,6 +43,7 @@ class CameraProcess(WorkerProcess):
         daemon : bool, optional
             daemon process flag, by default True
         """
+        self.outPsname = outPsname
         super(CameraProcess,self).__init__( inPs, outPs, daemon = True)
 
     # ===================================== RUN ==========================================
@@ -55,5 +56,5 @@ class CameraProcess(WorkerProcess):
     def _init_threads(self):
         """Create the Camera Publisher thread and add to the list of threads.
         """
-        camTh = CameraThread(self.outPs) 
+        camTh = CameraThread(self.outPs,outPsname=self.outPsname) 
         self.threads.append(camTh)

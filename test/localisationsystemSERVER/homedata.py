@@ -9,7 +9,7 @@ from threading import Thread
 
 from workerprocess import WorkerProcess
 
-PI_IP = "192.168.51.89"
+PI_IP = "192.168.186.89"
 PORT = 8888
 
 
@@ -179,6 +179,7 @@ class LocalisationServer:
                         pass
         else:
             print("Received unexpected status code {}".format(r.status_code))
+
 
 if __name__ == "__main__":
     loc = LocalisationServer(preview=True)

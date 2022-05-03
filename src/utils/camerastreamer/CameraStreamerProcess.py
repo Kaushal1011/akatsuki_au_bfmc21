@@ -31,21 +31,32 @@ import socket
 import struct
 import time
 from threading import Thread
-import numpy as np
-
+import zmq
 # import SharedArray as sa
 import cv2
-
+import base64
 from src.config import get_config
-
+import numpy as np
 config = get_config()
 HOST = config["pc_ip"]
 from src.templates.workerprocess import WorkerProcess
 
 
+def get_last(inP: Connection):
+    timestamp, data = inP.recv()
+    while inP.poll():
+        # print("lk: skipping frame")
+        # logger.log("SYNC", f"Skipping Frame delta - {time() - timestamp}")
+        timestamp, data = inP.recv()
+    return timestamp, data
+
+connect2file = {
+    "cam":"4l",
+    "sd":"62",
+}
 class CameraStreamerProcess(WorkerProcess):
     # ===================================== INIT =========================================
-    def __init__(self, inPs, outPs):
+    def __init__(self, inPs, outPs, connect:str="sd",  port: int = 2244):
         """Process used for sending images over the network to a targeted IP via UDP protocol
         (no feedback required). The image is compressed before sending it.
 
@@ -59,6 +70,8 @@ class CameraStreamerProcess(WorkerProcess):
             List of output pipes (not used at the moment)
         """
         super(CameraStreamerProcess, self).__init__(inPs, outPs)
+        self.port = port
+        self.file_id = connect2file[connect]
 
     #         self.frame_shm = sa.attach("shm://shared_frame1")
 
@@ -75,7 +88,7 @@ class CameraStreamerProcess(WorkerProcess):
         if self._blocker.is_set():
             return
         streamTh = Thread(
-            name="StreamSendingThread", target=self._send_thread, args=(self.inPs[0],)
+            name="StreamSendingThread", target=self._send_thread, args=(self.inPs,)
         )
         streamTh.daemon = True
         self.threads.append(streamTh)
@@ -86,7 +99,7 @@ class CameraStreamerProcess(WorkerProcess):
         self.serverIp = HOST  # PC ip
         # self.serverIp = "0.0.0.0"  # PC ip
 
-        self.port = 2244  # port
+        # self.port  # port
 
         self.client_socket = socket.socket()
         self.connection = None
@@ -109,7 +122,7 @@ class CameraStreamerProcess(WorkerProcess):
 
     # ===================================== SEND THREAD ==================================
 
-    def _send_thread(self, inP:Connection):
+    def _send_thread(self, inP: Connection):
         """Sending the frames received thought the input pipe to remote client by using the created socket connection.
 
         Parameters
@@ -117,19 +130,39 @@ class CameraStreamerProcess(WorkerProcess):
         inP : Pipe
             Input pipe to read the frames from CameraProcess or CameraSpooferProcess.
         """
-        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 70]
-        count = 1
+        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 40]
+        context = zmq.Context()
+
+        sub_stream = context.socket(zmq.SUB)
+        # print("Binding Socket to", self.addr)
+        sub_stream.setsockopt(zmq.CONFLATE, 1)
+        
+        sub_stream.connect(f"ipc:///tmp/v{self.file_id}")
+        sub_stream.setsockopt_string(zmq.SUBSCRIBE, '')
         while True:
             try:
-                _, image = inP.recv()
+                # stamp, image = get_last(inP)
+                # print(f"Stream timedelta -> {time.time() - stamp}s")
                 # image = np.array(self.frame_shm).copy()
                 # print(stamps, image)
+                # cv2.imshow("Image", image)
+                # cv2.waitKey(1)
+                
+                data = sub_stream.recv()
+                data = np.frombuffer(data, dtype=np.uint8)
+                image = np.reshape(data, (480, 640, 3))
+                print("Stream", image.shape)
+                pack_time = time.time()
+                # print(f"Streamer timedelta {(time.time() - stamp):.4f}s")
                 result, image = cv2.imencode(".jpg", image, encode_param)
                 data = image.tobytes()
                 size = len(data)
-                print(f"Streaming | sending data size: {size}")
+            
+                self.connection.write(struct.pack("d", 1.0))
+                # print(f"Streaming | sending data size: {size}, timestamp:{stamp}")
                 self.connection.write(struct.pack("<L", size))
                 self.connection.write(data)
+                print(f"Pack Time -> {(time.time() - pack_time):.4f}")
             except Exception as e:
                 print("CameraStreamer failed to stream images:", e, "\n")
                 # Reinitialize the socket for reconnecting to client.

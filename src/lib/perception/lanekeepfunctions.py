@@ -139,25 +139,27 @@ class LaneKeep:
     ) -> Tuple[float, bool, Optional[np.ndarray]]:
         preprocess_img: np.ndarray = self.preprocess_pipeline(img)
         intersection_detected, cnts = self.intersection_det(preprocess_img)
-        mask = np.ones(preprocess_img.shape, dtype="uint8") * 255
-        if len(cnts) > 0:
-            print(type(cnts), type(cnts[0]))
-            cv2.drawContours(mask, cnts, -1, 0, -1)
-        preprocess_img = cv2.bitwise_and(preprocess_img, preprocess_img, mask=mask)
+        # mask = np.ones(preprocess_img.shape, dtype="uint8") * 255
+        # cv2.imwrite("mask.png", preprocess_img)
+        # if len(cnts) > 0:
+        #     # print(type(cnts), type(cnts[0]))
+        #     cv2.drawContours(mask, cnts, -1, 0, -1)
+        # preprocess_img = cv2.bitwise_and(preprocess_img, preprocess_img, mask=mask)
 
         if self.computation_method == "hough":
             if get_image:
                 angle, outimg = self.houghlines_angle(preprocess_img, get_img=get_image)
-                if len(cnts) > 0:
-                    self.draw_intersection_bbox(outimg, cnts)
+                # if len(cnts) > 0:
+                #     self.draw_intersection_bbox(outimg, cnts)
                 return angle, intersection_detected, outimg
 
             else:
                 angle = self.houghlines_angle(preprocess_img)
+                angle = self.get_lane_error(preprocess_img)
                 # angle_roadarea = self.graph_road_search(preprocess_img)
                 # print(angle, " ", angle_roadarea)
                 #             angle = (angle*2 + angle_roadarea) / 3
-                return intersection_detected, angle
+                return angle, intersection_detected
 
     def roi_func(self, img: np.ndarray) -> np.ndarray:
         """Given image get Region of interest
@@ -211,11 +213,11 @@ class LaneKeep:
         mask = cv2.inRange(imgn, lower, upper)
         return mask
 
-    def intersection_det(self, img: np.ndarray, area_threshold=6_500):
+    def intersection_det(self, img: np.ndarray, area_threshold=5_500):
         # detect horizontal lines
-        horizontal_size = img.shape[1] // 4
+        horizontal_size = img.shape[1] // 6
         horizontal_kernel = cv2.getStructuringElement(
-            cv2.MORPH_RECT, (horizontal_size, 10)
+            cv2.MORPH_RECT, (horizontal_size, 5)
         )
         detect_horizontal = cv2.morphologyEx(
             img, cv2.MORPH_OPEN, horizontal_kernel, iterations=2
@@ -233,6 +235,7 @@ class LaneKeep:
                 detected = True
                 final_contours.append(c)
                 # cv2.drawContours(result, [c], -1, (255, 0, 0), 5)
+            print("Intersection Area -> ", area)
 
         return detected, final_contours
 
@@ -309,27 +312,30 @@ class LaneKeep:
         # out_img=display_heading_line(processed_img,angle)
         return angle
         # ,out_img
-    
-    def get_lane_error(self,img:np.ndarray)->float:
-        angle=get_error_lane(img)
+
+    def get_lane_error(self, img: np.ndarray) -> float:
+        angle = get_error_lane(img)
         return angle
 
+
 def get_error_lane(mask_image):
-    mid_y=(mask_image.shape[0]//2)
-    pval=int(mid_y+0.6*(mask_image.shape[0]//2))
-    mval=int(mid_y+ 0.8*(mask_image.shape[0]//2))
+    mid_y = mask_image.shape[0] // 2
+    pval = int(mid_y + 0.6 * (mask_image.shape[0] // 2))
+    mval = int(mid_y + 0.8 * (mask_image.shape[0] // 2))
     # print(pval,mval)
-    img_new=mask_image[pval:mval,:]
-    img_new=cv2.resize(img_new,None,fx=0.35,fy=0.35,interpolation = cv2.INTER_NEAREST)
+    img_new = mask_image[pval:mval, :]
+    img_new = cv2.resize(
+        img_new, None, fx=0.35, fy=0.35, interpolation=cv2.INTER_NEAREST
+    )
     # plt.plot(img_new)
-    print(img_new.shape)
+    # print(img_new.shape)
     histogram = np.sum(img_new[img_new.shape[0] // 2 :, :], axis=0)  # noqa
-    plt.plot(histogram)
+    # plt.plot(histogram)
     midpoint = np.int(histogram.shape[0] / 2)
     leftxBase = np.argmax(histogram[:midpoint])
     rightxBase = np.argmax(histogram[midpoint:]) + midpoint
-    print(leftxBase,midpoint,rightxBase)
-    return (abs(rightxBase-midpoint)-abs(leftxBase-midpoint))*26.5/(midpoint)
+    # print(leftxBase, midpoint, rightxBase)
+    return ((abs(rightxBase - midpoint) - abs(leftxBase - midpoint)) * 26.5 / (midpoint)) + 90
 
 
 def get_road_ratio_angle(mask_img):

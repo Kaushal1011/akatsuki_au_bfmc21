@@ -1,0 +1,4 @@
+{
+    "nodes":[[86,100],[100,61],[61,168],[168,230],[230,104],[104,465],[465,85]],
+    "activity":["navigation","roadblocked","parking","overtaking","highway","oneway","finish"]
+}

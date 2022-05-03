@@ -3,7 +3,7 @@ import socket
 from threading import Thread
 from src.templates.workerprocess import WorkerProcess
 import time
-
+import zmq
 REMOTE_PORT = 8888
 
 
@@ -57,14 +57,17 @@ class LocalisationProcess(WorkerProcess):
             List of the output pipes.
         """
         # self.server_socket.setblocking(False)
+        context_send = zmq.Context()
+        pub_loc = context_send.socket(zmq.PUB)
+        pub_loc.bind("ipc:///tmp/v31")
+
         try:
             print("Starting Home Localization Process")
             while True:
                 bts, addr = self.server_socket.recvfrom(1024)
                 bts = bts.decode()
-                command = json.loads(bts)
-                for outP in outPs:
-                    outP.send(command)
+                data = json.loads(bts)
+                pub_loc.send_json(data, flags=zmq.NOBLOCK)
 
         except Exception as e:
             print("Home LocSys Error")

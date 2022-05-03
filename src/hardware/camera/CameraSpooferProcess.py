@@ -33,7 +33,7 @@ from typing import Tuple
 
 import cv2
 import numpy as np
-
+import zmq
 from src.templates.workerprocess import WorkerProcess
 
 # from multiprocessing import shared_memory
@@ -110,6 +110,10 @@ class CameraSpooferProcess(WorkerProcess):
         videos : list(string)
             The list of files with the videos.
         """
+        context = zmq.Context()
+        pub_cam = context.socket(zmq.PUB)
+        pub_cam.bind("ipc:///tmp/v4l")
+
         while True:
             for video in videos:
                 cap = cv2.VideoCapture(video)
@@ -119,16 +123,9 @@ class CameraSpooferProcess(WorkerProcess):
                     stamp = time.time()
                     if ret:
                         frame: np.ndarray = cv2.resize(frame, self.videoSize)
-                        # shared_frame[::] = frame
-                        # print(type(frame), frame.nbytes, frame.dtype)
-                        # print("shared_frame in Spoofer\n", shared_frame)
-                        # assert (shared_frame == frame).all()
                         send_start_time = time.time()
-                        for p in self.outPs:
-                            p.send((stamp, frame))
-                        # print(f"Send time {time.time() - send_start_time}")
-                        # print("Cam Spoofer ----> ")
+                        pub_cam.send(frame.tobytes(), flags=zmq.NOBLOCK)
+                        print("CameraSpoofer")
                     else:
                         break
                 cap.release()
-                sa.delete("shared_frame1")

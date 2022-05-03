@@ -3,8 +3,6 @@ from multiprocessing import Event, Pipe
 
 
 import argparse
-
-import numpy as np
 from src import config as config_module
 
 parser = argparse.ArgumentParser()
@@ -34,8 +32,6 @@ from src.lib.actuator.momentcontrol import MovementControl
 from src.lib.actuator.sim_connect import SimulatorConnector
 from src.lib.cortex.decisionproc import DecisionMakingProcess
 from src.lib.cortex.posfusproc import PositionFusionProcess
-from src.lib.cortex.object_proc import ObjectProcess
-from src.lib.perception.intersection_det import IntersectionDetProcess
 from src.lib.perception.lanekeep import LaneKeepingProcess as LaneKeeping
 from src.lib.perception.signdetection import SignDetectionProcess
 from src.utils.camerastreamer.CameraStreamerProcess import CameraStreamerProcess
@@ -67,7 +63,7 @@ def filter(level: List[int]):
 TEST_PIPE = True
 logger.remove()
 if TEST_PIPE:
-    logger.add(sys.stderr, filter=filter([15]))
+    logger.add(sys.stderr, filter=filter([18]))
 
 logger.add("file1.log", filter=lambda r: r["level"] == 14)
 # logger.level("LK", no=10, color="<blue>", icon='' )
@@ -97,7 +93,7 @@ posFusionInputPs = []
 posFusionInputName = []
 # =============================== RC CONTROL =================================================
 if config["enableRc"]:
-    # rc      ->  serial handler
+    # rc  ->  serial handler
     rcShR, rcShS = Pipe(duplex=False)
 
     rcProc = RemoteControlReceiverProcess([], [rcShS])
@@ -122,7 +118,7 @@ if config["enableLaneKeeping"]:
 
     if config["enableStream"]:
         lkStrR, lkStrS = Pipe(duplex=False)
-        lkProc = LaneKeeping([lkR], [lkFzzS, lkStrS], stream=True)
+        lkProc = LaneKeeping([lkR], [lkFzzS, lkStrS])
     else:
         lkProc = LaneKeeping([lkR], [lkFzzS])
 
@@ -155,9 +151,9 @@ if config["enableSignDet"]:
     sDFzzR, sDFzzS = Pipe(duplex=False)
     if config["enableStream"]:
         sDStR, sDStS = Pipe(duplex=False)
-        sDProc = SignDetectionProcess([camsDR], [sDFzzS])
+        sDProc = SignDetectionProcess([camsDR], [sDFzzS,sDStS], ["fzz", "stream"])
     else:
-        sDProc = SignDetectionProcess([camsDR], [sDFzzS])
+        sDProc = SignDetectionProcess([camsDR], [sDFzzS], ["fzz"])
 
     camOutPs.append(camsDS)
     dataFusionInputPs.append(sDFzzR)
@@ -179,7 +175,7 @@ if config["enableSIM"]:
 
 elif config["home_loc"]:
     # LocSys -> Position Fusion
-    print("\n\n\n Starting Home Localization process \n\n\n")
+    print(">>> Starting Home Localization process")
     lsPosR, lsPosS = Pipe(duplex=False)
     locsysProc = LocalisationProcess([], [lsPosS])
     allProcesses.append(locsysProc)
@@ -197,7 +193,6 @@ elif config["using_server"]:
 
 
 # -------TrafficLightSemaphore----------
-# TODO: enable again when required
 # if config["enableSIM"]:
 #     # Traffic Semaphore -> Decision Making (data fusion)
 #     tlFzzR, tlFzzS = Pipe(duplex=False)
@@ -325,17 +320,20 @@ else:
 
 # ========================= Streamer =====================================================
 if config["enableStream"]:
-    if config["enableLaneKeeping"]:
-        streamProc = CameraStreamerProcess([lkStrR], [])
-        allProcesses.append(streamProc)
-    else:
-        camStR, camStS = Pipe(duplex=False)  # camera  ->  streamer
-        camOutPs.append(camStS)
-        streamProc = CameraStreamerProcess([camStR], [])
-        allProcesses.append(streamProc)
+#     if config["enableLaneKeeping"]:
+#         pass
+# #         streamProc = CameraStreamerProcess([lkStrR], [], port=STREAM_PORT1)
+# #         allProcesses.append(streamProc)
+#     else:
+#         camStR, camStS = Pipe(duplex=False)  # camera  ->  streamer
+#         camOutPs.append(camStS)
+#         streamProc = CameraStreamerProcess([camStR], [], port=STREAM_PORT1)
+#         allProcesses.append(streamProc)
 
     if config["enableSignDet"]:
-        streamProc2 = CameraStreamerProcess([sDStR], [])
+        #camStR, camStS = Pipe(duplex=False)  # camera  ->  streamer
+        #camOutPs.append(camStS)
+        streamProc2 = CameraStreamerProcess([sDStR], [], port=STREAM_PORT2)
         allProcesses.append(streamProc2)
 
 # ========================== Camera process ==============================================

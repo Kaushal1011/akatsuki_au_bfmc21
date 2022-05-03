@@ -26,17 +26,24 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-from src.utils.camerastreamer.CameraReceiverProcess import CameraReceiverProcess
+from src.utils.camerastreamer.zmqRecieverProcess import CameraReceiverProcess
 from multiprocessing import Event
-
+import argparse
 
 # ===================================== MAIN =============================================
 if __name__ == "__main__":
-    a = CameraReceiverProcess([],[])
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "port",
+        help="Stream connection port.\nLaneKeep -> 2244 \t SignDetection -> 4422",
+        type=int,
+    )
+    args = parser.parse_args()
+    a = CameraReceiverProcess([], [], args.port)
     a.start()
-    blocker =Event()
+    blocker = Event()
     try:
-        blocker.wait() 
+        blocker.wait()
     except KeyboardInterrupt:
         print("\nCatching a KeyboardInterruption exception! Shutdown all processes.")
         a.terminate()

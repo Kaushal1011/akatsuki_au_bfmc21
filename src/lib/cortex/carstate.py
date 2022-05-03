@@ -3,33 +3,10 @@ import math
 
 from time import time
 from src.lib.cortex.navigation import Navigator
-
-
-class DetectedSign:
-    def init(self):
-        self.priority = False
-        self.crosswalk = False
-        self.stop = False
-        self.roundabout = False
-        self.parking = False
-        self.highway_exit = False
-        self.oneway = False
-        self.noentry = False
-        self.highway_entry = False
-
-    def asdict(self):
-        return {
-            "priority": self.priority,
-            "crosswalk": self.crosswalk,
-            "stop": self.stop,
-            "roundabout": self.roundabout,
-            "parking": self.parking,
-            "highway_exit": self.highway_exit,
-            "oneway": self.oneway,
-            "noentry": self.noentry,
-            "highway_entry": self.highway_entry,
-        }
-
+activity_config={
+    "nodes":[[86,99],[100,145],[61,168],[169,229],[230,104],[105,465],[466,85]],
+    "activity":["navigation","roadblocked","parking","overtaking","highway","oneway","finish"]
+}
 
 class CarState:
     def __init__(self, max_v=0.20, dt=0.13, car_len=0.365, **kwargs) -> None:
@@ -45,13 +22,11 @@ class CarState:
         self.car_len = car_len
         self.rear_x = self.x - ((car_len / 2) * math.cos(-self.yaw))
         self.rear_y = self.y - ((car_len / 2) * math.sin(-self.yaw))
-        
-        self.target_x=None
-        self.target_y=None
-        self.target_ptype=None
-        self.target_etype=None
 
-        self.navigator = Navigator()
+        self.target_x = None
+        self.target_y = None
+
+        self.navigator = Navigator(activity_config)
         # plan path -> self.navigator.plan_path(self.x,self.y,self.yaw)
         # current node -> self.navigator.get_current_node(self.x, self.y, self.yaw)
         self.last_update_time = time()
@@ -62,6 +37,8 @@ class CarState:
 
         # intersection detected
         self.detected_intersection = False
+
+        self.parkingcoords=(2.94,2.09)
 
         # sign detection
         self.detected_sign = {
@@ -84,7 +61,7 @@ class CarState:
         self.detected_car = False
         self.detected_closed_road = False
         self.detected_pedestrian = False
-
+        self.target_ind=None
         # traffic light semaphore
         self.tl = {}
 
@@ -101,7 +78,12 @@ class CarState:
         # control parameters
         self.steering_angle = 0.0
         self.v = max_v
+        self.priority_speed=0.1
+        self.highway_speed = 0.25
 
+        # activity type
+
+        self.activity_type = None
         self.car_len = car_len
 
     def calc_distance(self, point_x: float, point_y: float) -> float:

@@ -33,6 +33,7 @@ import math
 import os.path
 import threading
 import time
+import zmq
 
 try:
     import RTIMU
@@ -69,6 +70,10 @@ class imu(threading.Thread):
         self.outPs = outPs
 
     def run(self):
+        context_send = zmq.Context()
+        pub_imu = context_send.socket(zmq.PUB)
+        pub_imu.bind(f"ipc:///tmp/v21")
+
         while self.running is True:
             if self.imu.IMURead():
                 self.data = self.imu.getIMUData()
@@ -80,23 +85,24 @@ class imu(threading.Thread):
                 self.accelx = self.accel[0]
                 self.accely = self.accel[1]
                 self.accelz = self.accel[2]
-                
+
                 # fix yaw
-                yaw = yaw*math.pi / 180
+                yaw = yaw * math.pi / 180
                 if yaw > math.pi:
-                    yaw = yaw - 2*math.pi
+                    yaw = yaw - 2 * math.pi
                 self.yaw = -yaw
-                
-                for outP in self.outPs:
-                    outP.send({"timestamp":time.time(),
-                               "roll": self.roll,
-                               "pitch": self.pitch,
-                               "yaw": self.yaw,
-                               "accelx":self.accelx,
-                               "accely":self.accely,
-                               "accelz":self.accelz
-                               
-                               })
+
+                data = {
+                    "timestamp": time.time(),
+                    "roll": self.roll,
+                    "pitch": self.pitch,
+                    "yaw": self.yaw,
+                    "accelx": self.accelx,
+                    "accely": self.accely,
+                    "accelz": self.accelz,
+                }
+                pub_imu.send_json(data)
+
                 # time.sleep(self.poll_interval * 1.0 / 1000.0)
 
             time.sleep(0.5)

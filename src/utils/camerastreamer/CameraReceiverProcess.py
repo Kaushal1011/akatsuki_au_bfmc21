@@ -26,6 +26,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
+from multiprocessing.connection import Connection
 import sys
 
 sys.path.append(".")
@@ -33,7 +34,7 @@ sys.path.append(".")
 import socket
 import struct
 from threading import Thread
-
+import time
 import cv2
 import numpy as np
 
@@ -42,7 +43,7 @@ from src.templates.workerprocess import WorkerProcess
 
 class CameraReceiverProcess(WorkerProcess):
     # ===================================== INIT =========================================
-    def __init__(self, inPs, outPs):
+    def __init__(self, inPs: Connection, outPs: Connection, port: int):
         """Process used for debugging. Can be used as a direct frame analyzer, instead of using the VNC
         It receives the images from the raspberry and displays them.
 
@@ -55,6 +56,7 @@ class CameraReceiverProcess(WorkerProcess):
         """
         super(CameraReceiverProcess, self).__init__(inPs, outPs)
         self.imgSize = (480, 640, 3)
+        self.port = port
 
     # ===================================== RUN ==========================================
     def run(self):
@@ -66,7 +68,7 @@ class CameraReceiverProcess(WorkerProcess):
     def _init_socket(self):
         """Initialize the socket server."""
 
-        self.port = 2244
+        # self.port = 2244
         self.serverIp = "0.0.0.0"
 
         self.server_socket = socket.socket()
@@ -74,7 +76,6 @@ class CameraReceiverProcess(WorkerProcess):
         self.server_socket.bind((self.serverIp, self.port))
 
         self.server_socket.listen(0)
-        print("socket init start")
         self.connection = self.server_socket.accept()[0].makefile("rb")
         print("socket init")
 
@@ -89,19 +90,22 @@ class CameraReceiverProcess(WorkerProcess):
         """Read the image from input stream, decode it and display it with the CV2 library."""
         try:
             while True:
-                print("here in read_stream")
 
+                stamp = struct.unpack("d", self.connection.read(struct.calcsize("d")))
+                print(f"Time delta {(time.time()-stamp[0]):.4f}")
                 # decode image
                 image_len = struct.unpack(
                     "<L", self.connection.read(struct.calcsize("<L"))
                 )[0]
 
                 bts = self.connection.read(image_len)
+                decode_time = time.time()
                 # ----------------------- read image -----------------------
                 image = np.frombuffer(bts, np.uint8)
                 image = cv2.imdecode(image, cv2.IMREAD_COLOR)
                 image = np.reshape(image, self.imgSize)
-                image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+                # print(f"Decode time {(time.time() - decode_time):.4f}s")
+                # image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
                 # image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
                 # ----------------------- show images -------------------
                 cv2.imshow("Image", image)
