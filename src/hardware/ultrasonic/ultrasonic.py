@@ -68,12 +68,12 @@ class Ultrasonic(threading.Thread):
         pub_dis = context_send.socket(zmq.PUB)
         pub_dis.bind(f"ipc:///tmp/v11")
 
-        while self.running is True:
+        while True:
             sonar2 = self.get_distance(GPIO_TRIGGER_FRONT, GPIO_ECHO_FRONT)
             sonar1 = self.get_distance(GPIO_TRIGGER_SIDE, GPIO_ECHO_SIDE)
             data = {"timestamp": time.time(), "sonar1": sonar1, "sonar2": sonar2}
             pub_dis.send_json(data)
-            time.sleep(0.1)
+            time.sleep(0.05)
 
     def stop(self):
         self.running = False
