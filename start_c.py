@@ -28,6 +28,9 @@ from src.lib.cortex.posfusproc import PositionFusionProcess
 
 from src.data.server_sim import ServerSIM as DistanceSIM
 from src.hardware.ultrasonic.distanceProc import DistanceProcess
+from src.lib.actuator.momentcontrol import MovementControl
+from src.lib.actuator.sim_connect import SimulatorConnector
+from src.hardware.serialhandler.SerialHandlerProcess import SerialHandlerProcess
 
 from src.utils.camerastreamer.zmqStreamerProcess import CameraStreamerProcess
 from src.utils.remotecontrol.RemoteControlReceiverProcess import (
@@ -195,37 +198,37 @@ allProcesses.append(datafzzProc)
 
 # ======================= Actuator =================================================
 
-# # Movement control
-# if config["enableSIM"] and isPI:
-#     # Movement control -> Serial handler
-#     mcSHR, mcSHS = Pipe(duplex=False)
-#     # Moment control -> SIM Serial Handler
-#     mcSSHR, mcSSHS = Pipe(duplex=False)
-#     cfProc = MovementControl(movementControlR, [mcSHS, mcSSHS])
-#     allProcesses.append(cfProc)
-# else:
-#     # Movement control -> Serial handler
-#     mcSHR, mcSHS = Pipe(duplex=False)
-#     cfProc = MovementControl(movementControlR, [mcSHS])
-#     allProcesses.append(cfProc)
+# Movement control
+if config["enableSIM"] and isPI:
+    # Movement control -> Serial handler
+    mcSHR, mcSHS = Pipe(duplex=False)
+    # Moment control -> SIM Serial Handler
+    mcSSHR, mcSSHS = Pipe(duplex=False)
+    cfProc = MovementControl(movementControlR, [mcSHS, mcSSHS])
+    allProcesses.append(cfProc)
+else:
+    # Movement control -> Serial handler
+    mcSHR, mcSHS = Pipe(duplex=False)
+    cfProc = MovementControl(movementControlR, [mcSHS])
+    allProcesses.append(cfProc)
 
 # Serial handler or Simulator Connector
-# if config["enableSIM"] and isPI:
-#     # shProc = SimulatorConnector([mcSSHR], [])
-#     # allProcesses.append(shProc)
-#
-#     shProc = SerialHandlerProcess([mcSHR], [])
-#     allProcesses.append(shProc)
-#
-# elif config["enableSIM"] and not isPI:
-#     shProc = SimulatorConnector([mcSHR], [])
-#     allProcesses.append(shProc)
-# else:
-#     try:
-#         shProc = SerialHandlerProcess([mcSHR], [])
-#         allProcesses.append(shProc)
-#     except Exception:
-#         print("ERROR: Falied to start Serial Handler")
+if config["enableSIM"] and isPI:
+    # shProc = SimulatorConnector([mcSSHR], [])
+    # allProcesses.append(shProc)
+
+    shProc = SerialHandlerProcess([mcSHR], [])
+    allProcesses.append(shProc)
+
+elif config["enableSIM"] and not isPI:
+    shProc = SimulatorConnector([mcSHR], [])
+    allProcesses.append(shProc)
+else:
+    try:
+        shProc = SerialHandlerProcess([mcSHR], [])
+        allProcesses.append(shProc)
+    except Exception:
+        print("ERROR: Falied to start Serial Handler")
 
 
 # ========================= Streamer =====================================================

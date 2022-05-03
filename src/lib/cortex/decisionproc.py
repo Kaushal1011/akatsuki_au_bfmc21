@@ -258,7 +258,7 @@ class DecisionMakingProcess(WorkerProcess):
                 start_time = time()
                 t_lk = time()
                 if "lk" in self.inPsnames:
-                    if sub_lk.poll(timeout=0.001):
+                    if sub_lk.poll(timeout=0.01):
                         lk_angle, detected_intersection = sub_lk.recv_json()
                         print("LK -> ", lk_angle, detected_intersection)
                         self.state.update_lk_angle(lk_angle)
@@ -290,10 +290,12 @@ class DecisionMakingProcess(WorkerProcess):
                             False,
                             False,
                         )
-                        print("DIS -> ", distance_data["sonar1"], distance_data["sonar1"])
+                        print(
+                            "DIS -> ", distance_data["sonar1"], distance_data["sonar1"]
+                        )
                         logger.log("PIPE", f"Recv->DIS {final_data[0]},{final_data[1]}")
                         logger.log(
-                        "SYNC", f"dis delta {time()- distance_data['timestamp']}"
+                            "SYNC", f"dis delta {time()- distance_data['timestamp']}"
                         )
                         self.state.update_object_det(*final_data)
 
@@ -317,31 +319,28 @@ class DecisionMakingProcess(WorkerProcess):
 
                 # # update car navigator, current ptype, current etype and current idx
 
-                # trigger_behaviour(self.state, self.actman)
+                trigger_behaviour(self.state, self.actman)
 
-                # speed, steer = self.actman(self.state)
-                # self.state.v = speed
-                # self.state.steering_angle = steer
-                # rx.append(self.state.x)
-                # ry.append(self.state.y)
-                # logger.log("XY", f"{self.state.x}, {self.state.y},")
-                # logger.debug(f"Sonar Front: {self.state.front_distance}")
-                # logger.debug(f"Sonar Side: {self.state.side_distance}")
-                # # print("speed: ", self.state.v)
-                # # print("steer: ", self.state.steering_angle)
+                speed, steer = self.actman(self.state)
+                self.state.v = speed
+                self.state.steering_angle = steer
+                rx.append(self.state.x)
+                ry.append(self.state.y)
+                logger.log("XY", f"{self.state.x}, {self.state.y},")
+                logger.debug(f"Sonar Front: {self.state.front_distance}")
+                logger.debug(f"Sonar Side: {self.state.side_distance}")
+                # print("speed: ", self.state.v)
+                # print("steer: ", self.state.steering_angle)
 
-                # # TODO
-                # # speed, steer_angle = self.get_controls()
+                # print(f"Time taken {time() - start_time}s\n ========================")
+                # Start car if model if loaded
+                # if not loaded_model.value:
+                #     print("//////////////////// Waiting for Model")
+                #     self.state.v = 0
 
-                # # print(f"Time taken {time() - start_time}s\n ========================")
-                # # Start car if model if loaded
-                # # if not loaded_model.value:
-                # #     print("//////////////////// Waiting for Model")
-                # #     self.state.v = 0
-
-                # for outP in outPs:
-                #     print("Final -> ", (self.state.steering_angle, self.state.v))
-                #     outP.send((self.state.steering_angle, self.state.v))
+                for outP in outPs:
+                    print("Final -> ", (self.state.steering_angle, self.state.v))
+                    outP.send((self.state.steering_angle, self.state.v))
 
             except Exception as e:
                 print("Decision Process error:")
