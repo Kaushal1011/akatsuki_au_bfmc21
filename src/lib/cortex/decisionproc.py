@@ -151,7 +151,7 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
 
 class DecisionMakingProcess(WorkerProcess):
     # ===================================== Worker process =========================================
-    def __init__(self, inPs, outPs, inPsnames=[], lk: bool = True, sd: bool = True):
+    def __init__(self, inPs, outPs, inPsnames=[]):
         """Process used for the image processing needed for lane keeping and for computing the steering value.
 
         Parameters
@@ -165,8 +165,6 @@ class DecisionMakingProcess(WorkerProcess):
         # pass navigator config
         self.state = CarState(navigator_config=None)
         self.inPsnames = inPsnames
-        self.lk = lk
-        self.sd = sd
         self.actman = ActionManager()
 
         lkobj = LaneKeepBehaviour()

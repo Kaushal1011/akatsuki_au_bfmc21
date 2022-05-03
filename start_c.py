@@ -80,16 +80,12 @@ STREAM_PORT1 = 2244
 STREAM_PORT2 = 4422
 # ["cam", "lk", "sd"]
 
-streams = ["lk", "sd"]
+streams = ["sd"]
 # =============================== INITIALIZING PROCESSES =================================
 # Pipe collections
 allProcesses = []
 movementControlR = []
-camOutPs = []
-dataFusionInputPs = []
 dataFusionInputName = []
-
-posFusionInputPs = []
 posFusionInputName = []
 # =============================== RC CONTROL =================================================
 if config["enableRc"]:
@@ -103,6 +99,7 @@ if config["enableRc"]:
 
 lkProc = LaneKeeping([], [], enable_stream=("lk" in streams))
 allProcesses.append(lkProc)
+dataFusionInputName.append("lk")
 
 if not config["enableSignDet"]:
     if "sd" in streams:
@@ -111,6 +108,8 @@ if not config["enableSignDet"]:
 if config["enableSignDet"]:
     sDProc = SignDetectionProcess([], [], [], enable_stream=("sd" in streams))
     allProcesses.append(sDProc)
+    dataFusionInputName.append("sd")
+
 
 # =============================== DATA ===================================================
 
@@ -180,12 +179,16 @@ if len(posFusionInputName) > 0:
 if config["enableSIM"]:
     disProc = DistanceSIM([], [], "dis", 6666)
     allProcesses.append(disProc)
+    dataFusionInputName.append("dis")
+
 elif isPI:
     disProc = DistanceProcess([], [])
     allProcesses.append(disProc)
+    dataFusionInputName.append("dis")
+
 
 # ======================= Decision Making =========================================
-datafzzProc = DecisionMakingProcess([], [], inPsnames=[])
+datafzzProc = DecisionMakingProcess([], [], inPsnames=dataFusionInputName)
 allProcesses.append(datafzzProc)
 # movementControlR.append(FzzMcR)
 #
@@ -237,13 +240,13 @@ if config["enableStream"]:
 
 # ========================== Camera process ==============================================
 if config["enableCameraSpoof"]:
-    camSpoofer = CameraSpooferProcess([], camOutPs, "vid")
+    camSpoofer = CameraSpooferProcess([], [], "vid")
     allProcesses.append(camSpoofer)
 else:
     if config["enableSIM"]:
-        camProc = SIMCameraProcess([], camOutPs)
+        camProc = SIMCameraProcess([], [])
     else:
-        camProc = CameraProcess([], camOutPs)
+        camProc = CameraProcess([], [])
 
     allProcesses.append(camProc)
 
