@@ -9,6 +9,7 @@ from multiprocessing import Pipe
 from multiprocessing.connection import Connection
 from typing import List
 from loguru import logger
+import zmq
 
 # import  config
 
@@ -77,6 +78,24 @@ class PositionFusionProcess(WorkerProcess):
             Output pipe to send the steering angle value to other process.
         """
         print("Position Fusion ", self.inPsnames, self.inPs)
+        if "loc" in self.inPsnames:
+            context_recv_loc = zmq.Context()
+            sub_loc = context_recv_loc.socket(zmq.SUB)
+            sub_loc.setsockopt(zmq.CONFLATE, 1)
+            sub_loc.connect("ipc:///tmp/v31")
+            sub_loc.setsockopt_string(zmq.SUBSCRIBE, "")
+
+        if "imu" in self.inPsnames:
+            context_recv_imu = zmq.Context()
+            sub_imu = context_recv_imu.socket(zmq.SUB)
+            sub_imu.setsockopt(zmq.CONFLATE, 1)
+            sub_imu.connect("ipc:///tmp/v21")
+            sub_imu.setsockopt_string(zmq.SUBSCRIBE, "")
+
+        context_send = zmq.Context()
+        pub_pos = context_send.socket(zmq.PUB)
+        pub_pos.bind("ipc:///tmp/v42")
+
         try:
             while True:
                 iyaw = None
@@ -91,45 +110,38 @@ class PositionFusionProcess(WorkerProcess):
 
                 pos = list()
                 if "imu" in self.inPsnames:
-                    idx = self.inPsnames.index("imu")
-                    if inPs[idx].poll():
-                        idx = self.inPsnames.index("imu")
-                        imu = get_last(inPs[idx])
-                        print(f'imu delta {time()-imu["timestamp"]}')
-                        logger.log("PIPE", f"imu {imu}")
-                        # print("IMU", time(), imu["timestamp"])
-                        pos_timestamp = imu["timestamp"]
-                        iroll = imu["roll"]
-                        ipitch = imu["pitch"]
-                        iyaw = imu["yaw"]
-                        # iyaw = 2 * math.pi - (iyaw + math.pi)
-
-                        ax = imu["accelx"]
-                        ay = imu["accely"]
-                        az = imu["accelz"]
+                    imu = sub_imu.recv_json()
+                    print("IMU -> ", imu)
+                    # print(f'imu delta {time()-imu["timestamp"]}')
+                    logger.log("PIPE", f"imu {imu}")
+                    # print("IMU", time(), imu["timestamp"])
+                    pos_timestamp = imu["timestamp"]
+                    iroll = imu["roll"]
+                    ipitch = imu["pitch"]
+                    iyaw = imu["yaw"]
+                    # iyaw = 2 * math.pi - (iyaw + math.pi)
+                    ax = imu["accelx"]
+                    ay = imu["accely"]
+                    az = imu["accelz"]
 
                 if "loc" in self.inPsnames:
-                    idx = self.inPsnames.index("loc")
-                    if inPs[idx].poll():
-                        loc: dict = get_last(inPs[idx])
-                        # logger.log("SYNC", f'loc delta {(time()-loc["timestamp"]):.4f}')
+                    loc: dict = sub_loc.recv(flags=zmq.NOBLOCK)
+                    print("LOC", loc)
+                    pos_timestamp = loc["timestamp"]
+                    gx = loc["posA"]
+                    gy = loc["posB"]
+                    gyaw = loc["rotA"] if "rotA" in loc.keys() else loc["radA"]
+                    # gyaw = 2 * math.pi - (gyaw + math.pi)
 
-                        # print("LOC", time(), loc["timestamp"])
-                        pos_timestamp = loc["timestamp"]
-                        gx = loc["posA"]
-                        gy = loc["posB"]
-                        gyaw = loc["rotA"] if "rotA" in loc.keys() else loc["radA"]
-                        # gyaw = 2 * math.pi - (gyaw + math.pi)
-
-
-                if iyaw or gx:
+                if (iyaw is not None) or (gx is not None):
                     pos_data = (
                         pos_timestamp,
                         self.localize.update(
                             iyaw, ipitch, iroll, ax, ay, az, gx, gy, gyaw
                         ),
                     )
-                    self.outPs[0].send(pos_data)
+                    # print("pos_data", pos_data)
+                    pub_pos.send_json(pos_data)
 
         except Exception as e:
             raise e

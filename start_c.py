@@ -3,6 +3,8 @@ from multiprocessing import Event, Pipe
 
 
 import argparse
+
+from isort import stream
 from src import config as config_module
 
 parser = argparse.ArgumentParser()
@@ -19,11 +21,25 @@ from src.hardware.camera.CameraSpooferProcess import CameraSpooferProcess
 from src.hardware.camera.cameraprocess import CameraProcess
 from src.hardware.camera.SIMCameraProcess import SIMCameraProcess
 from src.lib.perception.lanekeepz import LaneKeepingProcess as LaneKeeping
-# from src.lib.perception.signdetection import SignDetectionProcess
-from src.utils.camerastreamer.CameraStreamerProcess import CameraStreamerProcess
+from src.lib.perception.signdetection import SignDetectionProcess
+from src.data.localisationssystem.home_locProc import LocalisationProcess
+from src.data.localisationssystem.locsysProc import LocalisationSystemProcess
+from src.data.server_sim import ServerSIM as LocSysSIM
+from src.data.server_sim import ServerSIM as IMUSIM
+from src.lib.cortex.posfusproc import PositionFusionProcess
+
+from src.data.server_sim import ServerSIM as DistanceSIM
+from src.hardware.ultrasonic.distanceProc import DistanceProcess
+from src.lib.actuator.momentcontrol import MovementControl
+from src.lib.actuator.sim_connect import SimulatorConnector
+from src.hardware.serialhandler.SerialHandlerProcess import SerialHandlerProcess
+
+from src.utils.camerastreamer.zmqStreamerProcess import CameraStreamerProcess
 from src.utils.remotecontrol.RemoteControlReceiverProcess import (
     RemoteControlReceiverProcess,
 )
+from src.lib.cortex.decisionproc import DecisionMakingProcess
+
 import sys
 from loguru import logger
 from typing import List
@@ -67,16 +83,16 @@ LOCSYS_HOME_PORT = 8888
 
 STREAM_PORT1 = 2244
 STREAM_PORT2 = 4422
+# ["cam", "lk", "sd"]
+
+streams = ["sd"]
 # =============================== INITIALIZING PROCESSES =================================
 # Pipe collections
 allProcesses = []
 movementControlR = []
-camOutPs = []
-dataFusionInputPs = []
 dataFusionInputName = []
-
-posFusionInputPs = []
 posFusionInputName = []
+camOutNames = []
 # =============================== RC CONTROL =================================================
 if config["enableRc"]:
     # rc  ->  serial handler
@@ -87,94 +103,44 @@ if config["enableRc"]:
 
 # ===================================== PERCEPTION ===================================
 
+lkProc = LaneKeeping([], [], enable_stream=("lk" in streams))
+allProcesses.append(lkProc)
+dataFusionInputName.append("lk")
+camOutNames.append("lk")
 
-    # Camera process -> Lane keeping
-lkR, lkS = Pipe(duplex=False)
+if not config["enableSignDet"]:
+    if "sd" in streams:
+        streams.remove("sd")
 
-    # Lane keeping -> Data Fusion
-    # lkFzzR, lkFzzS = Pipe(duplex=False)
+if config["enableSignDet"]:
+    sDProc = SignDetectionProcess([], [], [], enable_stream=("sd" in streams))
+    allProcesses.append(sDProc)
+    dataFusionInputName.append("sd")
+    camOutNames.append("sd")
 
-    # Decision Process -> Movement control
-    # FzzMcR, FzzMcS = Pipe(duplex=False)
-
-# camOutPs.append(lkS)
-    #dataFusionInputPs.append(lkFzzR)
-    #dataFusionInputName.append("lk")
-
-    #if config["enableStream"]:
-    #    lkStrR, lkStrS = Pipe(duplex=False)
-    #    lkProc = LaneKeeping([lkR], [lkFzzS, lkStrS])
-    #else:
-lkProc = LaneKeeping([lkR], [])
-
-# allProcesses.append(lkProc)
-
-# if config["enableIntersectionDet"]:
-#     # Camera process -> Intersection Detection
-#     camiDR, camiDS = Pipe(duplex=False)
-
-#     # Intersection Detection -> Data Fusion
-#     iDFzzR, iDFzzS = Pipe(duplex=False)
-
-#     camOutPs.append(camiDS)
-#     dataFusionInputPs.append(iDFzzR)
-#     dataFusionInputName.append("iD")
-
-#     if config["enableStream"]:
-#         # TODO: add streaming utility
-#         idStrR, idStrS = Pipe(duplex=False)
-#         idProc = IntersectionDetProcess([camiDR], [iDFzzS, idStrS])
-#     else:
-#         idProc = IntersectionDetProcess([camiDR], [iDFzzS])
-#     allProcesses.append(idProc)
-
-# if config["enableSignDet"]:
-#     # Camera process -> Sign Detection
-# camsDR, camsDS = Pipe(duplex=False)
-# 
-#     # Sign Detection -> Data Fusion (Decision Process)
-#     sDFzzR, sDFzzS = Pipe(duplex=False)
-#     if config["enableStream"]:
-#         sDStR, sDStS = Pipe(duplex=False)
-#         sDProc = SignDetectionProcess([camsDR], [sDFzzS,sDStS], ["fzz", "stream"])
-#     else:
-# sDProc = SignDetectionProcess([camsDR],[],[])
-# 
-#     camOutPs.append(camsDS)
-#     dataFusionInputPs.append(sDFzzR)
-#     dataFusionInputName.append("sD")
-# 
-#     # TODO: To Streamer / Dashboard
-#     allProcesses.append(sDProc)
 
 # =============================== DATA ===================================================
 
 # -------LOCSYS----------
-# if config["enableSIM"]:
-#     # LocSys -> Position Fusion
-#     lsPosR, lsPosS = Pipe(duplex=False)
-#     locsysProc = LocSysSIM([], [lsPosS], LOCSYS_SIM_PORT)
-#     allProcesses.append(locsysProc)
-#     posFusionInputPs.append(lsPosR)
-#     posFusionInputName.append("loc")
-# 
-# elif config["home_loc"]:
-#     # LocSys -> Position Fusion
-#     print(">>> Starting Home Localization process")
-#     lsPosR, lsPosS = Pipe(duplex=False)
-#     locsysProc = LocalisationProcess([], [lsPosS])
-#     allProcesses.append(locsysProc)
-#     posFusionInputPs.append(lsPosR)
-#     posFusionInputName.append("loc")
-# 
-# 
-# elif config["using_server"]:
-#     # LocSys -> Position Fusion
-#     lsPosR, lsPosS = Pipe(duplex=False)
-#     locsysProc = LocalisationSystemProcess([], [lsPosS])
-#     allProcesses.append(locsysProc)
-#     posFusionInputPs.append(lsPosR)
-#     posFusionInputName.append("loc")
+if config["enableSIM"]:
+    # LocSys -> Position Fusion
+    locsysProc = LocSysSIM([], [], "loc", LOCSYS_SIM_PORT)
+    allProcesses.append(locsysProc)
+    posFusionInputName.append("loc")
+
+elif config["home_loc"]:
+    # LocSys -> Position Fusion
+    print(">>> Starting Home Localization process")
+    locsysProc = LocalisationProcess([], [])
+    allProcesses.append(locsysProc)
+    posFusionInputName.append("loc")
+
+
+elif config["using_server"]:
+    # LocSys -> Position Fusion
+    locsysProc = LocalisationSystemProcess([], [])
+    allProcesses.append(locsysProc)
+    posFusionInputName.append("loc")
 
 
 # -------TrafficLightSemaphore----------
@@ -196,140 +162,102 @@ lkProc = LaneKeeping([lkR], [])
 
 # ========================= IMU ===================================================
 # IMU -> Position Fusino
-# if isPI and not config["enableSIM"]:
-#     print("IMU process started")
-#     imuPosR, imuPosS = Pipe(duplex=False)
-#     imuProc = IMUProcess([], [imuPosS])
-#     allProcesses.append(imuProc)
-#     posFusionInputPs.append(imuPosR)
-#     posFusionInputName.append("imu")
-# else:
-#     imuPosR, imuPosS = Pipe(duplex=False)
-#     imuProc = IMUSIM([], [imuPosS], 5555)
-#     allProcesses.append(imuProc)
-#     posFusionInputPs.append(imuPosR)
-#     posFusionInputName.append("imu")
+if isPI and not config["enableSIM"]:
+    print("IMU process started")
+    imuProc = IMUProcess([], [])
+    allProcesses.append(imuProc)
+    posFusionInputName.append("imu")
 
-# 
+else:
+    imuProc = IMUSIM([], [], "imu", 5555)
+    allProcesses.append(imuProc)
+    posFusionInputName.append("imu")
+
+
+#
 # # ===================== Position Fusion ==========================================
-# if len(posFusionInputPs) > 0:
-#     posFzzR, posFzzS = Pipe(duplex=False)
-#     posfzzProc = PositionFusionProcess(
-#         posFusionInputPs, [posFzzS], inPsnames=posFusionInputName
-#     )
-#     allProcesses.append(posfzzProc)
-#     dataFusionInputPs.append(posFzzR)
-#     dataFusionInputName.append("pos")
+if len(posFusionInputName) > 0:
+    posfzzProc = PositionFusionProcess([], [], inPsnames=posFusionInputName)
+    allProcesses.append(posfzzProc)
+    dataFusionInputName.append("pos")
 
 # ===================== Distance Sensor ==========================================
 # Distance Sensor -> Decision Making (data fusion)
-# if isPI and not config["enableSIM"]:
-#     print("IMU process started")
-#     imuPosR, imuPosS = Pipe(duplex=False)
-#     imuProc = IMUProcess([], [imuPosS])
-#     allProcesses.append(imuProc)
-#     posFusionInputPs.append(imuPosR)
-#     posFusionInputName.append("imu")
-# else:
-# if config["enableSIM"]:
-#     disFzzR, disFzzS = Pipe(duplex=False)
-#     disProc = DistanceSIM([], [disFzzS], 6666)
-# 
-#     dataFusionInputName.append("dis")
-#     dataFusionInputPs.append(disFzzR)
-#     allProcesses.append(disProc)
-# elif isPI:
-#     disFzzR, disFzzS = Pipe(duplex=False)
-#     disProc = DistanceProcess([], [disFzzS])
-# 
-#     dataFusionInputName.append("dis")
-#     dataFusionInputPs.append(disFzzR)
-#     allProcesses.append(disProc)
 
-# ===================== Object Classifier ==========================================
-# distance -> object (already created)
-# camera -> object
-# camObjR, camObjS = Pipe(duplex=False)
-# # object -> decision making
-# objFzzR, objFzzS = Pipe(duplex=False)
+if config["enableSIM"]:
+    disProc = DistanceSIM([], [], "dis", 6666)
+    allProcesses.append(disProc)
+    dataFusionInputName.append("dis")
 
-# objProc = ObjectProcess([camObjR, disObjR], [objFzzS])
-# camOutPs.append(camObjS)
-# dataFusionInputPs.append(objFzzR)
-# dataFusionInputName.append("obj")
-# allProcesses.append(objProc)
+elif isPI:
+    disProc = DistanceProcess([], [])
+    allProcesses.append(disProc)
+    dataFusionInputName.append("dis")
 
 
 # ======================= Decision Making =========================================
-# datafzzProc = DecisionMakingProcess(
-#     dataFusionInputPs, [FzzMcS], inPsnames=dataFusionInputName
-# )
-# allProcesses.append(datafzzProc)
+datafzzProc = DecisionMakingProcess([], [], inPsnames=dataFusionInputName)
+allProcesses.append(datafzzProc)
 # movementControlR.append(FzzMcR)
-# 
+#
 
 # ======================= Actuator =================================================
 
-# # Movement control
-# if config["enableSIM"] and isPI:
-#     # Movement control -> Serial handler
-#     mcSHR, mcSHS = Pipe(duplex=False)
-#     # Moment control -> SIM Serial Handler
-#     mcSSHR, mcSSHS = Pipe(duplex=False)
-#     cfProc = MovementControl(movementControlR, [mcSHS, mcSSHS])
-#     allProcesses.append(cfProc)
-# else:
-#     # Movement control -> Serial handler
-#     mcSHR, mcSHS = Pipe(duplex=False)
-#     cfProc = MovementControl(movementControlR, [mcSHS])
-#     allProcesses.append(cfProc)
+# Movement control
+if config["enableSIM"] and isPI:
+    # Movement control -> Serial handler
+    mcSHR, mcSHS = Pipe(duplex=False)
+    # Moment control -> SIM Serial Handler
+    mcSSHR, mcSSHS = Pipe(duplex=False)
+    cfProc = MovementControl(movementControlR, [mcSHS, mcSSHS])
+    allProcesses.append(cfProc)
+else:
+    # Movement control -> Serial handler
+    mcSHR, mcSHS = Pipe(duplex=False)
+    cfProc = MovementControl(movementControlR, [mcSHS])
+    allProcesses.append(cfProc)
 
 # Serial handler or Simulator Connector
-# if config["enableSIM"] and isPI:
-#     # shProc = SimulatorConnector([mcSSHR], [])
-#     # allProcesses.append(shProc)
-# 
-#     shProc = SerialHandlerProcess([mcSHR], [])
-#     allProcesses.append(shProc)
-# 
-# elif config["enableSIM"] and not isPI:
-#     shProc = SimulatorConnector([mcSHR], [])
-#     allProcesses.append(shProc)
-# else:
-#     try:
-#         shProc = SerialHandlerProcess([mcSHR], [])
-#         allProcesses.append(shProc)
-#     except Exception:
-#         print("ERROR: Falied to start Serial Handler")
+if config["enableSIM"] and isPI:
+    # shProc = SimulatorConnector([mcSSHR], [])
+    # allProcesses.append(shProc)
+
+    shProc = SerialHandlerProcess([mcSHR], [])
+    allProcesses.append(shProc)
+
+elif config["enableSIM"] and not isPI:
+    shProc = SimulatorConnector([mcSHR], [])
+    allProcesses.append(shProc)
+else:
+    try:
+        shProc = SerialHandlerProcess([mcSHR], [])
+        allProcesses.append(shProc)
+    except Exception:
+        print("ERROR: Falied to start Serial Handler")
 
 
 # ========================= Streamer =====================================================
-# if config["enableStream"]:
-#     if config["enableLaneKeeping"]:
-#         pass
-# #         streamProc = CameraStreamerProcess([lkStrR], [], port=STREAM_PORT1)
-# #         allProcesses.append(streamProc)
-#     else:
-camStR, camStS = Pipe(duplex=False)  # camera  ->  streamer
-camOutPs.append(camStS)
-streamProc = CameraStreamerProcess([camStR], [], port=STREAM_PORT1)
-allProcesses.append(streamProc)
+if "cam" in streams:
+    camOutNames.append("stream")
 
-#     if config["enableSignDet"]:
-#         #camStR, camStS = Pipe(duplex=False)  # camera  ->  streamer
-#         #camOutPs.append(camStS)
-#         streamProc2 = CameraStreamerProcess([sDStR], [], port=STREAM_PORT2)
-#         allProcesses.append(streamProc2)
+if config["enableStream"]:
+    streamProc = CameraStreamerProcess([], [], streams[0], port=STREAM_PORT1)
+    allProcesses.append(streamProc)
+
+    if len(streams) > 1:
+        streamProc2 = CameraStreamerProcess([], [], streams[1], port=STREAM_PORT2)
+        allProcesses.append(streamProc2)
+
 
 # ========================== Camera process ==============================================
 if config["enableCameraSpoof"]:
-    camSpoofer = CameraSpooferProcess([], camOutPs, "vid")
+    camSpoofer = CameraSpooferProcess([], [], "vid")
     allProcesses.append(camSpoofer)
 else:
     if config["enableSIM"]:
-        camProc = SIMCameraProcess([], camOutPs)
+        camProc = SIMCameraProcess([], [])
     else:
-        camProc = CameraProcess([], camOutPs)
+        camProc = CameraProcess([], [], camOutNames)
 
     allProcesses.append(camProc)
 

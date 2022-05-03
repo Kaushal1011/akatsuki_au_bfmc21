@@ -1,14 +1,16 @@
 # from multiprocessing import shared_memory
 from multiprocessing.connection import Connection
 from threading import Thread
-from time import time
+import time
 from typing import List
-import base64
 import numpy as np
 
 # import SharedArray as sa
 from loguru import logger
 import zmq
+import numpy as np
+import base64
+
 # from simple_pid import PID
 from src.lib.perception.lanekeepfunctions import LaneKeep as LaneKeepMethod
 from src.templates.workerprocess import WorkerProcess
@@ -27,7 +29,9 @@ def get_last(inP: Connection):
 
 class LaneKeepingProcess(WorkerProcess):
     # ===================================== Worker process =========================================
-    def __init__(self, inPs: List[Connection], outPs: List[Connection]):
+    def __init__(
+        self, inPs: List[Connection], outPs: List[Connection], enable_stream: bool
+    ):
         """Process used for the image processing needed for lane keeping and for computing the steering value.
 
         Parameters
@@ -39,7 +43,7 @@ class LaneKeepingProcess(WorkerProcess):
         """
         super(LaneKeepingProcess, self).__init__(inPs, outPs)
         self.lk = LaneKeepMethod(use_perspective=False, computation_method="hough")
-        # self.frame_shm = sa.attach("shm://shared_frame1")
+        self.enable_stream = enable_stream
 
     def run(self):
         """Apply the initializing methods and start the threads."""
@@ -54,7 +58,7 @@ class LaneKeepingProcess(WorkerProcess):
             name="StreamSending",
             target=self._the_thread,
             args=(
-                self.inPs[0],
+                self.inPs,
                 self.outPs,
             ),
         )
@@ -80,53 +84,50 @@ class LaneKeepingProcess(WorkerProcess):
         count = 0
         t = 0.0
         t_r = 0.1
-        context = zmq.Context()
+        context_recv = zmq.Context()
+        sub_cam = context_recv.socket(zmq.SUB)
+        sub_cam.setsockopt(zmq.CONFLATE, 1)
+        sub_cam.connect("ipc:///tmp/v4l")
+        sub_cam.setsockopt_string(zmq.SUBSCRIBE, "")
 
-        footage_socket = context.socket(zmq.SUB)
-        footage_socket.setsockopt(zmq.CONFLATE, 1)
-        # print("Binding Socket to", self.addr)
-        footage_socket.connect("tcp://*:8011")
-        footage_socket.setsockopt_string(zmq.SUBSCRIBE, np.unicode(''))
+        context_send = zmq.Context()
+        pub_lk = context_send.socket(zmq.PUB)
+        pub_lk.bind("ipc:///tmp/v51")
+
+        if self.enable_stream:
+            context_send_img = zmq.Context()
+            pub_lk_img = context_send_img.socket(zmq.PUB)
+            pub_lk_img.bind("ipc:///tmp/v52")
 
         try:
             while True:
                 # Obtain image
-                image_recv_start = time()
+                image_recv_start = time.time()
                 # stamps, img = inP.recv()
-                data = footage_socket.recv_string()
-                img = base64.b64decode(data)
-                
+                data = sub_cam.recv()
+                data = np.frombuffer(data, dtype=np.uint8)
+                img = np.reshape(data, (480, 640, 3))
+
+                # print("lk img recv")
                 logger.log("PIPE", "recv image")
-                t_r += time() - image_recv_start
+                t_r += time.time() - image_recv_start
                 count += 1
 
                 logger.log(
                     "TIME",
                     f"Time taken to rec image {(t_r/count):.4f}s",
                 )
-                # print(f"LK time delta {(time() - stamp):.4f}s")
-                # print("LK", stamps)
-                # img = self.frame_shm
-                # print(f"lk: Time taken to recv image {time() - image_recv_start}")
-                # print("Time taken to recieve image", time()- i)
-                compute_time = time()
+                compute_time = time.time()
                 # Apply image processing
-                if len(outPs) > 1:
+                if self.enable_stream:
                     val, intersection_detected, outimage = self.lk(img, True)
+                    angle = self.computeSteeringAnglePID(val)
+                    pub_lk.send_json((angle, intersection_detected), flags=zmq.NOBLOCK)
+                    pub_lk_img.send(img.tobytes(), flags=zmq.NOBLOCK)
                 else:
                     val, intersection_detected = self.lk(img)
-                angle = self.computeSteeringAnglePID(val)
-                self.outPs[0].send((1, angle, intersection_detected))
-                t += time() - compute_time
-                logger.log(
-                    "TIME",
-                    f"Process Time -> {(t/count):.4f}s",
-                )
-                # print(f"LK compute time {(time() - compute_time):.4f}s")
-                if len(outPs) > 1:
-                    self.outPs[1].send((1, outimage))
-
-                    # print("Sending from Lane Keeping")
+                    angle = self.computeSteeringAnglePID(val)
+                    pub_lk.send_json((angle, intersection_detected), flags=zmq.NOBLOCK)
 
                 # print("Timetaken by LK: ", time() - a)
         except Exception as e:

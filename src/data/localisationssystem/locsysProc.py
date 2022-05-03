@@ -7,7 +7,7 @@ from threading import Thread
 from src.data.localisationssystem.locsys import LocalisationSystem
 from src.templates.workerprocess import WorkerProcess
 from multiprocessing import Pipe
-
+import zmq
 
 class LocalisationSystemProcess(WorkerProcess):
     # ================================ CAMERA PROCESS =====================================
@@ -52,6 +52,10 @@ class LocalisationSystemProcess(WorkerProcess):
         # Start the listener
         locsys.start()
         # Wait until 60 seconds passed
+        context_send = zmq.Context()
+        pub_loc = context_send.socket(zmq.PUB)
+        pub_loc.bind("ipc:///tmp/v31")
+
         while True:
             try:
                 coora = gpsStR.recv()
@@ -64,8 +68,8 @@ class LocalisationSystemProcess(WorkerProcess):
                             coora["coor"][1].real, coora["coor"][1].imag
                         ),
                     }
-                    for outP in [outPs]:
-                        outP.send((time.time(), data))
+                    pub_loc.send_json(data, flags=zmq.NOBLOCK)
+                    
                 time.sleep(1)
             except KeyboardInterrupt:
                 break

@@ -39,7 +39,7 @@ import cv2
 import numpy as np
 
 from src.templates.workerprocess import WorkerProcess
-
+import zmq
 HOST = "0.0.0.0"  # Standard loopback interface address (localhost)
 PORT = 5555
 
@@ -96,6 +96,10 @@ class SIMCameraProcess(WorkerProcess):
         try:
             start_time = time.time()
             frames = 0
+            context = zmq.Context()
+            pub_cam = context.socket(zmq.PUB)
+            pub_cam.bind("ipc:///tmp/v4l")
+
             while True:
                 # decode image
                 stamp = struct.unpack("d", self.connection.read(struct.calcsize("d")))
@@ -114,12 +118,12 @@ class SIMCameraProcess(WorkerProcess):
                 image = np.frombuffer(bts, np.uint8)
                 image = cv2.imdecode(image, cv2.IMREAD_COLOR)
                 image = np.reshape(image, self.imgSize)
-                image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+                image:np.ndarray = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
                 # stamp = time.time()
-                for outP in outPs:
-                    frames += 1
-                    print(f"FPS {frames/(time.time() - start_time)}")
-                    outP.send((stamp, image))
+                pub_cam.send(image.tobytes(), flags=zmq.NOBLOCK)
+                print("SIMCamera Send")
+            
+
         except Exception:
             pass
         finally:

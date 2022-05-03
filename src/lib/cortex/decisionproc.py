@@ -9,7 +9,6 @@ from typing import List, Optional
 
 
 from src.lib.cortex.carstate import CarState
-from src.lib.perception.signdetection import loaded_model
 from src.templates.workerprocess import WorkerProcess
 from time import time
 from src.lib.cortex.action import (
@@ -27,6 +26,8 @@ from src.lib.cortex.action import (
 import joblib
 from loguru import logger
 import math
+
+import zmq
 
 rx = []
 ry = []
@@ -65,11 +66,14 @@ def get_last_distance(inP: Connection):
 def trigger_behaviour(carstate: CarState, action_man: ActionManager):
     triggerparking = False
 
-    if hasattr(carstate,"parkingcoords"):
+    if hasattr(carstate, "parkingcoords"):
         print("Triggered Parking")
-        d=math.sqrt((carstate.rear_x-carstate.parkingcoords[0])**2+(carstate.rear_y-carstate.parkingcoords[1])**2)
-        if d<0.2:
-            triggerparking=True
+        d = math.sqrt(
+            (carstate.rear_x - carstate.parkingcoords[0]) ** 2
+            + (carstate.rear_y - carstate.parkingcoords[1]) ** 2
+        )
+        if d < 0.2:
+            triggerparking = True
 
     # print(carstate.side_distance)
     if carstate.detected_intersection and carstate.current_ptype == "int":
@@ -84,14 +88,15 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
         action_man.set_action(stopaction, action_time=3.0)
 
     if carstate.detected_sign["parking"] or triggerparking:
-        print("In parking trigger: ",triggerparking,carstate.detected_sign["parking"])
+        print("In parking trigger: ", triggerparking, carstate.detected_sign["parking"])
         # Parking
         # parkobj = ParkingBehaviour(car_state=carstate)
         # parkobjaction = ActionBehaviour(name="parking", callback=parkobj)
         # action_man.set_action(parkobjaction, action_time=None, car_state=carstate)
 
     if (
-        carstate.front_distance < 0.5
+        carstate.front_distance
+        < 0.5
         # and carstate.detected_car
         # and carstate.can_overtake
     ):
@@ -160,7 +165,6 @@ class DecisionMakingProcess(WorkerProcess):
         # pass navigator config
         self.state = CarState(navigator_config=None)
         self.inPsnames = inPsnames
-
         self.actman = ActionManager()
 
         lkobj = LaneKeepBehaviour()
@@ -220,74 +224,85 @@ class DecisionMakingProcess(WorkerProcess):
         outP : Pipe
             Output pipe to send the steering angle value to other process.
         """
+        if "lk" in self.inPsnames:
+            context_recv_lk = zmq.Context()
+            sub_lk = context_recv_lk.socket(zmq.SUB)
+            # sub_lk.setsockopt(zmq.CONFLATE, 1)
+            sub_lk.connect("ipc:///tmp/v51")
+            sub_lk.setsockopt_string(zmq.SUBSCRIBE, "")
+
+        if "sd" in self.inPsnames:
+            context_recv_sd = zmq.Context()
+            sub_sd = context_recv_sd.socket(zmq.SUB)
+            # sub_sd.setsockopt(zmq.CONFLATE, 1)
+            sub_sd.connect("ipc:///tmp/v61")
+            sub_sd.setsockopt_string(zmq.SUBSCRIBE, "")
+
+        if "pos" in self.inPsnames:
+            context_recv_pos = zmq.Context()
+            sub_pos = context_recv_pos.socket(zmq.SUB)
+            # sub_pos.setsockopt(zmq.CONFLATE, 1)
+            sub_pos.connect("ipc:///tmp/v42")
+            sub_pos.setsockopt_string(zmq.SUBSCRIBE, "")
+
+        if "dis" in self.inPsnames:
+            context_recv_dis = zmq.Context()
+            sub_dis = context_recv_dis.socket(zmq.SUB)
+            # sub_dis.setsockopt(zmq.CONFLATE, 1)
+            sub_dis.connect("ipc:///tmp/v11")
+            sub_dis.setsockopt_string(zmq.SUBSCRIBE, "")
+
         while True:
             try:
                 c = time()
                 start_time = time()
                 t_lk = time()
-                idx = self.inPsnames.index("lk")
-                lk_timestamp, lk_angle, detected_intersection = get_last_lk_id(
-                    inPs[idx]
-                )
-                self.state.update_lk_angle(lk_angle)
-                self.state.update_intersection(detected_intersection)
-                logger.log("PIPE", f"Recv->LK {lk_angle}")
-                logger.log("SYNC", f"LK timedelta {time()- lk_timestamp}")
-                # print(f"Time taken lk {(time() - t_lk):.4f}s {lk_angle}")
-
-                # t_id = time()
-                # idx = self.inPsnames.index("iD")
-                # id_timestamp, detected_intersection = get_last_value(inPs[idx])
-                # logger.log("PIPE", f"Recv->ID {detected_intersection}")
-                # logger.log("SYNC", f"iD delta {time()- id_timestamp}")
-
-                # print("id: ", detected_intersection)
-                # print(f"TIme taken iD {(time()- t_id):.4f}s")
+                if "lk" in self.inPsnames:
+                    if sub_lk.poll(timeout=0.1):
+                        lk_angle, detected_intersection = sub_lk.recv_json()
+                        print("LK -> ", lk_angle, detected_intersection)
+                        self.state.update_lk_angle(lk_angle)
+                        self.state.update_intersection(detected_intersection)
+                # logger.log("PIPE", f"Recv->LK {lk_angle}")
+                # logger.log("SYNC", f"LK timedelta {time()- lk_timestamp}")
+                # # print(f"Time taken lk {(time() - t_lk):.4f}s {lk_angle}")
 
                 # sign Detection
                 # TODO
-                t_sD = time()
-                if "sD" in self.inPsnames:
-                    idx = self.inPsnames.index("sD")
-                    if inPs[idx].poll():
-                        # TODO : get sign detection for all signs
-                        sd_timestamp, sign = inPs[idx].recv()
-                        print("SD <-<", sign)
-                        logger.log("SYNC", f"SD timedelta {time() - sd_timestamp}")
-                        logger.log("PIPE", f"Recv -> SD {sign}")
+                # t_sD = time()
+                if "sd" in self.inPsnames:
+                    if sub_sd.poll(timeout=0.1):
+                        signs_data = sub_sd.recv_json()
+                        print("SD ->", signs_data)
+                #         print("SD <-<", sign)
+                #         logger.log("SYNC", f"SD timedelta {time() - sd_timestamp}")
+                #         logger.log("PIPE", f"Recv -> SD {sign}")
 
-                        # self.state.update_sign_detected()
+                #         # self.state.update_sign_detected()
 
                 if "dis" in self.inPsnames:
-                    idx = self.inPsnames.index("dis")
-                    distance_data = get_last_distance(inPs[idx])
-                    final_data = (
-                        distance_data["sonar1"],
-                        distance_data["sonar2"],
-                        False,
-                        False,
-                        False,
-                    )
-                    # print("distance", distance_data["sonar1"], distance_data["sonar1"])
-                    logger.log("PIPE", f"Recv->DIS {final_data[0]},{final_data[1]}")
-                    logger.log(
-                        "SYNC", f"dis delta {time()- distance_data['timestamp']}"
-                    )
-
-                    self.state.update_object_det(*final_data)
+                    if sub_dis.poll(timeout=0.1):
+                        distance_data = sub_dis.recv_json()
+                        final_data = (
+                            distance_data["sonar1"],
+                            distance_data["sonar2"],
+                            False,
+                            False,
+                            False,
+                        )
+                        print(
+                            "DIS -> ", distance_data["sonar1"], distance_data["sonar1"]
+                        )
+                        logger.log("PIPE", f"Recv->DIS {final_data[0]},{final_data[1]}")
+                        logger.log(
+                            "SYNC", f"dis delta {time()- distance_data['timestamp']}"
+                        )
+                        self.state.update_object_det(*final_data)
 
                 if "pos" in self.inPsnames:
-                    idx = self.inPsnames.index("pos")
-                    if inPs[idx].poll():
-                        pos_timestamp, pos = get_last_value(inPs[idx])
-                        logger.log(
-                            "PIPE",
-                            f"Recv->POS {pos[0]:.2f} {pos[1]:.2f} {pos[2]:.2f} {pos[3]:.2f} {pos[4]:.2f}",
-                        )
-                        logger.log("SYNC", f"pos delta {time()- pos_timestamp}")
-                        print(f"({pos[0]:.3f}, {pos[1]:.3f}) YAW {pos[2]:.3f}")
-                        # print("pos")
-                        # print("Position: ",pos)
+                    if sub_pos.poll(timeout=0.1):
+                        pos = sub_pos.recv_json()
+                        print(f"POS -> {pos}")
                         if pos[0] == 0 and pos[1] == 0:
                             pass
                         else:
@@ -295,14 +310,14 @@ class DecisionMakingProcess(WorkerProcess):
                     else:
                         self.state.update_pos_noloc()
 
-                # if trafficlight process is connected
-                if "tl" in self.inPsnames:
-                    idx = self.inPsnames.index("tl")
-                    if inPs[idx].poll():
-                        trafficlights = inPs[idx].recv()
-                        print(trafficlights)
+                # # if trafficlight process is connected
+                # if "tl" in self.inPsnames:
+                #     idx = self.inPsnames.index("tl")
+                #     if inPs[idx].poll():
+                #         trafficlights = inPs[idx].recv()
+                #         print(trafficlights)
 
-                # update car navigator, current ptype, current etype and current idx
+                # # update car navigator, current ptype, current etype and current idx
 
                 trigger_behaviour(self.state, self.actman)
 
@@ -316,9 +331,6 @@ class DecisionMakingProcess(WorkerProcess):
                 logger.debug(f"Sonar Side: {self.state.side_distance}")
                 # print("speed: ", self.state.v)
                 # print("steer: ", self.state.steering_angle)
-
-                # TODO
-                # speed, steer_angle = self.get_controls()
 
                 # print(f"Time taken {time() - start_time}s\n ========================")
                 # Start car if model if loaded

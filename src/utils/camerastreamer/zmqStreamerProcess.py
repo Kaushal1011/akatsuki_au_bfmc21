@@ -7,8 +7,7 @@ import socket
 import struct
 import time
 from threading import Thread
-
-# import SharedArray as sa
+import numpy as np
 import cv2
 
 from src.config import get_config
@@ -27,9 +26,12 @@ def get_last(inP: Connection):
     return timestamp, data
 
 
+connect2file = {"cam": "4lc", "sd": "62", "lk": "52"}
+
+
 class CameraStreamerProcess(WorkerProcess):
     # ===================================== INIT =========================================
-    def __init__(self, inPs, outPs, port: int = 2244):
+    def __init__(self, inPs, outPs, connect: str = "sd", port: int = 2244):
         """Process used for sending images over the network to a targeted IP via UDP protocol
         (no feedback required). The image is compressed before sending it.
 
@@ -44,7 +46,8 @@ class CameraStreamerProcess(WorkerProcess):
         """
         super(CameraStreamerProcess, self).__init__(inPs, outPs)
         self.port = port
-        self.addr = f'tcp://{HOST}:{port}'
+        self.addr = f"tcp://{HOST}:{port}"
+        self.file_id = connect2file[connect]
 
     #         self.frame_shm = sa.attach("shm://shared_frame1")
 
@@ -60,7 +63,7 @@ class CameraStreamerProcess(WorkerProcess):
         if self._blocker.is_set():
             return
         streamTh = Thread(
-            name="StreamSendingThread", target=self._send_thread, args=(self.inPs[0],)
+            name="StreamSendingThread", target=self._send_thread, args=(self.inPs,)
         )
         streamTh.daemon = True
         self.threads.append(streamTh)
@@ -81,10 +84,19 @@ class CameraStreamerProcess(WorkerProcess):
         print("Connecting to ", self.addr)
         footage_socket.connect(self.addr)
 
+        context_sub = zmq.Context()
+
+        sub_stream = context_sub.socket(zmq.SUB)
+        # print("Binding Socket to", self.addr)
+        sub_stream.setsockopt(zmq.CONFLATE, 1)
+        sub_stream.connect(f"ipc:///tmp/v{self.file_id}")
+        sub_stream.setsockopt_string(zmq.SUBSCRIBE, "")
         while True:
             try:
-                stamp, frame = get_last(inP)
-                encoded, buffer = cv2.imencode('.jpg', frame, encode_param)
+                data = sub_stream.recv()
+                data = np.frombuffer(data, dtype=np.uint8)
+                image = np.reshape(data, (480, 640, 3))
+                encoded, buffer = cv2.imencode(".jpg", image, encode_param)
                 jpg_as_text = base64.b64encode(buffer)
                 footage_socket.send(jpg_as_text)
 
