@@ -29,7 +29,7 @@ class CameraReceiverProcess(WorkerProcess):
             List of output pipes
         """
         super(CameraReceiverProcess, self).__init__(inPs, outPs)
-        self.addr = f'tcp://*:{port}'
+        self.addr = f"tcp://*:{port}"
 
     # ===================================== RUN ==========================================
     def run(self):
@@ -50,7 +50,7 @@ class CameraReceiverProcess(WorkerProcess):
         print("Binding Socket to", self.addr)
         footage_socket.setsockopt(zmq.CONFLATE, 1)
         footage_socket.bind(self.addr)
-        footage_socket.setsockopt_string(zmq.SUBSCRIBE, '')
+        footage_socket.setsockopt_string(zmq.SUBSCRIBE, "")
 
         while True:
             try:
@@ -65,4 +65,3 @@ class CameraReceiverProcess(WorkerProcess):
                 print(e)
                 cv2.destroyAllWindows()
                 raise e
-

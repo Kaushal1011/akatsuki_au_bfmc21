@@ -82,10 +82,10 @@ class CameraStreamerProcess(WorkerProcess):
         context = zmq.Context()
         footage_socket = context.socket(zmq.PUB)
         print("Connecting to ", self.addr)
+        footage_socket.setsockopt(zmq.CONFLATE, 1)
         footage_socket.connect(self.addr)
 
         context_sub = zmq.Context()
-
         sub_stream = context_sub.socket(zmq.SUB)
         # print("Binding Socket to", self.addr)
         sub_stream.setsockopt(zmq.CONFLATE, 1)

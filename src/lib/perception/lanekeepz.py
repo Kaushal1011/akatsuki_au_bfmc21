@@ -9,7 +9,6 @@ import numpy as np
 from loguru import logger
 import zmq
 import numpy as np
-import base64
 
 # from simple_pid import PID
 from src.lib.perception.lanekeepfunctions import LaneKeep as LaneKeepMethod
@@ -97,6 +96,7 @@ class LaneKeepingProcess(WorkerProcess):
         if self.enable_stream:
             context_send_img = zmq.Context()
             pub_lk_img = context_send_img.socket(zmq.PUB)
+            pub_lk_img.setsockopt(zmq.CONFLATE, 1)
             pub_lk_img.bind("ipc:///tmp/v52")
 
         try:

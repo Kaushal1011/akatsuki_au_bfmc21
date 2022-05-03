@@ -116,16 +116,19 @@ class CameraThread(ThreadWithStop):
         if "lk" in self.outPsname:
             context_lk = zmq.Context()
             pub_cam_lk = context_lk.socket(zmq.PUB)
+            pub_cam_lk.setsockopt(zmq.CONFLATE, 1)
             pub_cam_lk.bind("ipc:///tmp/v4l")
 
         if "sd" in self.outPsname:
             context_sd = zmq.Context()
             pub_cam_sd = context_sd.socket(zmq.PUB)
+            pub_cam_sd.setsockopt(zmq.CONFLATE, 1)
             pub_cam_sd.bind("ipc:///tmp/v4ls")
 
         if "stream" in self.outPsname:
             context_stream = zmq.Context()
             pub_cam_stream = context_stream.socket(zmq.PUB)
+            pub_cam_stream.setsockopt(zmq.CONFLATE, 1)
             pub_cam_stream.bind("ipc:///tmp/v4lc")
 
         while self._running:

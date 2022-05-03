@@ -79,6 +79,7 @@ class SignDetectionProcess(WorkerProcess):
         if self.enable_steam:
             context_send_img = zmq.Context()
             pub_sd_img = context_send_img.socket(zmq.PUB)
+            pub_sd_img.setsockopt(zmq.CONFLATE, 1)
             pub_sd_img.bind("ipc:///tmp/v62")
 
         while True:
