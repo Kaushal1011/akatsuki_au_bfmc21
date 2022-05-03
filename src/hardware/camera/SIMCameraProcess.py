@@ -40,13 +40,14 @@ import numpy as np
 
 from src.templates.workerprocess import WorkerProcess
 import zmq
+
 HOST = "0.0.0.0"  # Standard loopback interface address (localhost)
 PORT = 5555
 
 
 class SIMCameraProcess(WorkerProcess):
     # ===================================== INIT =========================================
-    def __init__(self, inPs, outPs):
+    def __init__(self, inPs, outPs, outPsname):
         """Process used for debugging. Can be used as a direct frame analyzer, instead of using the VNC
         It receives the images from the raspberry and displays them.
 
@@ -58,27 +59,14 @@ class SIMCameraProcess(WorkerProcess):
             List of output pipes
         """
         super(SIMCameraProcess, self).__init__(inPs, outPs)
-
+        self.outPsname = outPsname
         self.imgSize = (480, 640, 3)
+        self.addr = f"tcp://*:{PORT}"
 
     # ===================================== RUN ==========================================
     def run(self):
         """Apply the initializers and start the threads."""
-        self._init_socket()
         super(SIMCameraProcess, self).run()
-
-    # ===================================== INIT SOCKET ==================================
-    def _init_socket(self):
-        """Initialize the socket server."""
-        self.port = PORT
-        self.serverIp = HOST
-
-        self.server_socket = socket.socket()
-        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.server_socket.bind((self.serverIp, self.port))
-
-        self.server_socket.listen(0)
-        self.connection = self.server_socket.accept()[0].makefile("rb")
 
     # ===================================== INIT THREADS =================================
     def _init_threads(self):
@@ -94,38 +82,53 @@ class SIMCameraProcess(WorkerProcess):
     def _read_stream(self, outPs):
         """Read the image from input stream, decode it and display it with the CV2 library."""
         try:
-            start_time = time.time()
-            frames = 0
+            if "lk" in self.outPsname:
+                context_lk = zmq.Context()
+                pub_cam_lk = context_lk.socket(zmq.PUB)
+                pub_cam_lk.setsockopt(zmq.CONFLATE, 1)
+                pub_cam_lk.bind("ipc:///tmp/v4l")
+
+            if "sd" in self.outPsname:
+                context_sd = zmq.Context()
+                pub_cam_sd = context_sd.socket(zmq.PUB)
+                pub_cam_sd.setsockopt(zmq.CONFLATE, 1)
+                pub_cam_sd.bind("ipc:///tmp/v4ls")
+
+            if "stream" in self.outPsname:
+                context_stream = zmq.Context()
+                pub_cam_stream = context_stream.socket(zmq.PUB)
+                pub_cam_stream.setsockopt(zmq.CONFLATE, 1)
+                pub_cam_stream.bind("ipc:///tmp/v4lc")
+
             context = zmq.Context()
-            pub_cam = context.socket(zmq.PUB)
-            pub_cam.bind("ipc:///tmp/v4l")
+            footage_socket = context.socket(zmq.SUB)
+            print("Binding Socket to", self.addr)
+            footage_socket.setsockopt(zmq.CONFLATE, 1)
+            footage_socket.bind(self.addr)
+            footage_socket.setsockopt_string(zmq.SUBSCRIBE, "")
 
             while True:
-                # decode image
-                stamp = struct.unpack("d", self.connection.read(struct.calcsize("d")))
-                stamp = stamp[0]
-                #print(f"SIMCamera {(time.time() - stamp):.4f}")
-                
-                image_len = struct.unpack(
-                    "<L", self.connection.read(struct.calcsize("<L"))
-                )[0]
-                bts = self.connection.read(image_len)
-                print(f"Got Frame delta {(time.time() - stamp):.4f}")
-                # if time.time() - stamp > 2:
-                #     print("Skipping frame")
-                #     continue
+
                 # ----------------------- read image -----------------------
-                image = np.frombuffer(bts, np.uint8)
+                data = footage_socket.recv()
+                image = np.frombuffer(data, np.uint8)
                 image = cv2.imdecode(image, cv2.IMREAD_COLOR)
                 image = np.reshape(image, self.imgSize)
-                image:np.ndarray = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-                # stamp = time.time()
-                pub_cam.send(image.tobytes(), flags=zmq.NOBLOCK)
-                print("SIMCamera Send")
-            
+                image: np.ndarray = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+
+                if "lk" in self.outPsname:
+                    pub_cam_lk.send(image, flags=zmq.NOBLOCK)
+                    # print("cam -> lk")
+
+                if "stream" in self.outPsname:
+                    pub_cam_stream.send(image, flags=zmq.NOBLOCK)
+                    # print("cam -> stream")
+
+                if "sd" in self.outPsname:
+                    pub_cam_sd.send(image, flags=zmq.NOBLOCK)
 
         except Exception:
             pass
         finally:
             self.connection.close()
-            self.server_socket.close()
+            footage_socket.close()

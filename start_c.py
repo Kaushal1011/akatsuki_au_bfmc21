@@ -84,7 +84,7 @@ STREAM_PORT1 = 2244
 STREAM_PORT2 = 4422
 # ["cam", "lk", "sd"]
 
-streams = ["lk","sd"]
+streams = ["lk", "sd"]
 # =============================== INITIALIZING PROCESSES =================================
 # Pipe collections
 allProcesses = []
@@ -254,7 +254,7 @@ if config["enableCameraSpoof"]:
     allProcesses.append(camSpoofer)
 else:
     if config["enableSIM"]:
-        camProc = SIMCameraProcess([], [])
+        camProc = SIMCameraProcess([], [], camOutNames)
     else:
         camProc = CameraProcess([], [], camOutNames)
 
