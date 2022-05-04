@@ -28,7 +28,7 @@
 
 import time
 from threading import Thread
-
+import zmq
 from src.data.trafficlights.trafficlights import trafficlights
 from src.templates.workerprocess import WorkerProcess
 
@@ -69,14 +69,17 @@ class TrafficProcess(WorkerProcess):
         # Start the listener
         Semaphores.start()
         # Wait until 60 seconds passed
+        context_send = zmq.Context()
+        pub_tl = context_send.socket(zmq.PUB)
+        pub_tl.bind("ipc:///tmp/vtl")
+
         while True:
-            for outP in [outPs]:
-                outP.send(
-                    {
-                        "s0": Semaphores.s1_state,
-                        "s1": Semaphores.s2_state,
-                        "s2": Semaphores.s3_state,
-                        "s3": Semaphores.s4_state,
-                    }
-                )
-            time.sleep(0.5)
+            pub_tl.send_json(
+                {
+                    "s0": Semaphores.s1_state,
+                    "s1": Semaphores.s2_state,
+                    "s2": Semaphores.s3_state,
+                    "s3": Semaphores.s4_state,
+                }
+            )
+            time.sleep(0.1)
