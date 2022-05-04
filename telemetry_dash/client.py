@@ -2,7 +2,7 @@ import socket
 import json
 import time
 import random
-host = socket.gethostbyname(socket.gethostname())
+host = "0.0.0.0"
 port = 12345
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)	    # TCP socket object
 addr = (host, port)

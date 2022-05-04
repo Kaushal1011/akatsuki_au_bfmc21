@@ -377,7 +377,7 @@ def update_card_tx(data, n_intervals):
     Input('stored_df', 'data'),
     Input('card-ty', 'n_intervals')
 )
-def update_card_(data, n_intervals):
+def update_card_ty(data, n_intervals):
     # df_tele = pd.read_csv("tele2.csv")
     # # df_tele = pd.DataFrame(data)
     # df_tele_list = df_tele.iloc[-1].tolist()
@@ -521,12 +521,12 @@ def clear_dcc_store(n_intervals):
 
 if __name__ == '__main__':
     
-    # host = socket.gethostbyname(socket.gethostname())
-    # port = 12345
-    # sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    # sock.bind((host,port))
-    # print("Socket Binded")
-    # df = pd.DataFrame(columns=['X-Coord', 'Y-Coord', 'Yaw', 'Speed', 'Steering_Angle', 'Current_Behaviour', 'Detection'])
+    host = "0.0.0.0"
+    port = 12345
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.bind((host,port))
+    print("Socket Binded")
+    df = pd.DataFrame(columns=['X-Coord', 'Y-Coord', 'Yaw', 'Speed', 'Steering_Angle', 'Current_Behaviour', 'Detection'])
     app.run_server(debug=True, port=8004)
     
 
