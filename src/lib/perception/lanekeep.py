@@ -102,7 +102,6 @@ class LaneKeepingProcess(WorkerProcess):
                     "TIME",
                     f"Time taken to rec image {(t_r/count):.4f}s",
                 )
-                print(f"LK time delta {(time() - stamp):.4f}s")
                 # print("LK", stamps)
                 # img = self.frame_shm
                 # print(f"lk: Time taken to recv image {time() - image_recv_start}")

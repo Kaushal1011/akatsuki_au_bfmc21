@@ -27,7 +27,7 @@ from src.data.server_sim import ServerSIM as LocSysSIM
 from src.data.server_sim import ServerSIM as IMUSIM
 from src.lib.cortex.posfusproc import PositionFusionProcess
 
-from src.data.server_sim import ServerSIM as DistanceSIM
+from src.data.distance_sim import DistanceSIM
 from src.hardware.ultrasonic.distanceProc import DistanceProcess
 from src.lib.actuator.momentcontrol import MovementControl
 from src.lib.actuator.sim_connect import SimulatorConnector
@@ -61,12 +61,12 @@ def filter(level: List[int]):
     return lambda r: r["level"].no in level or r["level"].no > 19
 
 
-TEST_PIPE = False
+TEST_PIPE = True
 logger.remove()
 if TEST_PIPE:
     logger.add(sys.stderr, filter=filter([18]))
 
-# logger.add("file1.log", filter=lambda r: r["level"] == 14)
+logger.add("file1.log", filter=lambda r: r["level"] == 14)
 # logger.level("LK", no=10, color="<blue>", icon='' )
 # logger.level("INT", no=10, color="<blue>", icon='' )
 
@@ -184,7 +184,7 @@ if len(posFusionInputName) > 0:
 # Distance Sensor -> Decision Making (data fusion)
 
 if config["enableSIM"]:
-    disProc = DistanceSIM([], [], "dis", 6666)
+    disProc = DistanceSIM([], [], 6666, log=True)
     allProcesses.append(disProc)
     dataFusionInputName.append("dis")
 
@@ -195,9 +195,12 @@ elif isPI:
 
 
 # ======================= Decision Making =========================================
-datafzzProc = DecisionMakingProcess([], [], inPsnames=dataFusionInputName)
+# Decision Process -> Movement control
+FzzMcR, FzzMcS = Pipe(duplex=False)
+
+datafzzProc = DecisionMakingProcess([], [FzzMcS], inPsnames=dataFusionInputName)
 allProcesses.append(datafzzProc)
-# movementControlR.append(FzzMcR)
+movementControlR.append(FzzMcR)
 #
 
 # ======================= Actuator =================================================

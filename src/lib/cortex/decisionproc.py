@@ -90,9 +90,9 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
     if carstate.detected_sign["parking"] or triggerparking:
         print("In parking trigger: ", triggerparking, carstate.detected_sign["parking"])
         # Parking
-        # parkobj = ParkingBehaviour(car_state=carstate)
-        # parkobjaction = ActionBehaviour(name="parking", callback=parkobj)
-        # action_man.set_action(parkobjaction, action_time=None, car_state=carstate)
+        parkobj = ParkingBehaviour(car_state=carstate)
+        parkobjaction = ActionBehaviour(name="parking", callback=parkobj)
+        action_man.set_action(parkobjaction, action_time=None, car_state=carstate)
 
     if (
         carstate.front_distance
@@ -254,9 +254,9 @@ class DecisionMakingProcess(WorkerProcess):
 
         while True:
             try:
-                c = time()
-                start_time = time()
-                t_lk = time()
+                # c = time()
+                # start_time = time()
+                # t_lk = time()
                 if "lk" in self.inPsnames:
                     if sub_lk.poll(timeout=0.05):
                         lk_angle, detected_intersection = sub_lk.recv_json()
@@ -339,7 +339,7 @@ class DecisionMakingProcess(WorkerProcess):
                 #     self.state.v = 0
 
                 for outP in outPs:
-                    print("Final -> ", (self.state.steering_angle, self.state.v))
+                    # print("Final -> ", (self.state.steering_angle, self.state.v))
                     outP.send((self.state.steering_angle, self.state.v))
 
             except Exception as e:

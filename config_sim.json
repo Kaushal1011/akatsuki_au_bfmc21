@@ -1,11 +1,11 @@
 {
-  "enableStream": false,
+  "enableStream": true,
   "enableCameraSpoof": false,
   "enableRc": false,
   "enableLaneKeeping": true,
   "enableSIM": true,
   "enableIntersectionDet": true,
-  "enableSignDet": false,
+  "enableSignDet": true,
   "start_idx": "86",
   "end_idx": "200",
   "using_server": false,

@@ -123,7 +123,7 @@ class LaneKeepingProcess(WorkerProcess):
                     val, intersection_detected, outimage = self.lk(img, True)
                     angle = self.computeSteeringAnglePID(val)
                     pub_lk.send_json((angle, intersection_detected), flags=zmq.NOBLOCK)
-                    pub_lk_img.send(img.tobytes(), flags=zmq.NOBLOCK)
+                    pub_lk_img.send(outimage.tobytes(), flags=zmq.NOBLOCK)
                 else:
                     val, intersection_detected = self.lk(img)
                     angle = self.computeSteeringAnglePID(val)

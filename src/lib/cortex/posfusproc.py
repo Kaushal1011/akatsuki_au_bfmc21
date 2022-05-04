@@ -115,7 +115,6 @@ class PositionFusionProcess(WorkerProcess):
                     # print(f'imu delta {time()-imu["timestamp"]}')
                     logger.log("PIPE", f"imu {imu}")
                     # print("IMU", time(), imu["timestamp"])
-                    pos_timestamp = imu["timestamp"]
                     iroll = imu["roll"]
                     ipitch = imu["pitch"]
                     iyaw = imu["yaw"]
@@ -125,9 +124,8 @@ class PositionFusionProcess(WorkerProcess):
                     az = imu["accelz"]
 
                 if "loc" in self.inPsnames:
-                    loc: dict = sub_loc.recv(flags=zmq.NOBLOCK)
-                    print("LOC", loc)
-                    pos_timestamp = loc["timestamp"]
+                    loc: dict = sub_loc.recv_json()
+                    print("LOC -> ", loc)
                     gx = loc["posA"]
                     gy = loc["posB"]
                     gyaw = loc["rotA"] if "rotA" in loc.keys() else loc["radA"]

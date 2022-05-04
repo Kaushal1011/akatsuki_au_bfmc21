@@ -173,8 +173,8 @@ class OvertakeBehaviour(BehaviourCallback):
         c = ty - m * tx
         # print("C: ",c)
 
-        x3 = tx + ((0.765 ** 2) / (m ** 2 + 1)) ** 0.5
-        x4 = tx - ((0.765 ** 2) / (m ** 2 + 1)) ** 0.5
+        x3 = tx + ((0.335 ** 2) / (m ** 2 + 1)) ** 0.5
+        x4 = tx - ((0.335 ** 2) / (m ** 2 + 1)) ** 0.5
         y3 = m * x3 + c
         y4 = m * x4 + c
 
@@ -557,8 +557,8 @@ class RoadBlocked(BehaviourCallback):
         c = ty - m * tx
         # print("C: ",c)
 
-        x3 = tx + ((0.765 ** 2) / (m ** 2 + 1)) ** 0.5
-        x4 = tx - ((0.765 ** 2) / (m ** 2 + 1)) ** 0.5
+        x3 = tx + ((0.335 ** 2) / (m ** 2 + 1)) ** 0.5
+        x4 = tx - ((0.335 ** 2) / (m ** 2 + 1)) ** 0.5
         y3 = m * x3 + c
         y4 = m * x4 + c
 
