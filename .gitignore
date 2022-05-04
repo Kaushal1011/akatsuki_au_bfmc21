@@ -1,7 +1,10 @@
 # vscode
 .vscode 
 *.zip
-best_openvino_model
+*_openvino_model
+*.onnx
+*.pt
+dataset
 
 # ignore data directory
 nbs/*/data

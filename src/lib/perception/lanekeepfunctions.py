@@ -336,7 +336,9 @@ def get_error_lane(mask_image):
     leftxBase = np.argmax(histogram[:midpoint])
     rightxBase = np.argmax(histogram[midpoint:]) + midpoint
     # print(leftxBase, midpoint, rightxBase)
-    return ((abs(rightxBase - midpoint) - abs(leftxBase - midpoint)) * 30 / (midpoint)) + 90
+    return (
+        (abs(rightxBase - midpoint) - abs(leftxBase - midpoint)) * 26.5 / (midpoint)
+    ) + 90
 
 
 def get_road_ratio_angle(mask_img):

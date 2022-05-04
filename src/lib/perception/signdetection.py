@@ -94,12 +94,13 @@ class SignDetectionProcess(WorkerProcess):
                 count += 1
                 start_time = time.time()
                 if self.enable_steam:
-                    classes, area, outimage = self.detection(img, bbox=True)
-                    pub_sd.send_json((classes, area), flags=zmq.NOBLOCK)
+                    detections, outimage = self.detection(img, bbox=True)
+                    pub_sd.send_json(detections, flags=zmq.NOBLOCK)
                     pub_sd_img.send(outimage.tobytes(), flags=zmq.NOBLOCK)
                 else:
-                    classes, area = self.detection(img)
-                    pub_sd.send_json((classes, area), flags=zmq.NOBLOCK)
+                    detections = self.detection(img)
+                    pub_sd.send_json(detections, flags=zmq.NOBLOCK)
+                logger.log("SD", f"detections -> {detections}")
 
             except Exception as e:
                 print("Sign Detection error:")

@@ -3,11 +3,29 @@ import math
 
 from time import time
 from src.lib.cortex.navigation import Navigator
+from typing import List, Tuple
 
-activity_config={
-    "nodes":[[86,99],[100,145],[61,168],[169,229],[230,104],[105,465],[466,85]],
-    "activity":["navigation","roadblocked","parking","overtaking","highway","oneway","finish"]
+activity_config = {
+    "nodes": [
+        [86, 99],
+        [100, 145],
+        [61, 168],
+        [169, 229],
+        [230, 104],
+        [105, 465],
+        [466, 85],
+    ],
+    "activity": [
+        "navigation",
+        "roadblocked",
+        "parking",
+        "overtaking",
+        "highway",
+        "oneway",
+        "finish",
+    ],
 }
+
 
 class CarState:
     def __init__(self, max_v=0.20, dt=0.13, car_len=0.365, **kwargs) -> None:
@@ -39,30 +57,30 @@ class CarState:
         # intersection detected
         self.detected_intersection = False
 
-        self.parkingcoords=(2.94,2.09)
+        self.parkingcoords = (2.94, 2.09)
 
         # sign detection
-        self.detected_sign = {
-            "priority": False,
+        self.detected = {
+            "car": False,
             "crosswalk": False,
-            "stop": False,
-            "roundabout": False,
-            "parking": False,
-            "highway_exit": False,
-            "oneway": False,
-            "noentry": False,
             "highway_entry": False,
+            "highway_exit": False,
+            "no_entry": False,
+            "onewayroad": False,
+            "parking": False,
+            "pedestrian": False,
+            "priority": False,
+            "roadblock": False,
+            "roundabout": False,
+            "stop": False,
+            "trafficlight": False,
         }
 
         # distance sensor
         self.front_distance = float("inf")
         self.side_distance = float("inf")
 
-        # object detection
-        self.detected_car = False
-        self.detected_closed_road = False
-        self.detected_pedestrian = False
-        self.target_ind=None
+        self.target_ind = None
         # traffic light semaphore
         self.tl = {}
 
@@ -79,7 +97,7 @@ class CarState:
         # control parameters
         self.steering_angle = 0.0
         self.v = max_v
-        self.priority_speed=0.1
+        self.priority_speed = 0.1
         self.highway_speed = 0.25
 
         # activity type
@@ -130,41 +148,14 @@ class CarState:
     def update_lk_angle(self, lk_angle: float) -> None:
         self.lanekeeping_angle = lk_angle
 
-    def update_object_det(
-        self,
-        front_distance: float,
-        side_distance: float,
-        detected_car: bool,
-        detected_pedestrain: bool,
-        detected_closed_road: bool,
-    ) -> None:
+    def update_object_det(self, front_distance: float, side_distance: float) -> None:
         self.front_distance = front_distance
         self.side_distance = side_distance
-        self.detected_car = detected_car
-        self.detected_pedestrian = detected_pedestrain
-        self.detected_closed_road = detected_closed_road
 
-    def update_sign_detected(
-        self,
-        priority: bool,
-        crosswalk: bool,
-        stop: bool,
-        roundabout: bool,
-        parking: bool,
-        highway_exit: bool,
-        oneway: bool,
-        noentry: bool,
-        highway_entry: bool,
-    ):
-        self.detected_sign["priority"] = priority
-        self.detected_sign["crosswalk"] = crosswalk
-        self.detected_sign["stop"] = stop
-        self.detected_sign["roundabout"] = roundabout
-        self.detected_sign["parking"] = parking
-        self.detected_sign["highway_exit"] = highway_exit
-        self.detected_sign["oneway"] = oneway
-        self.detected_sign["noentry"] = noentry
-        self.detected_sign["highway_entry"] = highway_entry
+    def update_detected(self, detections: List[Tuple[str, float]]):
+        detected_classes = [c for c, _ in detections]
+        for c in self.detected.keys():
+            self.detected_intersection[c] = c in detected_classes
 
     def update_tl(self, tl):
         self.tl = tl
