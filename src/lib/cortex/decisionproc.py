@@ -5,7 +5,7 @@ from multiprocessing.connection import Connection
 import pathlib
 from threading import Thread
 from time import time
-from typing import List, Optional
+from typing import Dict, List, Optional, Tuple
 
 
 from src.lib.cortex.carstate import CarState
@@ -149,6 +149,33 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
         pass
 
 
+ENVID = {
+    "car": 10,
+    "crosswalk": 4,
+    "highway_entry": 5,
+    "highway_exit": 6,
+    "no_entry": 1,
+    "onewayroad": 8,
+    "parking": 3,
+    "pedestrian": 11,
+    "priority": 2,
+    "roadblock": 14,
+    "roundabout": 7,
+    "stop": 1,
+    "trafficlight": 9,
+}
+
+
+def send_data2env(car_state: CarState, detections: List[Tuple[str, float]]):
+    x = car_state.x
+    y = car_state.y
+    return [
+        {"obstacle_id": ENVID[c], "x": x, "y": y}
+        for c, _ in detections
+        if not car_state.detected[c]
+    ]
+
+
 class DecisionMakingProcess(WorkerProcess):
     # ===================================== Worker process =========================================
     def __init__(self, inPs, outPs, inPsnames=[]):
@@ -277,15 +304,6 @@ class DecisionMakingProcess(WorkerProcess):
                 # sign Detection
                 # TODO
                 # t_sD = time()
-                if "sd" in self.inPsnames:
-                    if sub_sd.poll(timeout=0.05):
-                        detections = sub_sd.recv_json()
-                        self.state.update_detected(detections)
-                        print("SD ->", detections)
-                #         print("SD <-<", sign)
-                #         logger.log("SYNC", f"SD timedelta {time() - sd_timestamp}")
-                #         logger.log("PIPE", f"Recv -> SD {sign}")
-
                 if "dis" in self.inPsnames:
                     if sub_dis.poll(timeout=0.1):
                         distance_data = sub_dis.recv_json()
@@ -316,6 +334,20 @@ class DecisionMakingProcess(WorkerProcess):
                     else:
                         self.state.update_pos_noloc()
 
+                if "sd" in self.inPsnames:
+                    if sub_sd.poll(timeout=0.05):
+                        detections = sub_sd.recv_json()
+                        print("SD ->", detections)
+                        # send data to env server
+                        if len(outPs) > 1:
+                            for env_data in send_data2env(self.state, detections):
+                                outPs[1].send(env_data)
+
+                        self.state.update_detected(detections)
+                #         print("SD <-<", sign)
+                #         logger.log("SYNC", f"SD timedelta {time() - sd_timestamp}")
+                #         logger.log("PIPE", f"Recv -> SD {sign}")
+
                 if "tl" in self.inPsnames:
                     if sub_tl.poll(timeout=0.05):
                         trafficlights = sub_tl.recv()
@@ -341,10 +373,9 @@ class DecisionMakingProcess(WorkerProcess):
                 # if not loaded_model.value:
                 #     print("//////////////////// Waiting for Model")
                 #     self.state.v = 0
-
-                for outP in outPs:
-                    # print("Final -> ", (self.state.steering_angle, self.state.v))
-                    outP.send((self.state.steering_angle, self.state.v))
+                # print("Final -> ", (self.state.steering_angle, self.state.v))
+                if len(outPs) > 0:
+                    outPs[0].send((self.state.steering_angle, self.state.v))
 
             except Exception as e:
                 print("Decision Process error:")

@@ -1,3 +1,4 @@
+from multiprocessing import Process
 import sys
 from multiprocessing import Event, Pipe
 
@@ -26,7 +27,7 @@ from src.data.localisationssystem.locsysProc import LocalisationSystemProcess
 from src.data.server_sim import ServerSIM as LocSysSIM
 from src.data.server_sim import ServerSIM as IMUSIM
 from src.lib.cortex.posfusproc import PositionFusionProcess
-
+from src.data.environmentalserver.environmental import EnvironmentalHandler
 from src.data.distance_sim import DistanceSIM
 from src.hardware.ultrasonic.distanceProc import DistanceProcess
 from src.data.trafficlights.trafficProc import TrafficProcess
@@ -89,7 +90,7 @@ STREAM_PORT2 = 4422
 streams = ["lk", "sd"]
 # =============================== INITIALIZING PROCESSES =================================
 # Pipe collections
-allProcesses = []
+allProcesses: List[Process] = []
 movementControlR = []
 dataFusionInputName = []
 posFusionInputName = []
@@ -191,12 +192,22 @@ elif isPI:
     allProcesses.append(disProc)
     dataFusionInputName.append("dis")
 
+# ======================= Environment Server ======================================
+
+beacon = 23456
+id = 120
+serverpublickey = "publickey_server_test.pem"
+clientprivatekey = "privatekey_client_test.pem"
+
+gpsStR, gpsStS = Pipe(duplex=False)
+
+envhandler = EnvironmentalHandler(id, beacon, serverpublickey, gpsStR, clientprivatekey)
 
 # ======================= Decision Making =========================================
 # Decision Process -> Movement control
 FzzMcR, FzzMcS = Pipe(duplex=False)
 
-datafzzProc = DecisionMakingProcess([], [FzzMcS], inPsnames=dataFusionInputName)
+datafzzProc = DecisionMakingProcess([], [FzzMcS, gpsStS], inPsnames=dataFusionInputName)
 allProcesses.append(datafzzProc)
 movementControlR.append(FzzMcR)
 #
