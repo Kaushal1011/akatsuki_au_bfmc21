@@ -272,8 +272,8 @@ class DecisionMakingProcess(WorkerProcess):
                 # t_sD = time()
                 if "sd" in self.inPsnames:
                     if sub_sd.poll(timeout=0.05):
-                        signs_data = sub_sd.recv_json()
-                        print("SD ->", signs_data)
+                        detections = sub_sd.recv_json()
+                        print("SD ->", detections)
                 #         print("SD <-<", sign)
                 #         logger.log("SYNC", f"SD timedelta {time() - sd_timestamp}")
                 #         logger.log("PIPE", f"Recv -> SD {sign}")

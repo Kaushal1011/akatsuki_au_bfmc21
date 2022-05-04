@@ -318,7 +318,8 @@ def non_max_suppression_np(
     return output
 
 
-def get_area(bbox: np.ndarray) -> np.ndarray:
+def get_area(bbox: np.ndarray) -> list:
+    # (x1, y1, x2, y2)
     return ((bbox[:, 2] - bbox[:, 0]) * (bbox[:, 3] - bbox[:, 1])).tolist()
 
 
@@ -404,7 +405,7 @@ class Detection:
         img = roi_func(img)
         if not img.shape == (640, 640, 3):
             img_resized = cv2.resize(img, (640, 640))
-        cv2.imwrite("img.jpg", img)
+            
         x: np.ndarray = img_resized / 255
         x = x.astype(np.float32)
         x = np.expand_dims(x.transpose(2, 0, 1), 0)
@@ -423,13 +424,13 @@ class Detection:
         area = get_area(pred_nms[:, :4])
         if bbox:
             out_image = self.draw_bbox(pred_nms, classes=classes, image=img)
-            classes = [map2label[x] for x in classes]
-            return (classes, area, out_image)
+            classes = [map2label[int(x)] for x in classes]
+            return (list(zip(classes, area)), out_image)
         else:
             if classes:
                 print("Detected Something")
-                classes = [map2label[x] for x in classes]
-                return classes, area
+                classes = [map2label[int(x)] for x in classes]
+                return list(zip(classes, area))
             return [], []
 
     def draw_bbox(
