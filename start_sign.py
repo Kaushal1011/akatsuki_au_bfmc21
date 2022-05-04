@@ -44,7 +44,7 @@ def filter(level: List[int]):
     return lambda r: r["level"].no in level or r["level"].no > 19
 
 
-TEST_PIPE = False
+TEST_PIPE = True
 logger.remove()
 if TEST_PIPE:
     logger.add(sys.stderr, filter=filter([16]))
