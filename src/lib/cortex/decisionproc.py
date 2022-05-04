@@ -5,7 +5,8 @@ from multiprocessing.connection import Connection
 import pathlib
 from threading import Thread
 from time import time
-from typing import List, Optional
+from time import sleep
+from typing import Dict, List, Optional, Tuple
 
 
 from src.lib.cortex.carstate import CarState
@@ -87,8 +88,8 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
         stopaction = ActionBehaviour(name="stop", release_time=6.0, callback=stopobj)
         action_man.set_action(stopaction, action_time=3.0)
 
-    if carstate.detected_sign["parking"] or triggerparking:
-        print("In parking trigger: ", triggerparking, carstate.detected_sign["parking"])
+    if carstate.detected["parking"] or triggerparking:
+        print("In parking trigger: ", triggerparking, carstate.detected["parking"])
         # Parking
         parkobj = ParkingBehaviour(car_state=carstate)
         parkobjaction = ActionBehaviour(name="parking", callback=parkobj)
@@ -96,11 +97,11 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
 
     if (
         carstate.front_distance
-        < 0.5
+        < 0.7
         # and carstate.detected_car
         # and carstate.can_overtake
     ):
-        # print("Overtake Trigger")
+        print("Overtake Trigger")
         # overtake
         overtakeobj = OvertakeBehaviour(car_state=carstate)
         overtakeobjaction = ActionBehaviour(name="overtaking", callback=overtakeobj)
@@ -120,13 +121,13 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
         # replan closed road
         pass
 
-    if carstate.detected_sign["stop"]:
+    if carstate.detected["stop"]:
         # stop for t secs
         stopobj = StopBehvaiour()
         stopaction = ActionBehaviour(name="stop", release_time=6.0, callback=stopobj)
         action_man.set_action(stopaction, action_time=3.0)
 
-    if carstate.detected_sign["priority"]:
+    if carstate.detected["priority"]:
         # slowdown for t secs
         priorityobj = PriorityBehaviour()
         priorityaction = ActionBehaviour(
@@ -134,7 +135,7 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
         )
         action_man.set_action(priorityaction, action_time=9.0)
 
-    if carstate.detected_sign["crosswalk"]:
+    if carstate.detected["crosswalk"]:
         # stop detected pedestrain or crosswalk
         cwobj = CrosswalkBehavior(car_state=carstate)
         cwobjaction = ActionBehaviour(name="crosswalk", callback=cwobj)
@@ -147,6 +148,33 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
     if carstate.pitch < -0.2:
         # decline exit ramp
         pass
+
+
+ENVID = {
+    "car": 10,
+    "crosswalk": 4,
+    "highway_entry": 5,
+    "highway_exit": 6,
+    "no_entry": 1,
+    "onewayroad": 8,
+    "parking": 3,
+    "pedestrian": 11,
+    "priority": 2,
+    "roadblock": 14,
+    "roundabout": 7,
+    "stop": 1,
+    "trafficlight": 9,
+}
+
+
+def send_data2env(car_state: CarState, detections: List[Tuple[str, float]]):
+    x = car_state.x
+    y = car_state.y
+    return [
+        {"obstacle_id": ENVID[c], "x": x, "y": y}
+        for c, _ in detections
+        if not car_state.detected[c]
+    ]
 
 
 class DecisionMakingProcess(WorkerProcess):
@@ -163,7 +191,7 @@ class DecisionMakingProcess(WorkerProcess):
         """
         super(DecisionMakingProcess, self).__init__(inPs, outPs)
         # pass navigator config
-        self.state = CarState(navigator_config=None)
+        self.state = CarState()
         self.inPsnames = inPsnames
         self.actman = ActionManager()
 
@@ -172,20 +200,20 @@ class DecisionMakingProcess(WorkerProcess):
         self.actman.set_action(lkaction)
 
         ##################################################################
-        data_path = pathlib.Path(
-            pathlib.Path(__file__).parent.parent.parent.resolve(),
-            "data",
-            "mid_course.z",
-        )
-        data = joblib.load(data_path)
+        # data_path = pathlib.Path(
+        #     pathlib.Path(__file__).parent.parent.parent.resolve(),
+        #     "data",
+        #     "mid_course.z",
+        # )
+        # data = joblib.load(data_path)
         # cx = data["x"]
         # cy = data["y"]
         # coord_list = [x for x in zip(cx, cy)]
-        coord_list = data[0]
+        # coord_list = data[0]
         #################################################################
 
         # pass coordlist here from navigator config
-        csobj = ControlSystemBehaviour(coord_list=coord_list)
+        csobj = ControlSystemBehaviour(coord_list=self.state.navigator.coords)
         csaction = ActionBehaviour(name="cs", callback=csobj)
         self.actman.set_action(csaction)
 
@@ -277,16 +305,6 @@ class DecisionMakingProcess(WorkerProcess):
                 # sign Detection
                 # TODO
                 # t_sD = time()
-                if "sd" in self.inPsnames:
-                    if sub_sd.poll(timeout=0.05):
-                        detections = sub_sd.recv_json()
-                        print("SD ->", detections)
-                #         print("SD <-<", sign)
-                #         logger.log("SYNC", f"SD timedelta {time() - sd_timestamp}")
-                #         logger.log("PIPE", f"Recv -> SD {sign}")
-
-                #         # self.state.update_sign_detected()
-
                 if "dis" in self.inPsnames:
                     if sub_dis.poll(timeout=0.1):
                         distance_data = sub_dis.recv_json()
@@ -298,7 +316,7 @@ class DecisionMakingProcess(WorkerProcess):
                             False,
                         )
                         print(
-                            "DIS -> ", distance_data["sonar1"], distance_data["sonar1"]
+                            "DIS -> ", distance_data
                         )
                         logger.log("PIPE", f"Recv->DIS {final_data[0]},{final_data[1]}")
                         logger.log(
@@ -316,6 +334,20 @@ class DecisionMakingProcess(WorkerProcess):
                             self.state.update_pos(*pos)
                     else:
                         self.state.update_pos_noloc()
+
+                if "sd" in self.inPsnames:
+                    if sub_sd.poll(timeout=0.05):
+                        detections = sub_sd.recv_json()
+                        print("SD ->", detections)
+                        # send data to env server
+                        if len(outPs) > 1:
+                            for env_data in send_data2env(self.state, detections):
+                                outPs[1].send(env_data)
+
+                        self.state.update_detected(detections)
+                #         print("SD <-<", sign)
+                #         logger.log("SYNC", f"SD timedelta {time() - sd_timestamp}")
+                #         logger.log("PIPE", f"Recv -> SD {sign}")
 
                 if "tl" in self.inPsnames:
                     if sub_tl.poll(timeout=0.05):
@@ -342,10 +374,11 @@ class DecisionMakingProcess(WorkerProcess):
                 # if not loaded_model.value:
                 #     print("//////////////////// Waiting for Model")
                 #     self.state.v = 0
+                # print("Final -> ", (self.state.steering_angle, self.state.v))
+                if len(outPs) > 0:
+                    outPs[0].send((self.state.steering_angle, self.state.v))
 
-                for outP in outPs:
-                    # print("Final -> ", (self.state.steering_angle, self.state.v))
-                    outP.send((self.state.steering_angle, self.state.v))
+                sleep(0.2)
 
             except Exception as e:
                 print("Decision Process error:")
