@@ -198,7 +198,7 @@ def scale_coords(img1_shape, coords, img0_shape, ratio_pad=None):
     coords[:, [0, 2]] -= pad[0]  # x padding
     coords[:, [1, 3]] -= pad[1]  # y padding
     coords[:, :4] /= gain
-    clip_coords(coords, img0_shape)
+    coords = clip_coords(coords, img0_shape)
     return coords
 
 
@@ -206,6 +206,7 @@ def clip_coords(boxes, shape):
     # Clip bounding xyxy bounding boxes to image shape (height, width)
     boxes[:, [0, 2]] = boxes[:, [0, 2]].clip(0, shape[1])  # x1, x2
     boxes[:, [1, 3]] = boxes[:, [1, 3]].clip(0, shape[0])  # y1, y2
+    return boxes
 
 
 def non_max_suppression_np(
@@ -321,6 +322,52 @@ def get_area(bbox: np.ndarray) -> np.ndarray:
     return ((bbox[:, 2] - bbox[:, 0]) * (bbox[:, 3] - bbox[:, 1])).tolist()
 
 
+def roi_func(self, img: np.ndarray) -> np.ndarray:
+    """Given image get Region of interest
+
+    Args:
+        img: (np.ndarray) input image
+
+    Returns:
+        np.ndarray: the roi image
+    """
+    luroi = 0.2
+    ruroi = 1
+    lbroi = 0.2
+    rbroi = 1
+    hroi = 0.8
+    broi = 0
+    # create stencil just the first time and then save for later use
+    if self.stencil is None:
+        roi = [
+            (
+                int(luroi * ((img.shape[1] - 1))),
+                int(hroi * (img.shape[0] - 1)),
+            ),
+            (
+                int(lbroi * ((img.shape[1] - 1))),
+                int((img.shape[0] - 1) * (1 - broi)),
+            ),
+            (
+                int(rbroi * ((img.shape[1] - 1))),
+                int((img.shape[0] - 1) * (1 - broi)),
+            ),
+            (
+                int(ruroi * ((img.shape[1] - 1))),
+                int(hroi * (img.shape[0] - 1)),
+            ),
+        ]
+        self.stencil = np.zeros_like(img, dtype="uint8")
+        # specify coordinates of the polygon
+        polygon = np.array(roi)
+
+        # fill polygon with ones
+        cv2.fillConvexPoly(self.stencil, polygon, [255, 255, 255])
+
+    img = cv2.bitwise_and(img, img, mask=self.stencil[:, :, 0])
+    return img
+
+
 map2label = [
     "car",
     "crosswalk",
@@ -354,7 +401,7 @@ class Detection:
     def __call__(
         self, img: np.ndarray, bbox: bool = False
     ) -> Tuple[List[float], List[float], Optional[np.ndarray]]:
-
+        img = roi_func(img)
         if not img.shape == (640, 640, 3):
             img_resized = cv2.resize(img, (640, 640))
         cv2.imwrite("img.jpg", img)
