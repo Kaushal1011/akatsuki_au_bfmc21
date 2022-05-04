@@ -41,7 +41,7 @@ class LaneKeepingProcess(WorkerProcess):
             List of output pipes (0 - send steering data to the movvement control process)
         """
         super(LaneKeepingProcess, self).__init__(inPs, outPs)
-        self.lk = LaneKeepMethod(use_perspective=False, computation_method="hough")
+        self.lk = LaneKeepMethod(use_perspective=True, computation_method="hough")
         self.enable_stream = enable_stream
 
     def run(self):

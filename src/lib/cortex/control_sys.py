@@ -1,5 +1,9 @@
+from re import S
+from turtle import st
 import numpy as np
 import math
+
+from src.lib.cortex.carstate import CarState
 class Pure_Pursuit:
     def __init__(self, coord_list):
         self.k = 0.01  # look forward gain
@@ -9,20 +13,26 @@ class Pure_Pursuit:
         self.cx, self.cy = zip(*coord_list)
         self.old_nearest_point_index = None
 
-    def search_target_index(self, state):
+    def search_target_index(self, state:CarState):
 
         # To speed up nearest point search, doing it at only first time.
-        if self.old_nearest_point_index is None:
-            # search nearest point index
-            # print("Init Location State : " ,state.rear_x,state.rear_y)
-            dx = [state.rear_x - icx for icx in self.cx]
-            dy = [state.rear_y - icy for icy in self.cy]
-            d = np.hypot(dx, dy)
-            ind = np.argmin(d)
-            self.old_nearest_point_index = ind
+        # if self.old_nearest_point_index is None and False:
+        #     # search nearest point index
+        #     # print("Init Location State : " ,state.rear_x,state.rear_y)
+        #     dx = [state.rear_x - icx for icx in self.cx]
+        #     dy = [state.rear_y - icy for icy in self.cy]
+        #     d = np.hypot(dx, dy)
+        #     ind = np.argmin(d)
+        #     self.old_nearest_point_index = ind
+        # el
+        if self.old_nearest_point_index is None :
+            ind=state.navigator.get_current_node(state.rear_x,state.rear_y,-state.yaw)
+            self.old_nearest_point_index=ind
         else:
             ind = self.old_nearest_point_index
             distance_this_index = state.calc_distance(self.cx[ind], self.cy[ind])
+            if distance_this_index>3:
+                ind=state.navigator.get_current_node(state.rear_x,state.rear_y,-state.yaw)
             while True:
                 try:
                     distance_next_index = state.calc_distance(

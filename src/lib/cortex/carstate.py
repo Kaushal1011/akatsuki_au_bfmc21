@@ -3,6 +3,7 @@ import math
 
 from time import time
 from src.lib.cortex.navigation import Navigator
+
 activity_config={
     "nodes":[[86,99],[100,145],[61,168],[169,229],[230,104],[105,465],[466,85]],
     "activity":["navigation","roadblocked","parking","overtaking","highway","oneway","finish"]
@@ -16,7 +17,7 @@ class CarState:
         # 0.75, 4.8
         self.x = 0.8
         self.y = 14.8
-        self.yaw = 0
+        self.yaw = 1.57
         self.pitch = 0
         self.roll = 0
         self.car_len = car_len

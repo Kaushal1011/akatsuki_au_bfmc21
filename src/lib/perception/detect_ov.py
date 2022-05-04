@@ -352,7 +352,6 @@ class Detection:
 
         if not img.shape == (640, 640, 3):
             img_resized = cv2.resize(img, (640, 640))
-        cv2.imwrite("img.jpg", img)
         x: np.ndarray = img_resized / 255
         x = x.astype(np.float32)
         x = np.expand_dims(x.transpose(2, 0, 1), 0)

@@ -6,7 +6,7 @@ import pathlib
 from threading import Thread
 from time import time
 from typing import List, Optional
-
+from time import sleep
 
 from src.lib.cortex.carstate import CarState
 from src.templates.workerprocess import WorkerProcess
@@ -96,11 +96,11 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
 
     if (
         carstate.front_distance
-        < 0.5
+        < 0.7
         # and carstate.detected_car
         # and carstate.can_overtake
     ):
-        # print("Overtake Trigger")
+        print("Overtake Trigger")
         # overtake
         overtakeobj = OvertakeBehaviour(car_state=carstate)
         overtakeobjaction = ActionBehaviour(name="overtaking", callback=overtakeobj)
@@ -163,7 +163,7 @@ class DecisionMakingProcess(WorkerProcess):
         """
         super(DecisionMakingProcess, self).__init__(inPs, outPs)
         # pass navigator config
-        self.state = CarState(navigator_config=None)
+        self.state = CarState()
         self.inPsnames = inPsnames
         self.actman = ActionManager()
 
@@ -172,20 +172,20 @@ class DecisionMakingProcess(WorkerProcess):
         self.actman.set_action(lkaction)
 
         ##################################################################
-        data_path = pathlib.Path(
-            pathlib.Path(__file__).parent.parent.parent.resolve(),
-            "data",
-            "mid_course.z",
-        )
-        data = joblib.load(data_path)
+        # data_path = pathlib.Path(
+        #     pathlib.Path(__file__).parent.parent.parent.resolve(),
+        #     "data",
+        #     "mid_course.z",
+        # )
+        # data = joblib.load(data_path)
         # cx = data["x"]
         # cy = data["y"]
         # coord_list = [x for x in zip(cx, cy)]
-        coord_list = data[0]
+        # coord_list = data[0]
         #################################################################
 
         # pass coordlist here from navigator config
-        csobj = ControlSystemBehaviour(coord_list=coord_list)
+        csobj = ControlSystemBehaviour(coord_list=self.state.navigator.coords)
         csaction = ActionBehaviour(name="cs", callback=csobj)
         self.actman.set_action(csaction)
 
@@ -291,7 +291,7 @@ class DecisionMakingProcess(WorkerProcess):
                             False,
                         )
                         print(
-                            "DIS -> ", distance_data["sonar1"], distance_data["sonar1"]
+                            "DIS -> ", distance_data
                         )
                         logger.log("PIPE", f"Recv->DIS {final_data[0]},{final_data[1]}")
                         logger.log(
@@ -341,6 +341,8 @@ class DecisionMakingProcess(WorkerProcess):
                 for outP in outPs:
                     # print("Final -> ", (self.state.steering_angle, self.state.v))
                     outP.send((self.state.steering_angle, self.state.v))
+
+                sleep(0.2)
 
             except Exception as e:
                 print("Decision Process error:")
