@@ -1,8 +1,9 @@
 # vscode
 .vscode 
 *.zip
-best_openvino_model
-
+*_openvino_model
+*.onnx
+*.pt
 # ignore data directory
 nbs/*/data
 nbs/yolov5

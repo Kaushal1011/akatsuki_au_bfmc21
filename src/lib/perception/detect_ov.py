@@ -321,22 +321,26 @@ def get_area(bbox: np.ndarray) -> np.ndarray:
 
 
 map2label = {
-    0:"car",
-    1:"crosswalk",
-    2:"highway_entry",
-    3:"highway_exit",
-    4:"no_entry",
-    5:"onewayroad",
-    6:"parking",
-    7:"pedestrian",
-    8:"priority",
-    9:"roadblock",
-    10:"roundabout",
-    11:"stop",
-    12:"trafficlight",
-    }
+    0: "car",
+    1: "crosswalk",
+    2: "highway_entry",
+    3: "highway_exit",
+    4: "no_entry",
+    5: "onewayroad",
+    6: "parking",
+    7: "pedestrian",
+    8: "priority",
+    9: "roadblock",
+    10: "roundabout",
+    11: "stop",
+    12: "trafficlight",
+}
+
+
 class Detection:
-    def __init__(self, model_path: str = "best_openvino_model/best.xml") -> None:
+    def __init__(
+        self, model_path: str = "sign_model_openvino_model/sign_model.xml"
+    ) -> None:
         ie = Core()
         model = ie.read_model(model=model_path)
         device = "MYRIAD" if "MYRIAD" in ie.available_devices else "CPU"
