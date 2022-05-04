@@ -4,6 +4,8 @@
 *_openvino_model
 *.onnx
 *.pt
+dataset
+
 # ignore data directory
 nbs/*/data
 nbs/yolov5
