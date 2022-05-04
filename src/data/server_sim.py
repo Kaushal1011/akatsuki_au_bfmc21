@@ -6,7 +6,7 @@ from src.templates.workerprocess import WorkerProcess
 import zmq
 
 
-connect2file = {"loc": "31", "imu": "21"}
+connect2file = {"loc": "31", "imu": "21", "tl": "tl"}
 
 
 class ServerSIM(WorkerProcess):

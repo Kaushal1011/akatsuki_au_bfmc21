@@ -252,6 +252,13 @@ class DecisionMakingProcess(WorkerProcess):
             sub_dis.connect("ipc:///tmp/v11")
             sub_dis.setsockopt_string(zmq.SUBSCRIBE, "")
 
+        if "tl" in self.inPsnames:
+            context_recv_tl = zmq.Context()
+            sub_tl = context_recv_tl.socket(zmq.SUB)
+            # sub_dis.setsockopt(zmq.CONFLATE, 1)
+            sub_tl.connect("ipc:///tmp/vtl")
+            sub_tl.setsockopt_string(zmq.SUBSCRIBE, "")
+
         while True:
             try:
                 # c = time()
@@ -310,12 +317,10 @@ class DecisionMakingProcess(WorkerProcess):
                     else:
                         self.state.update_pos_noloc()
 
-                # # if trafficlight process is connected
-                # if "tl" in self.inPsnames:
-                #     idx = self.inPsnames.index("tl")
-                #     if inPs[idx].poll():
-                #         trafficlights = inPs[idx].recv()
-                #         print(trafficlights)
+                if "tl" in self.inPsnames:
+                    if sub_tl.poll(timeout=0.05):
+                        trafficlights = sub_tl.recv()
+                        print(f"TL -> {trafficlights}")
 
                 # # update car navigator, current ptype, current etype and current idx
 

@@ -29,6 +29,8 @@ from src.lib.cortex.posfusproc import PositionFusionProcess
 
 from src.data.distance_sim import DistanceSIM
 from src.hardware.ultrasonic.distanceProc import DistanceProcess
+from src.data.trafficlights.trafficProc import TrafficProcess
+from src.data.server_sim import ServerSIM as TrafficSIM
 from src.lib.actuator.momentcontrol import MovementControl
 from src.lib.actuator.sim_connect import SimulatorConnector
 from src.hardware.serialhandler.SerialHandlerProcess import SerialHandlerProcess
@@ -143,21 +145,17 @@ elif config["using_server"]:
 
 
 # -------TrafficLightSemaphore----------
-# if config["enableSIM"]:
-#     # Traffic Semaphore -> Decision Making (data fusion)
-#     tlFzzR, tlFzzS = Pipe(duplex=False)
-#     trafficProc = TrafficSIM([], [tlFzzS], TRAFFIC_SIM_PORT)
-#     allProcesses.append(trafficProc)
-#     dataFusionInputPs.append(tlFzzR)
-#     dataFusionInputName.append("tl")
+if config["enableSIM"]:
+    # Traffic Semaphore -> Decision Making (data fusion)
+    trafficProc = TrafficSIM([], [], "tl", TRAFFIC_SIM_PORT)
+    allProcesses.append(trafficProc)
+    dataFusionInputName.append("tl")
 
-# elif config["using_server"]:
-#     # Traffic Semaphore -> Decision Making (data fusion)
-#     tlFzzR, tlFzzS = Pipe(duplex=False)
-#     trafficProc = TrafficProcess([], [tlFzzS])
-#     allProcesses.append(trafficProc)
-#     dataFusionInputPs.append(tlFzzR)
-#     dataFusionInputName.append("tl")
+elif config["using_server"]:
+    # Traffic Semaphore -> Decision Making (data fusion)
+    trafficProc = TrafficProcess([], [])
+    allProcesses.append(trafficProc)
+    dataFusionInputName.append("tl")
 
 # ========================= IMU ===================================================
 # IMU -> Position Fusino
