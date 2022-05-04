@@ -82,7 +82,7 @@ class HighwayBehaviour(BehaviourCallback):
         self.exit_highway = False
 
     def __call__(self, car_state: CarState):
-        if car_state.detected_sign["highway_exit"]:
+        if car_state.detected["highway_exit"]:
             self.exit_highway = True
 
         return {"speed": car_state.highway_speed}

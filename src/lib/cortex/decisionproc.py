@@ -87,8 +87,8 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
         stopaction = ActionBehaviour(name="stop", release_time=6.0, callback=stopobj)
         action_man.set_action(stopaction, action_time=3.0)
 
-    if carstate.detected_sign["parking"] or triggerparking:
-        print("In parking trigger: ", triggerparking, carstate.detected_sign["parking"])
+    if carstate.detected["parking"] or triggerparking:
+        print("In parking trigger: ", triggerparking, carstate.detected["parking"])
         # Parking
         parkobj = ParkingBehaviour(car_state=carstate)
         parkobjaction = ActionBehaviour(name="parking", callback=parkobj)
@@ -120,13 +120,13 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
         # replan closed road
         pass
 
-    if carstate.detected_sign["stop"]:
+    if carstate.detected["stop"]:
         # stop for t secs
         stopobj = StopBehvaiour()
         stopaction = ActionBehaviour(name="stop", release_time=6.0, callback=stopobj)
         action_man.set_action(stopaction, action_time=3.0)
 
-    if carstate.detected_sign["priority"]:
+    if carstate.detected["priority"]:
         # slowdown for t secs
         priorityobj = PriorityBehaviour()
         priorityaction = ActionBehaviour(
@@ -134,7 +134,7 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
         )
         action_man.set_action(priorityaction, action_time=9.0)
 
-    if carstate.detected_sign["crosswalk"]:
+    if carstate.detected["crosswalk"]:
         # stop detected pedestrain or crosswalk
         cwobj = CrosswalkBehavior(car_state=carstate)
         cwobjaction = ActionBehaviour(name="crosswalk", callback=cwobj)
@@ -280,12 +280,11 @@ class DecisionMakingProcess(WorkerProcess):
                 if "sd" in self.inPsnames:
                     if sub_sd.poll(timeout=0.05):
                         detections = sub_sd.recv_json()
+                        self.state.update_detected(detections)
                         print("SD ->", detections)
                 #         print("SD <-<", sign)
                 #         logger.log("SYNC", f"SD timedelta {time() - sd_timestamp}")
                 #         logger.log("PIPE", f"Recv -> SD {sign}")
-
-                #         # self.state.update_sign_detected()
 
                 if "dis" in self.inPsnames:
                     if sub_dis.poll(timeout=0.1):
