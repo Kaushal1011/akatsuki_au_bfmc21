@@ -183,6 +183,7 @@ def nms(dets, scores, thresh):
 
 def scale_coords(img1_shape, coords, img0_shape, ratio_pad=None):
     # Rescale coords (xyxy) from img1_shape to img0_shape
+    print(f"Scaling from {img1_shape} -> {img0_shape}")
     if ratio_pad is None:  # calculate from img0_shape
         gain = min(
             img1_shape[0] / img0_shape[0], img1_shape[1] / img0_shape[1]
@@ -320,21 +321,21 @@ def get_area(bbox: np.ndarray) -> np.ndarray:
     return ((bbox[:, 2] - bbox[:, 0]) * (bbox[:, 3] - bbox[:, 1])).tolist()
 
 
-map2label = {
-    0: "car",
-    1: "crosswalk",
-    2: "highway_entry",
-    3: "highway_exit",
-    4: "no_entry",
-    5: "onewayroad",
-    6: "parking",
-    7: "pedestrian",
-    8: "priority",
-    9: "roadblock",
-    10: "roundabout",
-    11: "stop",
-    12: "trafficlight",
-}
+map2label = [
+    "car",
+    "crosswalk",
+    "highway_entry",
+    "highway_exit",
+    "no_entry",
+    "onewayroad",
+    "parking",
+    "pedestrian",
+    "priority",
+    "roadblock",
+    "roundabout",
+    "stop",
+    "trafficlight",
+]
 
 
 class Detection:
@@ -394,7 +395,9 @@ class Detection:
             # s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
 
         for *xyxy, conf, cls in reversed(pred_nms):
-            annotator.box_label(xyxy, "", colors(c, True))
+            c = int(cls)
+            label = f"{map2label[c]} {conf:.2f}"
+            annotator.box_label(xyxy, label, colors(c, True))
 
         im0 = annotator.result()
         # TODO: change channels if required
