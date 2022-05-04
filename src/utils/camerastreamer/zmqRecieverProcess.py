@@ -51,7 +51,7 @@ class CameraReceiverProcess(WorkerProcess):
         footage_socket.setsockopt(zmq.CONFLATE, 1)
         footage_socket.bind(self.addr)
         footage_socket.setsockopt_string(zmq.SUBSCRIBE, "")
-
+        count = 1
         while True:
             try:
                 frame = footage_socket.recv_string()
@@ -59,7 +59,10 @@ class CameraReceiverProcess(WorkerProcess):
                 npimg = np.fromstring(img, dtype=np.uint8)
                 source = cv2.imdecode(npimg, 1)
                 cv2.imshow("Stream", source)
-                cv2.waitKey(1)
+                if cv2.waitKey(1) & 0xFF == ord("s"):
+                    count += 1
+                    print("Saving Image")
+                    cv2.imwrite(f"./dataset/{count}.jpg", source)
             except Exception as e:
                 print(e)
                 cv2.destroyAllWindows()
