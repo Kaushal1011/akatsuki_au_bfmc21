@@ -5,6 +5,8 @@ from multiprocessing import Event, Pipe
 
 import argparse
 
+from terrascript import Connection
+
 from src import config as config_module
 
 parser = argparse.ArgumentParser()
@@ -109,6 +111,7 @@ lkProc = LaneKeeping([], [], enable_stream=("lk" in streams))
 allProcesses.append(lkProc)
 dataFusionInputName.append("lk")
 camOutNames.append("lk")
+dataFusionOutPs: List[Connection] = []
 
 if not config["enableSignDet"]:
     if "sd" in streams:
@@ -192,22 +195,29 @@ elif isPI:
     allProcesses.append(disProc)
     dataFusionInputName.append("dis")
 
-# ======================= Environment Server ======================================
-
-beacon = 23456
-id = 120
-serverpublickey = "publickey_server_test.pem"
-clientprivatekey = "privatekey_client_test.pem"
-
-gpsStR, gpsStS = Pipe(duplex=False)
-
-envhandler = EnvironmentalHandler(id, beacon, serverpublickey, gpsStR, clientprivatekey)
-
-# ======================= Decision Making =========================================
+# ==== Movement Control pipe
 # Decision Process -> Movement control
 FzzMcR, FzzMcS = Pipe(duplex=False)
+dataFusionOutPs.append(FzzMcS)
 
-datafzzProc = DecisionMakingProcess([], [FzzMcS, gpsStS], inPsnames=dataFusionInputName)
+# ======================= Environment Server ======================================
+if config["using_server"]:
+    beacon = 23456
+    id = 120
+    serverpublickey = "publickey_server_test.pem"
+    clientprivatekey = "privatekey_client_test.pem"
+
+    gpsStR, gpsStS = Pipe(duplex=False)
+
+    envhandler = EnvironmentalHandler(
+        id, beacon, serverpublickey, gpsStR, clientprivatekey
+    )
+    dataFusionOutPs.append(gpsStS)
+
+
+# ======================= Decision Making =========================================
+
+datafzzProc = DecisionMakingProcess([], dataFusionOutPs, inPsnames=dataFusionInputName)
 allProcesses.append(datafzzProc)
 movementControlR.append(FzzMcR)
 #
