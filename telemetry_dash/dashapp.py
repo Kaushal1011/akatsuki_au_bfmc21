@@ -7,9 +7,19 @@ from dash.dependencies import Output, Input
 import dash_bootstrap_components as dbc
 import plotly.express as px
 import pandas as pd
-import csv, socket, pickle
+import csv, pickle
 from json import loads
 import plotly.graph_objects as go
+# from socket import *
+import socket
+
+host = "0.0.0.0"
+port = 12345
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+sock.bind((host,port))
+print("Socket Binded")
+
 
 options = dict(loop=True, autoplay=True, rendererSettings=dict(
     preserveAspectRatio='xMidYMid slice'))
@@ -24,6 +34,10 @@ app.layout = html.Div([
         storage_type='memory'
     ), dcc.Interval(
         id='html-div',
+        interval=100,  # in milliseconds
+        n_intervals=0
+    ), dcc.Interval(
+        id='html-div1',
         interval=100,  # in milliseconds
         n_intervals=0
     ),
@@ -317,12 +331,14 @@ app.layout = html.Div([
 )
 def store_data(n_intervals):
     data, addr = sock.recvfrom(4096)
-    data = data.decode('utf-8')    
+    data = data.decode('utf-8')  
     dictData=loads(data)
-    df.append(dictData)
-    df_last_20 = df.tail(20)
-    print(df_last_20)
-    return df_last_20.to_dict('records')
+    print(dictData)
+    # df.append(dictData)
+    # print(df)  
+    # df_last_20 = df.tail(20)
+    # print(df_last_20)
+    return dictData
 
 
 @app.callback(
@@ -341,9 +357,15 @@ def update_card_x(data, n_intervals):
     # df_tele = pd.read_csv("tele2.csv")
     # df_tele = pd.DataFrame(data)
     # df_tele_list = df_tele.iloc[-1].tolist()
-    dff = pd.DataFrame.from_records(data)
-    df_tele_list = dff.iloc[-1].tolist()
-    return df_tele_list[0]
+    # data, addr = sock.recvfrom(4096)
+    # data = data.decode('utf-8')  
+    # dictData=loads(data)
+    # print(dictData)
+    # dff = pd.DataFrame(data)
+    x = data["X-Coord"]
+    print(x)
+    # df_tele_list = dff.iloc[-1].tolist()
+    return x
 
 
 @app.callback(
@@ -377,7 +399,7 @@ def update_card_tx(data, n_intervals):
     Input('stored_df', 'data'),
     Input('card-ty', 'n_intervals')
 )
-def update_card_ty(data, n_intervals):
+def update_card_(data, n_intervals):
     # df_tele = pd.read_csv("tele2.csv")
     # # df_tele = pd.DataFrame(data)
     # df_tele_list = df_tele.iloc[-1].tolist()
@@ -514,19 +536,14 @@ def update_speed_curve(data, n_intervals):
     return fig_line
 
 @app.callback(Output('stored_df', 'clear_data'),
-            [Input('html-div', 'n_intervals')])
+            [Input('html-div-1', 'n_intervals')])
 def clear_dcc_store(n_intervals):
         return True
 
 
 if __name__ == '__main__':
-    
-    host = "0.0.0.0"
-    port = 12345
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.bind((host,port))
-    print("Socket Binded")
-    df = pd.DataFrame(columns=['X-Coord', 'Y-Coord', 'Yaw', 'Speed', 'Steering_Angle', 'Current_Behaviour', 'Detection'])
+    # df = pd.DataFrame(columns=['X-Coord', 'Y-Coord', 'Yaw', 'Speed', 'Steering_Angle', 'Current_Behaviour', 'Detection'])
     app.run_server(debug=True, port=8004)
+        
     
 

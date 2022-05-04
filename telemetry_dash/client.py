@@ -2,7 +2,7 @@ import socket
 import json
 import time
 import random
-host = "0.0.0.0"
+host = socket.gethostbyname(socket.gethostname())
 port = 12345
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)	    # TCP socket object
 addr = (host, port)
@@ -22,7 +22,7 @@ while True:
     print(data)
     sock.sendto(data.encode('utf-8'), addr)
     # sock.sendall(bytes(data,encoding="utf-8"), addr)
-    # time.sleep(1)
+    time.sleep(0.1)
     cnt+=1
     if cnt==650:
         break
