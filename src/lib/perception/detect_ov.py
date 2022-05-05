@@ -7,19 +7,20 @@ import time
 FONT = "Arial.ttf"  # https://ultralytics.com/assets/Arial.ttf
 
 AREA_THRESHOLD = {
-    "car": 5000,
-    "crosswalk": 5000,
-    "highway_entry": 5000,
-    "highway_exit": 5000,
-    "no_entry": 5000,
-    "onewayroad": 5000,
-    "parking": 5000,
-    "pedestrian": 5000,
-    "priority": 5000,
-    "roadblock": 5000,
-    "roundabout": 5000,
-    "stop": 5000,
-    "trafficlight": 5000,
+    'car':50,
+    'crosswalk':50,
+    'doll':50,
+    'highway_entry':50,
+    'highway_exit':50,
+    'no_entry':50,
+    'onewayroad':50,
+    'parking':50,
+    'pedestrian':50,
+    'priority':50,
+    'roadblock':50,
+    'roundabout':50,
+    'stop':50,
+    'trafficlight':50
 }
 
 
@@ -384,26 +385,12 @@ def roi_func(img: np.ndarray) -> np.ndarray:
     return img
 
 
-map2label = [
-    "car",
-    "crosswalk",
-    "highway_entry",
-    "highway_exit",
-    "no_entry",
-    "onewayroad",
-    "parking",
-    "pedestrian",
-    "priority",
-    "roadblock",
-    "roundabout",
-    "stop",
-    "trafficlight",
-]
+map2label = ['car', 'crosswalk', 'doll', 'highway_entry', 'highway_exit', 'no_entry', 'onewayroad', 'parking', 'pedestrian', 'priority', 'roadblock', 'roundabout', 'stop', 'trafficlight']
 
 
 class Detection:
     def __init__(
-        self, model_path: str = "sign_model_openvino_model/sign_model.xml"
+        self, model_path: str = "best1yet_openvino_model/best1yet.xml"
     ) -> None:
         ie = Core()
         model = ie.read_model(model=model_path)

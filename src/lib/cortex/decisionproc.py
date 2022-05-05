@@ -364,7 +364,7 @@ class DecisionMakingProcess(WorkerProcess):
                 # # update car navigator, current ptype, current etype and current idx
 
                 trigger_behaviour(self.state, self.actman)
-
+                print(self.state.detection)
                 speed, steer = self.actman(self.state)
                 self.state.v = speed
                 self.state.steering_angle = steer
