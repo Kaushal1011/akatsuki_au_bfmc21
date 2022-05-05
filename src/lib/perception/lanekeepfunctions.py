@@ -64,12 +64,12 @@ class LaneKeep:
         adpt_Th_C: int = 4,
         canny_thres1: int = 50,
         canny_thres2: int = 150,
-        luroi: float = 0.1,
-        ruroi: float = 0.9,
+        luroi: float = 0.,
+        ruroi: float = 1,
         lbroi: float = 0,
         rbroi: float = 1,
-        hroi: float = 0.5,
-        broi: float = 0.0,
+        hroi: float = 0.45,
+        broi: float = 0.06,
     ):
         """Define LaneKeeping pipeline and parameters
 
@@ -205,13 +205,25 @@ class LaneKeep:
         """Preprocess image for edge detection"""
         # Apply HLS color filtering to filter out white lane lines
         imgn = img.copy()
+        imgn = cv2.GaussianBlur(imgn, (17, 17), 0)
+        imgn = cv2.cvtColor(imgn, cv2.COLOR_RGB2HSV)
 
-        lower = np.array([235 ,235, 235], np.uint8)
-
-        upper = np.array([255, 255, 255], np.uint8)
+        lower = np.array([0, 0, 249], np.uint8)
+        upper = np.array([90, 90, 255], np.uint8)
 
         mask = cv2.inRange(imgn, lower, upper)
         return mask
+#     
+#         """Preprocess image for edge detection"""
+#         # Apply HLS color filtering to filter out white lane lines
+#         imgn = img.copy()
+# 
+#         lower = np.array([237 ,237, 237], np.uint8)
+# 
+#         upper = np.array([255, 255, 255], np.uint8)
+# 
+#         mask = cv2.inRange(imgn, lower, upper)
+#         return mask
 
     def intersection_det(self, img: np.ndarray, area_threshold=5_500):
         # detect horizontal lines
@@ -453,7 +465,7 @@ def find_lanes(thresh_canny):
     # )
     # return lines
     lines = cv2.HoughLinesP(
-        thresh_canny, 1, np.pi / 180, 15, minLineLength=40, maxLineGap=10
+        thresh_canny, 1, np.pi / 180, 15, minLineLength=80, maxLineGap=300
     )
     return lines
 

@@ -3,7 +3,7 @@ class PID:
     Discrete PID control
     """
 
-    def __init__(self, P=2.0, I=0.0, D=1.0, Derivator=0, Integrator=0, Integrator_max=12, Integrator_min=-12):
+    def __init__(self, P=2.0, I=0.0, D=1.0, Derivator=0, Integrator=0, Integrator_max=36, Integrator_min=-36):
 
         self.Kp = P
         self.Ki = I

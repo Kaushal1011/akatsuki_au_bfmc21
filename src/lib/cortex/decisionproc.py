@@ -109,14 +109,14 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
 
     if (
         carstate.front_distance < 0.6
-        and carstate.detected_car
+        and carstate.detected["car"]
         and not carstate.can_overtake
     ):
         # tailing or stop
         pass
 
     if (
-        carstate.detected_closed_road or carstate.calc_distance_target_node() > 2
+        carstate.detected["roadblock"] or carstate.calc_distance_target_node() > 2
     ):  # 10 cm
         # replan closed road
         pass
@@ -329,7 +329,7 @@ class DecisionMakingProcess(WorkerProcess):
                         logger.log(
                             "SYNC", f"dis delta {time()- distance_data['timestamp']}"
                         )
-                        self.state.update_object_det(*final_data)
+                        self.state.update_object_det(distance_data["sonar1"],distance_data["sonar2"] )
 
                 if "pos" in self.inPsnames:
                     if sub_pos.poll(timeout=0.05):

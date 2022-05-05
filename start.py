@@ -5,7 +5,7 @@ from multiprocessing import Event, Pipe
 
 import argparse
 
-from terrascript import Connection
+from multiprocessing.connection import Connection
 
 from src import config as config_module
 
@@ -29,10 +29,10 @@ from src.data.localisationssystem.locsysProc import LocalisationSystemProcess
 from src.data.server_sim import ServerSIM as LocSysSIM
 from src.data.server_sim import ServerSIM as IMUSIM
 from src.lib.cortex.posfusproc import PositionFusionProcess
-from src.data.environmentalserver.environmental import EnvironmentalHandler
+# from src.data.environmentalserver.environmental import EnvironmentalHandler
 from src.data.distance_sim import DistanceSIM
 from src.hardware.ultrasonic.distanceProc import DistanceProcess
-from src.data.trafficlights.trafficProc import TrafficProcess
+# from src.data.trafficlights.trafficProc import TrafficProcess
 from src.data.server_sim import ServerSIM as TrafficSIM
 from src.lib.actuator.momentcontrol import MovementControl
 from src.lib.actuator.sim_connect import SimulatorConnector
@@ -155,7 +155,7 @@ if config["enableSIM"]:
     allProcesses.append(trafficProc)
     dataFusionInputName.append("tl")
 
-elif config["using_server"]:
+elif config["using_server"] and False:
     # Traffic Semaphore -> Decision Making (data fusion)
     trafficProc = TrafficProcess([], [])
     allProcesses.append(trafficProc)
