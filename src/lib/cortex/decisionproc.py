@@ -364,7 +364,7 @@ class DecisionMakingProcess(WorkerProcess):
                 # # update car navigator, current ptype, current etype and current idx
 
                 trigger_behaviour(self.state, self.actman)
-
+                print(self.state.detection)
                 speed, steer = self.actman(self.state)
                 self.state.v = speed
                 self.state.steering_angle = steer
@@ -375,7 +375,8 @@ class DecisionMakingProcess(WorkerProcess):
                 logger.debug(f"Sonar Side: {self.state.side_distance}")
 
                 if len(outPs) > 0:
-                    outPs[0].send((self.state.steering_angle, self.state.v))
+                    # outPs[0].send((self.state.steering_angle, self.state.v))
+                    outPs[0].send((0, 0.0))
 
                 sleep(0.2)
 
