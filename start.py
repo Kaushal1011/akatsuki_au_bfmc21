@@ -29,7 +29,7 @@ from src.data.localisationssystem.locsysProc import LocalisationSystemProcess
 from src.data.server_sim import ServerSIM as LocSysSIM
 from src.data.server_sim import ServerSIM as IMUSIM
 from src.lib.cortex.posfusproc import PositionFusionProcess
-# from src.data.environmentalserver.environmental import EnvironmentalHandler
+from src.data.environmentalserver.environmental import EnvironmentalHandler
 from src.data.distance_sim import DistanceSIM
 from src.hardware.ultrasonic.distanceProc import DistanceProcess
 from src.data.trafficlights.trafficProc import TrafficProcess
@@ -155,7 +155,7 @@ if config["enableSIM"]:
     allProcesses.append(trafficProc)
     dataFusionInputName.append("tl")
 
-elif config["using_server"] or True:
+elif config["using_server"] and False:
     # Traffic Semaphore -> Decision Making (data fusion)
     trafficProc = TrafficProcess([], [])
     allProcesses.append(trafficProc)
@@ -201,7 +201,7 @@ FzzMcR, FzzMcS = Pipe(duplex=False)
 dataFusionOutPs.append(FzzMcS)
 
 # ======================= Environment Server ======================================
-if config["using_server"]:
+if config["using_server"] or True:
     beacon = 23456
     id = 120
     serverpublickey = "publickey_server_test.pem"
@@ -212,6 +212,7 @@ if config["using_server"]:
     envhandler = EnvironmentalHandler(
         id, beacon, serverpublickey, gpsStR, clientprivatekey
     )
+    allProcesses.append(envhandler)
     dataFusionOutPs.append(gpsStS)
 
 

@@ -337,7 +337,7 @@ class DecisionMakingProcess(WorkerProcess):
                 if "sd" in self.inPsnames:
                     if sub_sd.poll(timeout=0.05):
                         detections = sub_sd.recv_json()
-                        # print("SD ->", detections)
+                        print("SD ->", detections)
                         # send data to env server
                         if len(outPs) > 1:
                             for env_data in send_data2env(self.state, detections):
