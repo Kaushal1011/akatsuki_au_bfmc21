@@ -84,7 +84,7 @@ STREAM_PORT1 = 2244
 STREAM_PORT2 = 4422
 # ["cam", "lk", "sd"]
 
-streams = ["lk", "sd"]
+streams = ["cam", "lk"]
 # =============================== INITIALIZING PROCESSES =================================
 # Pipe collections
 allProcesses = []

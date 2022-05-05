@@ -64,12 +64,12 @@ class LaneKeep:
         adpt_Th_C: int = 4,
         canny_thres1: int = 50,
         canny_thres2: int = 150,
-        luroi: float = 0.2,
-        ruroi: float = 0.8,
+        luroi: float = 0.05,
+        ruroi: float = 0.95,
         lbroi: float = 0,
         rbroi: float = 1,
-        hroi: float = 0.6,
-        broi: float = 0,
+        hroi: float = 0.45,
+        broi: float = 0.2,
     ):
         """Define LaneKeeping pipeline and parameters
 
@@ -149,13 +149,14 @@ class LaneKeep:
         if self.computation_method == "hough":
             if get_image:
                 angle, outimg = self.houghlines_angle(preprocess_img, get_img=get_image)
+                # angle = self.get_lane_error(preprocess_img)
                 # if len(cnts) > 0:
                 #     self.draw_intersection_bbox(outimg, cnts)
                 return angle, intersection_detected, outimg
 
             else:
                 angle = self.houghlines_angle(preprocess_img)
-                angle = self.get_lane_error(preprocess_img)
+                # angle = self.get_lane_error(preprocess_img)
                 # angle_roadarea = self.graph_road_search(preprocess_img)
                 # print(angle, " ", angle_roadarea)
                 #             angle = (angle*2 + angle_roadarea) / 3
@@ -204,11 +205,11 @@ class LaneKeep:
         """Preprocess image for edge detection"""
         # Apply HLS color filtering to filter out white lane lines
         imgn = img.copy()
-        imgn = cv2.GaussianBlur(imgn, (17, 17), 0)
-        imgn = cv2.cvtColor(imgn, cv2.COLOR_RGB2HSV)
+#         imgn = cv2.GaussianBlur(imgn, (17, 17), 0)
+#         imgn = cv2.cvtColor(imgn, cv2.COLOR_RGB2HSV)
 
-        lower = np.array([0, 0, 249], np.uint8)
-        upper = np.array([90, 90, 255], np.uint8)
+        lower = np.array([230, 230, 230], np.uint8)
+        upper = np.array([255, 255, 255], np.uint8)
 
         mask = cv2.inRange(imgn, lower, upper)
         return mask

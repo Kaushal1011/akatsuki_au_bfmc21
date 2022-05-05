@@ -48,6 +48,7 @@ class CameraStreamerProcess(WorkerProcess):
         self.port = port
         self.addr = f"tcp://{HOST}:{port}"
         self.file_id = connect2file[connect]
+        self.connect = connect
         if connect == "lk":
             self.shape = (480, 640, 1)
         else:
@@ -100,6 +101,8 @@ class CameraStreamerProcess(WorkerProcess):
                 data = sub_stream.recv()
                 data = np.frombuffer(data, dtype=np.uint8)
                 image = np.reshape(data, self.shape)
+                if self.connect == "cam":
+                    image = image[...,::-1]
                 encoded, buffer = cv2.imencode(".jpg", image, encode_param)
                 jpg_as_text = base64.b64encode(buffer)
                 footage_socket.send(jpg_as_text)

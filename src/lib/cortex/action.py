@@ -252,10 +252,10 @@ class LaneKeepBehaviour(BehaviourCallback):
     def __call__(self, car_state):
         # print("Lanekeeping angle: ", car_state.lanekeeping_angle)
         # return  {"steer":car_state.lanekeeping_angle}
-        if abs(car_state.cs_steer - car_state.lanekeeping_angle) > 20:
-            return None
-        elif car_state.current_ptype == "lk":
-            return {"steer": car_state.lanekeeping_angle}
+        #if abs(car_state.cs_steer - car_state.lanekeeping_angle) > 20:
+        #    return None
+        #elif car_state.current_ptype == "lk":
+        return {"steer": car_state.lanekeeping_angle}
             # return None
 
     def set(self, **kwargs):

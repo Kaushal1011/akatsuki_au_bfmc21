@@ -323,7 +323,7 @@ def get_area(bbox: np.ndarray) -> list:
     return ((bbox[:, 2] - bbox[:, 0]) * (bbox[:, 3] - bbox[:, 1])).tolist()
 
 
-def roi_func(self, img: np.ndarray) -> np.ndarray:
+def roi_func(img: np.ndarray) -> np.ndarray:
     """Given image get Region of interest
 
     Args:
@@ -332,15 +332,14 @@ def roi_func(self, img: np.ndarray) -> np.ndarray:
     Returns:
         np.ndarray: the roi image
     """
-    luroi = 0.2
+    luroi = 0.15
     ruroi = 1
-    lbroi = 0.2
+    lbroi = 0.15
     rbroi = 1
-    hroi = 0.8
+    hroi = 0.05
     broi = 0
     # create stencil just the first time and then save for later use
-    if self.stencil is None:
-        roi = [
+    roi = [
             (
                 int(luroi * ((img.shape[1] - 1))),
                 int(hroi * (img.shape[0] - 1)),
@@ -358,14 +357,14 @@ def roi_func(self, img: np.ndarray) -> np.ndarray:
                 int(hroi * (img.shape[0] - 1)),
             ),
         ]
-        self.stencil = np.zeros_like(img, dtype="uint8")
+    stencil = np.zeros_like(img, dtype="uint8")
         # specify coordinates of the polygon
-        polygon = np.array(roi)
+    polygon = np.array(roi)
 
         # fill polygon with ones
-        cv2.fillConvexPoly(self.stencil, polygon, [255, 255, 255])
+    cv2.fillConvexPoly(stencil, polygon, [255, 255, 255])
 
-    img = cv2.bitwise_and(img, img, mask=self.stencil[:, :, 0])
+    img = cv2.bitwise_and(img, img, mask=stencil[:, :, 0])
     return img
 
 
