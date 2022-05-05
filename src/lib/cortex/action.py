@@ -223,7 +223,7 @@ class OvertakeBehaviour(BehaviourCallback):
             di = 23
         elif di < -23:
             di = -23
-        car_state.cs_steer = di
+        car_state.cs_angle = di
 
         if car_state.side_distance < 0.5:
             self.parallel_reach = True
@@ -264,12 +264,12 @@ class LaneKeepBehaviour(BehaviourCallback):
             angle = -23
         # print("Lanekeeping angle: ", car_state.lanekeeping_angle)
         # print("Lanekeeping angle: ", angle)
-        return  {"steer":angle}
-#         if abs(car_state.cs_steer - angle) > 20:
-#             return None
-#         elif car_state.current_ptype == "lk":
-#             return {"steer": car_state.lanekeeping_angle}
-            # return None
+        # return  {"steer":angle}
+        if abs(car_state.cs_angle - angle) > 20:
+            return None
+        elif car_state.current_ptype == "lk":
+            # return {"steer": (angle+car_state.cs_angle*2)/3}
+            return None
 
     def set(self, **kwargs):
         pass
@@ -304,7 +304,7 @@ class ControlSystemBehaviour(BehaviourCallback):
             di = 23
         elif di < -23:
             di = -23
-        car_state.cs_steer = di
+        car_state.cs_angle = di
         return {"steer": di, "speed": car_state.max_v}
 
     def set(self, **kwargs):
@@ -394,18 +394,31 @@ class ParkingBehaviour(BehaviourCallback):
             di = 23
         elif di < -23:
             di = -23
-        car_state.cs_steer = di
+        car_state.cs_angle = di
         return di
 
     def reverse_chase(self, car_state: CarState, tx, ty):
-        alpha = math.atan2(ty - car_state.rear_y, tx - car_state.rear_x) - (
+        car_state.f_x = car_state.x - ((car_state.car_len / 2) * math.cos(car_state.yaw))
+        car_state.f_y = car_state.y - ((car_state.car_len / 2) * math.sin(car_state.yaw))
+
+        # alpha = math.atan2(ty - car_state.rear_y, tx - car_state.rear_x) - (
+        #     car_state.yaw
+        # )
+        # delta = math.atan2(
+        #     2.0
+        #     * self.WB
+        #     * math.sin(alpha)
+        #     / math.sqrt((ty - car_state.rear_y) ** 2 + (tx - car_state.rear_x) ** 2),
+        #     1.0,
+        # )
+        alpha = math.atan2(ty - car_state.f_y, tx - car_state.f_x) - (
             car_state.yaw
         )
         delta = math.atan2(
             2.0
             * self.WB
             * math.sin(alpha)
-            / math.sqrt((ty - car_state.rear_y) ** 2 + (tx - car_state.rear_x) ** 2),
+            / math.sqrt((ty - car_state.f_y) ** 2 + (tx - car_state.f_x) ** 2),
             1.0,
         )
         di = delta * 180 / math.pi
@@ -413,12 +426,12 @@ class ParkingBehaviour(BehaviourCallback):
             di = 23
         elif di < -23:
             di = -23
-        car_state.cs_steer = di
+        car_state.cs_angle = di
         return di
 
     def __call__(self, car_state: CarState):
         
-        offsetx_1 = 0.6
+        offsetx_1 = 0.5
 
         if self.type == "perpendicular":
             if self.initx is None and self.inity is None:
@@ -428,14 +441,17 @@ class ParkingBehaviour(BehaviourCallback):
 
             if self.phase == 1:
 
-                tx = self.initx + 0.6 + offsetx_1
-                ty = self.inity
+                # tx = self.initx + 0.5 + offsetx_1
+                # ty = self.inity
+                tx=3.4
+                ty=2.0
+
                 print("In Phase 1", tx, ty)
                 # go to check spot
                 d = math.sqrt(
                     (tx - car_state.rear_x) ** 2 + (ty - car_state.rear_y) ** 2
                 )
-                if d < 0.16:
+                if d < 0.2:
                     self.phase = 2
 
                 di = self.chase(car_state, tx, ty)
@@ -454,20 +470,24 @@ class ParkingBehaviour(BehaviourCallback):
                 print("In Phase 3")
 
                 # go to safe spot for reverse
-                tx = self.initx + 1.1 +  offsetx_1
-                ty = self.inity - 0.25
+                # tx = self.initx + 0.5 +  offsetx_1
+                # ty = self.inity - 0.35
+                tx=3.85
+                ty=1.75
                 print("In Phase 3", tx, ty)
                 d = math.sqrt(
                     (tx - car_state.rear_x) ** 2 + (ty - car_state.rear_y) ** 2
                 )
-                if d < 0.16:
+                if d < 0.2:
                     self.phase = 4
                 di = self.chase(car_state, tx, ty)
                 return {"steer": di, "speed": car_state.priority_speed}
 
             elif self.phase == 4:
-                tx = self.initx + 0.55 + offsetx_1
-                ty = self.inity + 0.25
+                # tx = self.initx + 0.75 + offsetx_1
+                # ty = self.inity + 0.35
+                tx = 3.2
+                ty = 2.6
                 print("In Phase 4", tx, ty)
                 d = math.sqrt(
                     (tx - car_state.rear_x) ** 2 + ((ty - car_state.rear_y) ** 2)
@@ -476,19 +496,20 @@ class ParkingBehaviour(BehaviourCallback):
                     self.phase = 5
                 di = self.reverse_chase(car_state, tx, ty)
                 return {"steer": di, "speed": -car_state.priority_speed}
+            
             elif self.phase == 5:
                 print("In Phase 5")
                 # reverse into parking
-                # tx = 3.3
-                # ty = 2.6
-                tx = self.initx + 0.55 +  offsetx_1
-                ty = self.inity + 1.05
+                tx = 3.2
+                ty = 3.1
+                # tx = self.initx + 0.75 +  offsetx_1
+                # ty = self.inity + 1
                 print("In Phase 5", tx, ty)
                 d = math.sqrt(
                     (tx - car_state.rear_x) ** 2 + (ty - car_state.rear_y) ** 2
                 )
                 print("curx,cury", car_state.rear_x, car_state.rear_y)
-                if d < 0.25:
+                if d < 0.225:
                     self.phase = 6
                 di = self.reverse_chase(car_state, tx, ty)
                 return {"steer": di, "speed": -car_state.priority_speed}
@@ -500,7 +521,7 @@ class ParkingBehaviour(BehaviourCallback):
                 d = math.sqrt(
                     (tx - car_state.rear_x) ** 2 + (ty - car_state.rear_y) ** 2
                 )
-                if d < 0.15:
+                if d < 0.25:
                     self.over = True
                 di = self.chase(car_state, tx, ty)
                 return {"steer": di, "speed": +car_state.priority_speed}
@@ -545,7 +566,7 @@ class RoadBlocked(BehaviourCallback):
             di = 23
         elif di < -23:
             di = -23
-        car_state.cs_steer = di
+        car_state.cs_angle = di
         return di
 
     def __call__(self, car_state: CarState):

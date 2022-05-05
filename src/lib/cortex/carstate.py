@@ -28,7 +28,7 @@ activity_config = {
 
 
 class CarState:
-    def __init__(self, max_v=0.10, dt=0.13, car_len=0.365, **kwargs) -> None:
+    def __init__(self, max_v=0.20, dt=0.13, car_len=0.365, **kwargs) -> None:
 
         self.max_v = max_v
         # position data
@@ -41,6 +41,8 @@ class CarState:
         self.car_len = car_len
         self.rear_x = self.x - ((car_len / 2) * math.cos(-self.yaw))
         self.rear_y = self.y - ((car_len / 2) * math.sin(-self.yaw))
+        self.f_x = 0
+        self.f_y = 0
 
         self.target_x = None
         self.target_y = None
