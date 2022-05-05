@@ -6,6 +6,22 @@ import time
 
 FONT = "Arial.ttf"  # https://ultralytics.com/assets/Arial.ttf
 
+AREA_THRESHOLD = {
+    "car": 5000,
+    "crosswalk": 5000,
+    "highway_entry": 5000,
+    "highway_exit": 5000,
+    "no_entry": 5000,
+    "onewayroad": 5000,
+    "parking": 5000,
+    "pedestrian": 5000,
+    "priority": 5000,
+    "roadblock": 5000,
+    "roundabout": 5000,
+    "stop": 5000,
+    "trafficlight": 5000,
+}
+
 
 class Colors:
     # Ultralytics color palette https://ultralytics.com/
@@ -183,6 +199,7 @@ def nms(dets, scores, thresh):
 
 def scale_coords(img1_shape, coords, img0_shape, ratio_pad=None):
     # Rescale coords (xyxy) from img1_shape to img0_shape
+    print(f"Scaling from {img1_shape} -> {img0_shape}")
     if ratio_pad is None:  # calculate from img0_shape
         gain = min(
             img1_shape[0] / img0_shape[0], img1_shape[1] / img0_shape[1]
@@ -197,7 +214,7 @@ def scale_coords(img1_shape, coords, img0_shape, ratio_pad=None):
     coords[:, [0, 2]] -= pad[0]  # x padding
     coords[:, [1, 3]] -= pad[1]  # y padding
     coords[:, :4] /= gain
-    clip_coords(coords, img0_shape)
+    coords = clip_coords(coords, img0_shape)
     return coords
 
 
@@ -205,6 +222,7 @@ def clip_coords(boxes, shape):
     # Clip bounding xyxy bounding boxes to image shape (height, width)
     boxes[:, [0, 2]] = boxes[:, [0, 2]].clip(0, shape[1])  # x1, x2
     boxes[:, [1, 3]] = boxes[:, [1, 3]].clip(0, shape[0])  # y1, y2
+    return boxes
 
 
 def non_max_suppression_np(
@@ -316,27 +334,77 @@ def non_max_suppression_np(
     return output
 
 
-def get_area(bbox: np.ndarray) -> np.ndarray:
+def get_area(bbox: np.ndarray) -> list:
+    # (x1, y1, x2, y2)
     return ((bbox[:, 2] - bbox[:, 0]) * (bbox[:, 3] - bbox[:, 1])).tolist()
 
 
-map2label = {
-    0:"car",
-    1:"crosswalk",
-    2:"highway_entry",
-    3:"highway_exit",
-    4:"no_entry",
-    5:"onewayroad",
-    6:"parking",
-    7:"pedestrian",
-    8:"priority",
-    9:"roadblock",
-    10:"roundabout",
-    11:"stop",
-    12:"trafficlight",
-    }
+def roi_func(img: np.ndarray) -> np.ndarray:
+    """Given image get Region of interest
+
+    Args:
+        img: (np.ndarray) input image
+
+    Returns:
+        np.ndarray: the roi image
+    """
+    luroi = 0.15
+    ruroi = 1
+    lbroi = 0.15
+    rbroi = 1
+    hroi = 0.05
+    broi = 0
+    # create stencil just the first time and then save for later use
+    roi = [
+            (
+                int(luroi * ((img.shape[1] - 1))),
+                int(hroi * (img.shape[0] - 1)),
+            ),
+            (
+                int(lbroi * ((img.shape[1] - 1))),
+                int((img.shape[0] - 1) * (1 - broi)),
+            ),
+            (
+                int(rbroi * ((img.shape[1] - 1))),
+                int((img.shape[0] - 1) * (1 - broi)),
+            ),
+            (
+                int(ruroi * ((img.shape[1] - 1))),
+                int(hroi * (img.shape[0] - 1)),
+            ),
+        ]
+    stencil = np.zeros_like(img, dtype="uint8")
+        # specify coordinates of the polygon
+    polygon = np.array(roi)
+
+        # fill polygon with ones
+    cv2.fillConvexPoly(stencil, polygon, [255, 255, 255])
+
+    img = cv2.bitwise_and(img, img, mask=stencil[:, :, 0])
+    return img
+
+
+map2label = [
+    "car",
+    "crosswalk",
+    "highway_entry",
+    "highway_exit",
+    "no_entry",
+    "onewayroad",
+    "parking",
+    "pedestrian",
+    "priority",
+    "roadblock",
+    "roundabout",
+    "stop",
+    "trafficlight",
+]
+
+
 class Detection:
-    def __init__(self, model_path: str = "best_openvino_model/best.xml") -> None:
+    def __init__(
+        self, model_path: str = "sign_model_openvino_model/sign_model.xml"
+    ) -> None:
         ie = Core()
         model = ie.read_model(model=model_path)
         device = "MYRIAD" if "MYRIAD" in ie.available_devices else "CPU"
@@ -349,10 +417,10 @@ class Detection:
     def __call__(
         self, img: np.ndarray, bbox: bool = False
     ) -> Tuple[List[float], List[float], Optional[np.ndarray]]:
-
+        img = roi_func(img)
         if not img.shape == (640, 640, 3):
             img_resized = cv2.resize(img, (640, 640))
-        cv2.imwrite("img.jpg", img)
+
         x: np.ndarray = img_resized / 255
         x = x.astype(np.float32)
         x = np.expand_dims(x.transpose(2, 0, 1), 0)
@@ -371,13 +439,15 @@ class Detection:
         area = get_area(pred_nms[:, :4])
         if bbox:
             out_image = self.draw_bbox(pred_nms, classes=classes, image=img)
-            classes = [map2label[x] for x in classes]
-            return (classes, area, out_image)
+            classes = [map2label[int(x)] for x in classes]
+            detections = [
+                (c, a) for c, a in zip(classes, area) if a > AREA_THRESHOLD[c]
+            ]
+            return (detections, out_image)
         else:
             if classes:
-                print("Detected Something")
-                classes = [map2label[x] for x in classes]
-                return classes, area
+                classes = [map2label[int(x)] for x in classes]
+                return [(c, a) for c, a in zip(classes, area) if a > AREA_THRESHOLD[c]]
             return [], []
 
     def draw_bbox(
@@ -390,65 +460,12 @@ class Detection:
             # s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
 
         for *xyxy, conf, cls in reversed(pred_nms):
-            annotator.box_label(xyxy, "", colors(c, True))
+            c = int(cls)
+            label = f"{map2label[c]} {conf:.2f}"
+            annotator.box_label(xyxy, label, colors(c, True))
 
         im0 = annotator.result()
         # TODO: change channels if required
         im0 = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         # cv2.imwrite("output101.jpg", im0)
         return im0
-
-
-# if __name__ == "__main__":
-#     ##  Load Model
-#     ie = Core()
-#     model = ie.read_model(model="best_openvino_model/best.xml")
-#     compiled_model = ie.compile_model(model=model, device_name="MYRIAD")
-
-#     input_layer_ir = next(iter(compiled_model.inputs))
-
-#     ##  Load Image
-#     # Text detection models expects image in BGR format
-#     image = cv2.imread("test.jpeg")
-#     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-#     # N,C,H,W = batch size, number of channels, height, width
-#     N, C, H, W = input_layer_ir.shape
-
-#     # Resize image to meet network expected input sizes
-#     resized_image = cv2.resize(image, (W, H))
-
-#     # Reshape to network input shape
-#     input_image: np.ndarray = np.expand_dims(resized_image.transpose(2, 0, 1), 0)
-
-#     x: np.ndarray = input_image / 255
-#     x = x.astype(np.float16)
-#     x = x.unsqueeze(0)
-#     ## Inference
-#     print("X ====> ", x.shape)
-#     request = compiled_model.create_infer_request()
-#     request.infer({input_layer_ir.any_name: x})
-#     pred = request.get_tensor("output").data
-#     pred_nms = non_max_suppression_np(pred)
-
-#     print(image.shape)
-
-#     for i, det in enumerate(pred_nms):  # per image
-#         annotator = Annotator(image, line_width=2)
-#         s = ""
-#         if len(det):
-#             det[:, :4] = scale_coords(x.shape[2:], det[:, :4], image.shape).round()
-
-#             # Print results
-#             print(np.unique(det[:, -1]))
-#             for c in np.unique(det[:, -1]):
-
-#                 n = (det[:, -1] == c).sum()  # detections per class
-#                 # s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
-
-#             for *xyxy, conf, cls in reversed(det):
-#                 print("XYXY", xyxy)
-#                 annotator.box_label(xyxy, "", colors(c, True))
-
-#     im0 = annotator.result()
-#     im0 = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-#     cv2.imwrite("output101.jpg", im0)

@@ -234,45 +234,86 @@ class Navigator:
         raise NotImplementedError
 
     def get_current_node(self, x, y, yaw):
-        idx = self.get_nearest_node(self, x, y, yaw)
-        return (
-            self.path[idx],
-            self.ptype[idx],
-            self.etype[idx],
-        )
+        idx = self.get_nearest_node_incoords( x, y, yaw)
+        return idx
+        # return (
+        #     self.coords[idx],
+        #     self.ptype[idx],
+        #     self.etype[idx],
+        # )
+
+    def get_nearest_node_incoords(self,x,y,yaw):
+        
+        dx=[]
+        dy=[]
+        
+        for i in range(len(self.coords)):
+            dx.append(self.coords[i][0]-x)
+            dy.append(self.coords[i][1]-y)
+        
+        d = np.hypot(dx, dy)
+        # print(dx,dy)
+        idxs = np.argsort(d)
+        print(idxs)
+        for i in idxs:
+            print(d[i])
+
+        d=np.hypot(dx,dy)
+        idxs=np.argsort(d)
+        min_dyaw_idx = 0
+        for idx in idxs[:10]:
+            try:
+                dyaw=self.yaw[idx] - yaw
+                print(self.yaw[idx],yaw)
+
+                if (abs(dyaw) < 0.2):
+                    return idx
+
+            except KeyError as e:
+                print(e)
+                continue
+
+        return min_dyaw_idx
+
 
     def get_nearest_node(self, x, y, yaw):
         dx = []
         dy = []
+        print(x,y)
         for node in self.node_dict:
             dx.append(self.node_dict[node]["x"] - x)
             dy.append(self.node_dict[node]["y"] - y)
 
         d = np.hypot(dx, dy)
+        print(dx,dy)
         idxs = np.argsort(d)
-        min_dyaw = float("inf")
+        print(idxs)
+        for i in idxs:
+            print(d[i])
+        # min_dyaw = float("inf")
         min_dyaw_idx = -1
-        for idx in idxs[:10]:
+        for idx in idxs:
             try:
                 dyaw: np.ndarray = abs(np.array(self.node_dict[str(idx)]["yaw"]) - yaw)
-                dyaw = dyaw.min()
+                # dyaw = dyaw.min()
    
-                if abs(dyaw) > 3.141592:
-                    if dyaw>0:
-                        dyaw=abs(dyaw)-2*math.pi
-                    else:
-                        dyaw=2*math.pi-abs(dyaw)
+                # if abs(dyaw) > 3.141592:
+                #     if dyaw>0:
+                #         dyaw=abs(dyaw)-2*math.pi
+                #     else:
+                #         dyaw=2*math.pi-abs(dyaw)
                 
-                if dyaw > min_dyaw:
-                    min_dyaw = dyaw
-                    min_dyaw_idx = idx
+                # if dyaw > min_dyaw:
+                #     min_dyaw = dyaw
+                #     min_dyaw_idx = idx
 
-                # if (abs(dyaw) < 0.2).any():
-                #     return self.node_dict[str(idx)]
+                if (abs(dyaw) < 0.2).any():
+                    return idx
+
             except KeyError as e:
                 print(e)
                 continue
-        return self.node_dict[str(min_dyaw_idx)]
+        return min_dyaw_idx
 
     def get_path_ahead(self, x, y, yaw):
 

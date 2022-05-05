@@ -64,12 +64,12 @@ class LaneKeep:
         adpt_Th_C: int = 4,
         canny_thres1: int = 50,
         canny_thres2: int = 150,
-        luroi: float = 0.2,
-        ruroi: float = 0.8,
+        luroi: float = 0.,
+        ruroi: float = 1,
         lbroi: float = 0,
         rbroi: float = 1,
-        hroi: float = 0.6,
-        broi: float = 0,
+        hroi: float = 0.45,
+        broi: float = 0.06,
     ):
         """Define LaneKeeping pipeline and parameters
 
@@ -149,13 +149,14 @@ class LaneKeep:
         if self.computation_method == "hough":
             if get_image:
                 angle, outimg = self.houghlines_angle(preprocess_img, get_img=get_image)
+                # angle = self.get_lane_error(preprocess_img)
                 # if len(cnts) > 0:
                 #     self.draw_intersection_bbox(outimg, cnts)
                 return angle, intersection_detected, outimg
 
             else:
                 angle = self.houghlines_angle(preprocess_img)
-                angle = self.get_lane_error(preprocess_img)
+                # angle = self.get_lane_error(preprocess_img)
                 # angle_roadarea = self.graph_road_search(preprocess_img)
                 # print(angle, " ", angle_roadarea)
                 #             angle = (angle*2 + angle_roadarea) / 3
@@ -212,6 +213,17 @@ class LaneKeep:
 
         mask = cv2.inRange(imgn, lower, upper)
         return mask
+#     
+#         """Preprocess image for edge detection"""
+#         # Apply HLS color filtering to filter out white lane lines
+#         imgn = img.copy()
+# 
+#         lower = np.array([237 ,237, 237], np.uint8)
+# 
+#         upper = np.array([255, 255, 255], np.uint8)
+# 
+#         mask = cv2.inRange(imgn, lower, upper)
+#         return mask
 
     def intersection_det(self, img: np.ndarray, area_threshold=5_500):
         # detect horizontal lines
@@ -320,8 +332,8 @@ class LaneKeep:
 
 def get_error_lane(mask_image):
     mid_y = mask_image.shape[0] // 2
-    pval = int(mid_y + 0.6 * (mask_image.shape[0] // 2))
-    mval = int(mid_y + 0.8 * (mask_image.shape[0] // 2))
+    pval = int(mid_y + 0.5 * (mask_image.shape[0] // 2))
+    mval = int(mid_y + 0.9 * (mask_image.shape[0] // 2))
     # print(pval,mval)
     img_new = mask_image[pval:mval, :]
     img_new = cv2.resize(
@@ -335,7 +347,9 @@ def get_error_lane(mask_image):
     leftxBase = np.argmax(histogram[:midpoint])
     rightxBase = np.argmax(histogram[midpoint:]) + midpoint
     # print(leftxBase, midpoint, rightxBase)
-    return ((abs(rightxBase - midpoint) - abs(leftxBase - midpoint)) * 26.5 / (midpoint)) + 90
+    return (
+        (abs(rightxBase - midpoint) - abs(leftxBase - midpoint)) * 26.5 / (midpoint)
+    ) + 90
 
 
 def get_road_ratio_angle(mask_img):
@@ -410,10 +424,12 @@ def average_slope_intercept(frame, line_segments):
                 intercept = fit[1]
                 if slope < 0:
                     if x1 < left_region_boundary and x2 < left_region_boundary:
-                        left_fit.append((slope, intercept))
+                        if slope<-0.2:
+                            left_fit.append((slope, intercept))
                 else:
                     if x1 > right_region_boundary and x2 > right_region_boundary:
-                        right_fit.append((slope, intercept))
+                        if slope>0.2:
+                            right_fit.append((slope, intercept))
     except ValueError as e:
         print(line_segment)
         raise e
@@ -449,7 +465,7 @@ def find_lanes(thresh_canny):
     # )
     # return lines
     lines = cv2.HoughLinesP(
-        thresh_canny, 1, np.pi / 180, 15, minLineLength=40, maxLineGap=10
+        thresh_canny, 1, np.pi / 180, 15, minLineLength=80, maxLineGap=300
     )
     return lines
 
