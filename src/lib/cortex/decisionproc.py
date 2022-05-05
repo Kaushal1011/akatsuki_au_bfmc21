@@ -7,7 +7,7 @@ from threading import Thread
 from time import time
 from time import sleep
 from typing import Dict, List, Optional, Tuple
-
+import socket
 
 from src.lib.cortex.carstate import CarState
 from src.templates.workerprocess import WorkerProcess
@@ -287,6 +287,15 @@ class DecisionMakingProcess(WorkerProcess):
             sub_tl.connect("ipc:///tmp/vtl")
             sub_tl.setsockopt_string(zmq.SUBSCRIBE, "")
 
+        if "tel" in self.inPsnames:
+            # TODO : use zmq PUB/SUB
+            # context_tel = zmq.Context()
+            host = socket.gethostbyname(socket.gethostname())
+            port = 12345
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # TCP socket object
+            addr = (host, port)
+            sock.connect((host, port))
+
         while True:
             try:
                 # c = time()
@@ -315,9 +324,7 @@ class DecisionMakingProcess(WorkerProcess):
                             False,
                             False,
                         )
-                        print(
-                            "DIS -> ", distance_data
-                        )
+                        print("DIS -> ", distance_data)
                         logger.log("PIPE", f"Recv->DIS {final_data[0]},{final_data[1]}")
                         logger.log(
                             "SYNC", f"dis delta {time()- distance_data['timestamp']}"
@@ -366,15 +373,7 @@ class DecisionMakingProcess(WorkerProcess):
                 logger.log("XY", f"{self.state.x}, {self.state.y},")
                 logger.debug(f"Sonar Front: {self.state.front_distance}")
                 logger.debug(f"Sonar Side: {self.state.side_distance}")
-                # print("speed: ", self.state.v)
-                # print("steer: ", self.state.steering_angle)
 
-                # print(f"Time taken {time() - start_time}s\n ========================")
-                # Start car if model if loaded
-                # if not loaded_model.value:
-                #     print("//////////////////// Waiting for Model")
-                #     self.state.v = 0
-                # print("Final -> ", (self.state.steering_angle, self.state.v))
                 if len(outPs) > 0:
                     outPs[0].send((self.state.steering_angle, self.state.v))
 

@@ -13,7 +13,7 @@ from loguru import logger
 # Extra because no path planning at start
 ####################################################################################
 # data_path = pathlib.Path(                                                        #
-#     pathlib.Path(__file__).parent.parent.parent.resolve(), "data", "mid_course.z"# 
+#     pathlib.Path(__file__).parent.parent.parent.resolve(), "data", "mid_course.z"#
 # )                                                                                #
 # data = joblib.load(data_path)                                                    #
 # ptype = data["ptype"]                                                            #
@@ -249,14 +249,13 @@ class OvertakeBehaviour(BehaviourCallback):
 
 
 class LaneKeepBehaviour(BehaviourCallback):
-
     def __init__(self, **kwargs):
-        self.pid_con=PID(P=0.95,I=0.7,D=2.0)
-        self.last_angle=0
+        self.pid_con = PID(P=0.95, I=0.7, D=2.0)
+        self.last_angle = 0
 
     def __call__(self, car_state):
-        angle=self.pid_con.update(car_state.lanekeeping_angle)
-        angle=(angle+self.last_angle)/2
+        angle = self.pid_con.update(car_state.lanekeeping_angle)
+        angle = (angle + self.last_angle) / 2
         if angle > 23:
             angle = 23
         elif angle < -23:
@@ -664,7 +663,7 @@ class ActionManager:
         self.l3_ab = None
         self.l4_ab = None
 
-    def __call__(self, carstate):
+    def __call__(self, carstate: CarState):
 
         obj = [
             self.cs,
@@ -680,12 +679,14 @@ class ActionManager:
         count = 0
 
         # reset cs after interrupt using either self
+        carstate.active_behaviours = []
 
         for i in obj:
             if i:
                 logger.opt(colors=True).info(
                     f"Currently Active Behaviour <light-blue>{i.name}</light-blue>"
                 )
+                carstate.active_behaviours.append(i.name)
                 outputs = i(carstate)
                 if outputs and "speed" in outputs.keys():
                     speed = outputs["speed"]

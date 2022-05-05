@@ -85,7 +85,7 @@ class CarState:
         self.tl = {}
 
         # active behavious
-        self.active_behavious = []
+        self.active_behaviours = []
 
         # navigation (control sys)
         self.current_target = (0, 0)
@@ -164,4 +164,37 @@ class CarState:
         return f"{datetime.datetime.now()}| {self.steering_angle:.4f}, {self.det_intersection}, {self.x:.4f}, {self.y:.4f}, {self.yaw:.4f}"
 
     def asdict(self) -> dict:
-        return {"angle": self.steering_angle, "intersection": self.det_intersection}
+        return {
+            "x": self.x,
+            "y": self.y,
+            "yaw": self.yaw,
+            "v": self.v,
+            "pitch": self.pitch,
+            "roll": self.roll,
+            "rear_x": self.rear_x,
+            "rear_y": self.rear_y,
+            "target_x": self.target_x,
+            "target_y": self.target_y,
+            "target_idx": self.target_ind,
+            "lk_angle": self.lanekeeping_angle,
+            "cs_angle": self.cs_angle,
+            "front_distance": self.front_distance,
+            "side_distance": self.side_distance,
+            "current_ptype": self.current_ptype,
+            "current_target": self.current_target,
+            "detected_intersection": self.detected_intersection,
+            "car_detected": self.detected["car"],
+            "crosswalk": self.detected["crosswalk"],
+            "highway_entry": self.detected["highway_entry"],
+            "highway_exit": self.detected["highway_exit"],
+            "no_entry": self.detected["no_entry"],
+            "onewayroad": self.detected["onewayroad"],
+            "parking": self.detected["parking"],
+            "pedestrian": self.detected["pedestrian"],
+            "priority": self.detected["priority"],
+            "roadblock": self.detected["roadblock"],
+            "roundabout": self.detected["roundabout"],
+            "stop": self.detected["stop"],
+            "trafficlight": self.detected["trafficlight"],
+            "active_behaviours": self.active_behaviours,
+        }
