@@ -304,7 +304,7 @@ class DecisionMakingProcess(WorkerProcess):
                 if "lk" in self.inPsnames:
                     if sub_lk.poll(timeout=0.05):
                         lk_angle, detected_intersection = sub_lk.recv_json()
-                        print("LK -> ", lk_angle, detected_intersection)
+                        # print("LK -> ", lk_angle, detected_intersection)
                         self.state.update_lk_angle(lk_angle)
                         self.state.update_intersection(detected_intersection)
                 # logger.log("PIPE", f"Recv->LK {lk_angle}")
@@ -324,7 +324,7 @@ class DecisionMakingProcess(WorkerProcess):
                             False,
                             False,
                         )
-                        print("DIS -> ", distance_data)
+                        # print("DIS -> ", distance_data)
                         logger.log("PIPE", f"Recv->DIS {final_data[0]},{final_data[1]}")
                         logger.log(
                             "SYNC", f"dis delta {time()- distance_data['timestamp']}"
@@ -334,7 +334,7 @@ class DecisionMakingProcess(WorkerProcess):
                 if "pos" in self.inPsnames:
                     if sub_pos.poll(timeout=0.05):
                         pos = sub_pos.recv_json()
-                        print(f"POS -> {pos}")
+                        # print(f"POS -> {pos}")
                         if pos[0] == 0 and pos[1] == 0:
                             pass
                         else:
@@ -359,7 +359,7 @@ class DecisionMakingProcess(WorkerProcess):
                 if "tl" in self.inPsnames:
                     if sub_tl.poll(timeout=0.05):
                         trafficlights = sub_tl.recv()
-                        print(f"TL -> {trafficlights}")
+                        # print(f"TL -> {trafficlights}")
 
                 # # update car navigator, current ptype, current etype and current idx
 
@@ -375,7 +375,8 @@ class DecisionMakingProcess(WorkerProcess):
                 logger.debug(f"Sonar Side: {self.state.side_distance}")
 
                 if len(outPs) > 0:
-                    outPs[0].send((self.state.steering_angle, self.state.v))
+                    # outPs[0].send((self.state.steering_angle, self.state.v))
+                    outPs[0].send((0, 0))
 
                 sleep(0.2)
 

@@ -66,7 +66,7 @@ def filter(level: List[int]):
     return lambda r: r["level"].no in level or r["level"].no > 19
 
 
-TEST_PIPE = True
+TEST_PIPE = False
 logger.remove()
 if TEST_PIPE:
     logger.add(sys.stderr, filter=filter([18]))
@@ -186,7 +186,7 @@ if len(posFusionInputName) > 0:
 # Distance Sensor -> Decision Making (data fusion)
 
 if config["enableSIM"]:
-    disProc = DistanceSIM([], [], 6666, log=True)
+    disProc = DistanceSIM([], [], 6666, log=False)
     allProcesses.append(disProc)
     dataFusionInputName.append("dis")
 

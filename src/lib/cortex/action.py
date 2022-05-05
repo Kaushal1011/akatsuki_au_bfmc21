@@ -260,8 +260,8 @@ class LaneKeepBehaviour(BehaviourCallback):
             angle = 23
         elif angle < -23:
             angle = -23
-        print("Lanekeeping angle: ", car_state.lanekeeping_angle)
-        print("Lanekeeping angle: ", angle)
+        # print("Lanekeeping angle: ", car_state.lanekeeping_angle)
+        # print("Lanekeeping angle: ", angle)
         return  {"steer":angle}
 #         if abs(car_state.cs_steer - angle) > 20:
 #             return None
