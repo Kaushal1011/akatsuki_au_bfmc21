@@ -7,19 +7,19 @@ import joblib
 
 from src.lib.cortex.carstate import CarState
 import pathlib
-
+from src.lib.cortex.PID import PID
 from loguru import logger
 
 # Extra because no path planning at start
 ####################################################################################
-data_path = pathlib.Path(  #
-    pathlib.Path(__file__).parent.parent.parent.resolve(), "data", "mid_course.z"  #
-)  #
-data = joblib.load(data_path)  #
+# data_path = pathlib.Path(                                                        #
+#     pathlib.Path(__file__).parent.parent.parent.resolve(), "data", "mid_course.z"#
+# )                                                                                #
+# data = joblib.load(data_path)                                                    #
 # ptype = data["ptype"]                                                            #
 # etype = data["etype"]                                                            #
-ptype = data[1]  #
-etype = data[2]  #
+# ptype = data[1]                                                                  #
+# etype = data[2]                                                                  #
 ####################################################################################
 
 
@@ -82,7 +82,7 @@ class HighwayBehaviour(BehaviourCallback):
         self.exit_highway = False
 
     def __call__(self, car_state: CarState):
-        if car_state.detected_sign["highway_exit"]:
+        if car_state.detected["highway_exit"]:
             self.exit_highway = True
 
         return {"speed": car_state.highway_speed}
@@ -173,8 +173,8 @@ class OvertakeBehaviour(BehaviourCallback):
         c = ty - m * tx
         # print("C: ",c)
 
-        x3 = tx + ((0.335 ** 2) / (m ** 2 + 1)) ** 0.5
-        x4 = tx - ((0.335 ** 2) / (m ** 2 + 1)) ** 0.5
+        x3 = tx + ((0.345 ** 2) / (m ** 2 + 1)) ** 0.5
+        x4 = tx - ((0.345 ** 2) / (m ** 2 + 1)) ** 0.5
         y3 = m * x3 + c
         y4 = m * x4 + c
 
@@ -223,10 +223,10 @@ class OvertakeBehaviour(BehaviourCallback):
             di = -23
         car_state.cs_steer = di
 
-        if car_state.side_distance < 0.3:
+        if car_state.side_distance < 0.5:
             self.parallel_reach = True
 
-        if car_state.side_distance > 0.9 and self.parallel_reach:
+        if car_state.side_distance > 0.7 and self.parallel_reach:
             self.parallel_out = True
 
         print("In Overtake ", self.set_side)
@@ -249,13 +249,24 @@ class OvertakeBehaviour(BehaviourCallback):
 
 
 class LaneKeepBehaviour(BehaviourCallback):
+    def __init__(self, **kwargs):
+        self.pid_con = PID(P=0.95, I=0.7, D=2.0)
+        self.last_angle = 0
+
     def __call__(self, car_state):
-        # print("Lanekeeping angle: ", car_state.lanekeeping_angle)
-        # return  {"steer":car_state.lanekeeping_angle}
-        #if abs(car_state.cs_steer - car_state.lanekeeping_angle) > 20:
-        #    return None
-        #elif car_state.current_ptype == "lk":
-        return {"steer": car_state.lanekeeping_angle}
+        angle = self.pid_con.update(car_state.lanekeeping_angle)
+        angle = (angle + self.last_angle) / 2
+        if angle > 23:
+            angle = 23
+        elif angle < -23:
+            angle = -23
+        print("Lanekeeping angle: ", car_state.lanekeeping_angle)
+        print("Lanekeeping angle: ", angle)
+        # return  {"steer":angle}
+        if abs(car_state.cs_steer - angle) > 20:
+            return None
+        elif car_state.current_ptype == "lk":
+            return {"steer": angle}
             # return None
 
     def set(self, **kwargs):
@@ -282,8 +293,8 @@ class ControlSystemBehaviour(BehaviourCallback):
         # car_state.can_overtake = car_state.navigator.etype[ind]
         # car_state.activity_type = car_state.navigator.activity[ind]
 
-        car_state.current_ptype = ptype[ind]
-        car_state.can_overtake = etype[ind]
+        car_state.current_ptype = car_state.navigator.ptype[ind]
+        car_state.can_overtake = car_state.navigator.etype[ind]
 
         di = self.cs.purest_pursuit_steer_control(car_state, ind, lf)
         di = di * 180 / math.pi
@@ -413,7 +424,7 @@ class ParkingBehaviour(BehaviourCallback):
 
             if self.phase == 1:
 
-                tx = self.initx + 0.5
+                tx = self.initx + 0.6
                 ty = self.inity
                 print("In Phase 1", tx, ty)
                 # go to check spot
@@ -438,8 +449,8 @@ class ParkingBehaviour(BehaviourCallback):
                 print("In Phase 3")
 
                 # go to safe spot for reverse
-                tx = self.initx + 1.0
-                ty = self.inity - 0.2
+                tx = self.initx + 1.1
+                ty = self.inity - 0.25
                 print("In Phase 3", tx, ty)
                 d = math.sqrt(
                     (tx - car_state.rear_x) ** 2 + (ty - car_state.rear_y) ** 2
@@ -450,8 +461,8 @@ class ParkingBehaviour(BehaviourCallback):
                 return {"steer": di, "speed": car_state.priority_speed}
 
             elif self.phase == 4:
-                tx = self.initx + 0.5
-                ty = self.inity + 0.2
+                tx = self.initx + 0.55
+                ty = self.inity + 0.25
                 print("In Phase 4", tx, ty)
                 d = math.sqrt(
                     (tx - car_state.rear_x) ** 2 + ((ty - car_state.rear_y) ** 2)
@@ -465,8 +476,8 @@ class ParkingBehaviour(BehaviourCallback):
                 # reverse into parking
                 # tx = 3.3
                 # ty = 2.6
-                tx = self.initx + 0.5
-                ty = self.inity + 1.1
+                tx = self.initx + 0.55
+                ty = self.inity + 1.05
                 print("In Phase 5", tx, ty)
                 d = math.sqrt(
                     (tx - car_state.rear_x) ** 2 + (ty - car_state.rear_y) ** 2
@@ -484,7 +495,7 @@ class ParkingBehaviour(BehaviourCallback):
                 d = math.sqrt(
                     (tx - car_state.rear_x) ** 2 + (ty - car_state.rear_y) ** 2
                 )
-                if d < 0.1:
+                if d < 0.15:
                     self.over = True
                 di = self.chase(car_state, tx, ty)
                 return {"steer": di, "speed": +car_state.priority_speed}
@@ -652,7 +663,7 @@ class ActionManager:
         self.l3_ab = None
         self.l4_ab = None
 
-    def __call__(self, carstate):
+    def __call__(self, carstate: CarState):
 
         obj = [
             self.cs,
@@ -668,12 +679,14 @@ class ActionManager:
         count = 0
 
         # reset cs after interrupt using either self
+        carstate.active_behaviours = []
 
         for i in obj:
             if i:
                 logger.opt(colors=True).info(
                     f"Currently Active Behaviour <light-blue>{i.name}</light-blue>"
                 )
+                carstate.active_behaviours.append(i.name)
                 outputs = i(carstate)
                 if outputs and "speed" in outputs.keys():
                     speed = outputs["speed"]

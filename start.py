@@ -1,8 +1,11 @@
+from multiprocessing import Process
 import sys
 from multiprocessing import Event, Pipe
 
 
 import argparse
+
+from terrascript import Connection
 
 from src import config as config_module
 
@@ -26,9 +29,11 @@ from src.data.localisationssystem.locsysProc import LocalisationSystemProcess
 from src.data.server_sim import ServerSIM as LocSysSIM
 from src.data.server_sim import ServerSIM as IMUSIM
 from src.lib.cortex.posfusproc import PositionFusionProcess
-
+from src.data.environmentalserver.environmental import EnvironmentalHandler
 from src.data.distance_sim import DistanceSIM
 from src.hardware.ultrasonic.distanceProc import DistanceProcess
+from src.data.trafficlights.trafficProc import TrafficProcess
+from src.data.server_sim import ServerSIM as TrafficSIM
 from src.lib.actuator.momentcontrol import MovementControl
 from src.lib.actuator.sim_connect import SimulatorConnector
 from src.hardware.serialhandler.SerialHandlerProcess import SerialHandlerProcess
@@ -87,7 +92,7 @@ STREAM_PORT2 = 4422
 streams = ["cam", "lk"]
 # =============================== INITIALIZING PROCESSES =================================
 # Pipe collections
-allProcesses = []
+allProcesses: List[Process] = []
 movementControlR = []
 dataFusionInputName = []
 posFusionInputName = []
@@ -106,6 +111,7 @@ lkProc = LaneKeeping([], [], enable_stream=("lk" in streams))
 allProcesses.append(lkProc)
 dataFusionInputName.append("lk")
 camOutNames.append("lk")
+dataFusionOutPs: List[Connection] = []
 
 if not config["enableSignDet"]:
     if "sd" in streams:
@@ -143,21 +149,17 @@ elif config["using_server"]:
 
 
 # -------TrafficLightSemaphore----------
-# if config["enableSIM"]:
-#     # Traffic Semaphore -> Decision Making (data fusion)
-#     tlFzzR, tlFzzS = Pipe(duplex=False)
-#     trafficProc = TrafficSIM([], [tlFzzS], TRAFFIC_SIM_PORT)
-#     allProcesses.append(trafficProc)
-#     dataFusionInputPs.append(tlFzzR)
-#     dataFusionInputName.append("tl")
+if config["enableSIM"]:
+    # Traffic Semaphore -> Decision Making (data fusion)
+    trafficProc = TrafficSIM([], [], "tl", TRAFFIC_SIM_PORT)
+    allProcesses.append(trafficProc)
+    dataFusionInputName.append("tl")
 
-# elif config["using_server"]:
-#     # Traffic Semaphore -> Decision Making (data fusion)
-#     tlFzzR, tlFzzS = Pipe(duplex=False)
-#     trafficProc = TrafficProcess([], [tlFzzS])
-#     allProcesses.append(trafficProc)
-#     dataFusionInputPs.append(tlFzzR)
-#     dataFusionInputName.append("tl")
+elif config["using_server"]:
+    # Traffic Semaphore -> Decision Making (data fusion)
+    trafficProc = TrafficProcess([], [])
+    allProcesses.append(trafficProc)
+    dataFusionInputName.append("tl")
 
 # ========================= IMU ===================================================
 # IMU -> Position Fusino
@@ -193,12 +195,29 @@ elif isPI:
     allProcesses.append(disProc)
     dataFusionInputName.append("dis")
 
-
-# ======================= Decision Making =========================================
+# ==== Movement Control pipe
 # Decision Process -> Movement control
 FzzMcR, FzzMcS = Pipe(duplex=False)
+dataFusionOutPs.append(FzzMcS)
 
-datafzzProc = DecisionMakingProcess([], [FzzMcS], inPsnames=dataFusionInputName)
+# ======================= Environment Server ======================================
+if config["using_server"]:
+    beacon = 23456
+    id = 120
+    serverpublickey = "publickey_server_test.pem"
+    clientprivatekey = "privatekey_client_test.pem"
+
+    gpsStR, gpsStS = Pipe(duplex=False)
+
+    envhandler = EnvironmentalHandler(
+        id, beacon, serverpublickey, gpsStR, clientprivatekey
+    )
+    dataFusionOutPs.append(gpsStS)
+
+
+# ======================= Decision Making =========================================
+
+datafzzProc = DecisionMakingProcess([], dataFusionOutPs, inPsnames=dataFusionInputName)
 allProcesses.append(datafzzProc)
 movementControlR.append(FzzMcR)
 #

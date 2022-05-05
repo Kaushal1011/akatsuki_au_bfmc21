@@ -64,12 +64,12 @@ class LaneKeep:
         adpt_Th_C: int = 4,
         canny_thres1: int = 50,
         canny_thres2: int = 150,
-        luroi: float = 0.05,
-        ruroi: float = 0.95,
+        luroi: float = 0.1,
+        ruroi: float = 0.9,
         lbroi: float = 0,
         rbroi: float = 1,
-        hroi: float = 0.45,
-        broi: float = 0.2,
+        hroi: float = 0.5,
+        broi: float = 0.0,
     ):
         """Define LaneKeeping pipeline and parameters
 
@@ -205,10 +205,9 @@ class LaneKeep:
         """Preprocess image for edge detection"""
         # Apply HLS color filtering to filter out white lane lines
         imgn = img.copy()
-#         imgn = cv2.GaussianBlur(imgn, (17, 17), 0)
-#         imgn = cv2.cvtColor(imgn, cv2.COLOR_RGB2HSV)
 
-        lower = np.array([230, 230, 230], np.uint8)
+        lower = np.array([235 ,235, 235], np.uint8)
+
         upper = np.array([255, 255, 255], np.uint8)
 
         mask = cv2.inRange(imgn, lower, upper)
@@ -321,8 +320,8 @@ class LaneKeep:
 
 def get_error_lane(mask_image):
     mid_y = mask_image.shape[0] // 2
-    pval = int(mid_y + 0.6 * (mask_image.shape[0] // 2))
-    mval = int(mid_y + 0.8 * (mask_image.shape[0] // 2))
+    pval = int(mid_y + 0.5 * (mask_image.shape[0] // 2))
+    mval = int(mid_y + 0.9 * (mask_image.shape[0] // 2))
     # print(pval,mval)
     img_new = mask_image[pval:mval, :]
     img_new = cv2.resize(
@@ -413,10 +412,12 @@ def average_slope_intercept(frame, line_segments):
                 intercept = fit[1]
                 if slope < 0:
                     if x1 < left_region_boundary and x2 < left_region_boundary:
-                        left_fit.append((slope, intercept))
+                        if slope<-0.2:
+                            left_fit.append((slope, intercept))
                 else:
                     if x1 > right_region_boundary and x2 > right_region_boundary:
-                        right_fit.append((slope, intercept))
+                        if slope>0.2:
+                            right_fit.append((slope, intercept))
     except ValueError as e:
         print(line_segment)
         raise e

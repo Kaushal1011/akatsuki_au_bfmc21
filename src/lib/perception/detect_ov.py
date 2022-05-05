@@ -6,6 +6,22 @@ import time
 
 FONT = "Arial.ttf"  # https://ultralytics.com/assets/Arial.ttf
 
+AREA_THRESHOLD = {
+    "car": 5000,
+    "crosswalk": 5000,
+    "highway_entry": 5000,
+    "highway_exit": 5000,
+    "no_entry": 5000,
+    "onewayroad": 5000,
+    "parking": 5000,
+    "pedestrian": 5000,
+    "priority": 5000,
+    "roadblock": 5000,
+    "roundabout": 5000,
+    "stop": 5000,
+    "trafficlight": 5000,
+}
+
 
 class Colors:
     # Ultralytics color palette https://ultralytics.com/
@@ -404,7 +420,7 @@ class Detection:
         img = roi_func(img)
         if not img.shape == (640, 640, 3):
             img_resized = cv2.resize(img, (640, 640))
-            
+
         x: np.ndarray = img_resized / 255
         x = x.astype(np.float32)
         x = np.expand_dims(x.transpose(2, 0, 1), 0)
@@ -424,12 +440,14 @@ class Detection:
         if bbox:
             out_image = self.draw_bbox(pred_nms, classes=classes, image=img)
             classes = [map2label[int(x)] for x in classes]
-            return (list(zip(classes, area)), out_image)
+            detections = [
+                (c, a) for c, a in zip(classes, area) if a > AREA_THRESHOLD[c]
+            ]
+            return (detections, out_image)
         else:
             if classes:
-                print("Detected Something")
                 classes = [map2label[int(x)] for x in classes]
-                return list(zip(classes, area))
+                return [(c, a) for c, a in zip(classes, area) if a > AREA_THRESHOLD[c]]
             return [], []
 
     def draw_bbox(
@@ -451,58 +469,3 @@ class Detection:
         im0 = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         # cv2.imwrite("output101.jpg", im0)
         return im0
-
-
-# if __name__ == "__main__":
-#     ##  Load Model
-#     ie = Core()
-#     model = ie.read_model(model="best_openvino_model/best.xml")
-#     compiled_model = ie.compile_model(model=model, device_name="MYRIAD")
-
-#     input_layer_ir = next(iter(compiled_model.inputs))
-
-#     ##  Load Image
-#     # Text detection models expects image in BGR format
-#     image = cv2.imread("test.jpeg")
-#     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-#     # N,C,H,W = batch size, number of channels, height, width
-#     N, C, H, W = input_layer_ir.shape
-
-#     # Resize image to meet network expected input sizes
-#     resized_image = cv2.resize(image, (W, H))
-
-#     # Reshape to network input shape
-#     input_image: np.ndarray = np.expand_dims(resized_image.transpose(2, 0, 1), 0)
-
-#     x: np.ndarray = input_image / 255
-#     x = x.astype(np.float16)
-#     x = x.unsqueeze(0)
-#     ## Inference
-#     print("X ====> ", x.shape)
-#     request = compiled_model.create_infer_request()
-#     request.infer({input_layer_ir.any_name: x})
-#     pred = request.get_tensor("output").data
-#     pred_nms = non_max_suppression_np(pred)
-
-#     print(image.shape)
-
-#     for i, det in enumerate(pred_nms):  # per image
-#         annotator = Annotator(image, line_width=2)
-#         s = ""
-#         if len(det):
-#             det[:, :4] = scale_coords(x.shape[2:], det[:, :4], image.shape).round()
-
-#             # Print results
-#             print(np.unique(det[:, -1]))
-#             for c in np.unique(det[:, -1]):
-
-#                 n = (det[:, -1] == c).sum()  # detections per class
-#                 # s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
-
-#             for *xyxy, conf, cls in reversed(det):
-#                 print("XYXY", xyxy)
-#                 annotator.box_label(xyxy, "", colors(c, True))
-
-#     im0 = annotator.result()
-#     im0 = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-#     cv2.imwrite("output101.jpg", im0)
