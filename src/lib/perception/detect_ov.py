@@ -429,6 +429,7 @@ class Detection:
             detections = [
                 (c, a) for c, a in zip(classes, area) if a > AREA_THRESHOLD[c]
             ]
+            detections.append()
             return (detections, out_image)
         else:
             if classes:

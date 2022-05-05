@@ -26,12 +26,13 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
+
 from threading import Thread
 from multiprocessing import Pipe
-from server_data import ServerData
-from server_listener import ServerListener
-from server_subscriber import ServerSubscriber
-from  environmental_streamer import EnvironmentalStreamer
+from src.data.environmentalserver.server_data import ServerData
+from src.data.environmentalserver.server_listener import ServerListener
+from src.data.environmentalserver.server_subscriber import ServerSubscriber
+from  src.data.environmentalserver.environmental_streamer import EnvironmentalStreamer
 
 import time
 import random
@@ -77,6 +78,7 @@ class EnvironmentalHandler(Thread):
         self.__environmental_streamer.stream()
 
     def run(self):
+        print("Starting Env Process")
         while(self.__running):
             self.setup()
             self.stream()

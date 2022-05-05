@@ -58,11 +58,11 @@ class TrafficProcess(WorkerProcess):
     def _init_threads(self):
         """Create the Camera Publisher thread and add to the list of threads."""
         trafficTh = Thread(
-            name="TrafficLightThread", target=self.runListener, args=(self.outPs)
+            name="TrafficLightThread", target=self.runListener
         )
         self.threads.append(trafficTh)
 
-    def runListener(self, outPs):
+    def runListener(self):
         # Get time stamp when starting tester
         # Create listener object
         Semaphores = trafficlights()
