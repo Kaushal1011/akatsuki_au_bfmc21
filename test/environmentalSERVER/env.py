@@ -34,43 +34,58 @@ from data_collector import MarkerDataSet
 import logging
 import time
 
+
 class ObstacleHandlerSystemServer:
-    """ObstacleHandlerSystemServer aims to serve the car clients by receiving the sent coordinates and the obstacle id encountered on the map. 
-    It involves a ServerConfig object, CarClientServerThread object, ServerBeaconThread object. 
-    The object of ServerConfig accumulates all information about server. The object of ServerBeaconThread 
-    aims to infrom the client about the server ip by sending continuously a broadcast message. The object of 
-    CarClientServerThread are serving the car clients. 
+    """ObstacleHandlerSystemServer aims to serve the car clients by receiving the sent coordinates and the obstacle id encountered on the map.
+    It involves a ServerConfig object, CarClientServerThread object, ServerBeaconThread object.
+    The object of ServerConfig accumulates all information about server. The object of ServerBeaconThread
+    aims to infrom the client about the server ip by sending continuously a broadcast message. The object of
+    CarClientServerThread are serving the car clients.
     In this examples, a object of GenerateData is added for create coordinates of a robots, which are moving on circle.
     """
+
     def __init__(self):
         logging.basicConfig(level=logging.INFO)
-        self.__logger = logging.getLogger('root')
+        self.__logger = logging.getLogger("root")
 
         self.markerSet = MarkerDataSet()
-        self.serverconfig = ServerConfig('<broadcast>', 23456, 23466)
+        self.serverconfig = ServerConfig("<broadcast>", 23456, 23466)
         privateKeyFile = "privatekey_server_test.pem"
         clientkeys = "keys/"
 
-        self.__carclientserverThread = CarClientServerThread(self.serverconfig, self.__logger, keyfile = privateKeyFile, markerSet = self.markerSet, clientkeys = clientkeys)
-        self.__beaconserverThread =  ServerBeaconThread(self.serverconfig, 1.0, self.__logger)
-     
-    def run(self):    
+        self.__carclientserverThread = CarClientServerThread(
+            self.serverconfig,
+            self.__logger,
+            keyfile=privateKeyFile,
+            markerSet=self.markerSet,
+            clientkeys=clientkeys,
+        )
+        self.__beaconserverThread = ServerBeaconThread(
+            self.serverconfig, 1.0, self.__logger
+        )
+
+    def run(self):
         self.__carclientserverThread.start()
         self.__beaconserverThread.start()
- 
+
         try:
-            while(True):
+            while True:
                 time.sleep(1.0)
-                self.__logger(self.markerSet.getlist())
+                if 120 in self.markerSet.getlist().keys():
+                    resent_obs = list(self.markerSet.getlist()[120].keys())[-1]
+                    print(self.markerSet.getlist()[120][resent_obs])
+                else:
+                    print(self.markerSet.getlist())
+                # self.__logger(self.markerSet.getlist())
         except KeyboardInterrupt:
             pass
-             
+
         self.__carclientserverThread.stop()
         self.__carclientserverThread.join()
         self.__beaconserverThread.stop()
         self.__beaconserverThread.join()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     ObsHanServer = ObstacleHandlerSystemServer()
     ObsHanServer.run()
