@@ -7,19 +7,19 @@ import time
 FONT = "Arial.ttf"  # https://ultralytics.com/assets/Arial.ttf
 
 AREA_THRESHOLD = {
-    'car':50,
-    'crosswalk':50,
-    'doll':50,
-    'highway_entry':50,
-    'highway_exit':50,
-    'no_entry':50,
-    'onewayroad':50,
-    'parking':50,
+    'car':5000,
+    'crosswalk':6200,
+    'doll':5000,
+    'highway_entry':5300,
+    'highway_exit':5000,
+    'no_entry':6000,
+    'onewayroad':7000,
+    'parking':10000,
     'pedestrian':50,
-    'priority':50,
+    'priority':11000,
     'roadblock':50,
-    'roundabout':50,
-    'stop':50,
+    'roundabout':6000,
+    'stop':5500,
     'trafficlight':50
 }
 
@@ -200,7 +200,6 @@ def nms(dets, scores, thresh):
 
 def scale_coords(img1_shape, coords, img0_shape, ratio_pad=None):
     # Rescale coords (xyxy) from img1_shape to img0_shape
-    print(f"Scaling from {img1_shape} -> {img0_shape}")
     if ratio_pad is None:  # calculate from img0_shape
         gain = min(
             img1_shape[0] / img0_shape[0], img1_shape[1] / img0_shape[1]
@@ -435,7 +434,7 @@ class Detection:
             if classes:
                 classes = [map2label[int(x)] for x in classes]
                 return [(c, a) for c, a in zip(classes, area) if a > AREA_THRESHOLD[c]]
-            return [], []
+            return []
 
     def draw_bbox(
         self, pred_nms: np.ndarray, classes: Tuple[int], image: np.ndarray

@@ -155,7 +155,8 @@ class CarState:
     def update_detected(self, detections: List[Tuple[str, float]]):
         detected_classes = [c for c, _ in detections]
         for c in self.detected.keys():
-            self.detected_intersection[c] = c in detected_classes
+            self.detected[c] = (c in detected_classes)
+
 
     def update_tl(self, tl):
         self.tl = tl

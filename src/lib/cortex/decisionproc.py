@@ -88,7 +88,7 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
         stopaction = ActionBehaviour(name="stop", release_time=6.0, callback=stopobj)
         action_man.set_action(stopaction, action_time=3.0)
 
-    if carstate.detected["parking"] or triggerparking:
+    if carstate.detected["parking"]:
         print("In parking trigger: ", triggerparking, carstate.detected["parking"])
         # Parking
         parkobj = ParkingBehaviour(car_state=carstate)
@@ -98,8 +98,8 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
     if (
         carstate.front_distance
         < 0.7
-        # and carstate.detected_car
-        # and carstate.can_overtake
+        and carstate.detected["car"]
+        and carstate.can_overtake
     ):
         print("Overtake Trigger")
         # overtake
@@ -116,7 +116,7 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
         pass
 
     if (
-        carstate.detected["roadblock"] or carstate.calc_distance_target_node() > 2
+        carstate.detected["roadblock"] and carstate.front_distance<0.75
     ):  # 10 cm
         # replan closed road
         pass
@@ -364,7 +364,7 @@ class DecisionMakingProcess(WorkerProcess):
                 # # update car navigator, current ptype, current etype and current idx
 
                 trigger_behaviour(self.state, self.actman)
-                print(self.state.detection)
+                # print(self.state.detected)
                 speed, steer = self.actman(self.state)
                 self.state.v = speed
                 self.state.steering_angle = steer
@@ -375,8 +375,8 @@ class DecisionMakingProcess(WorkerProcess):
                 logger.debug(f"Sonar Side: {self.state.side_distance}")
 
                 if len(outPs) > 0:
-                    # outPs[0].send((self.state.steering_angle, self.state.v))
-                    outPs[0].send((0, 0))
+                    outPs[0].send((self.state.steering_angle, self.state.v))
+                    # outPs[0].send((0, 0))
 
                 sleep(0.2)
 

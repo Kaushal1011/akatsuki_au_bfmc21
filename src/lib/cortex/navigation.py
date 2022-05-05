@@ -254,9 +254,9 @@ class Navigator:
         d = np.hypot(dx, dy)
         # print(dx,dy)
         idxs = np.argsort(d)
-        print(idxs)
-        for i in idxs:
-            print(d[i])
+        # print(idxs)
+        # for i in idxs:
+        #     print(d[i])
 
         d=np.hypot(dx,dy)
         idxs=np.argsort(d)

@@ -1,6 +1,8 @@
 from hashlib import sha3_384
 import time
 
+from matplotlib import offsetbox
+
 from src.lib.cortex.control_sys import Pure_Pursuit
 import math
 import joblib
@@ -415,6 +417,8 @@ class ParkingBehaviour(BehaviourCallback):
         return di
 
     def __call__(self, car_state: CarState):
+        
+        offsetx_1 = 0.6
 
         if self.type == "perpendicular":
             if self.initx is None and self.inity is None:
@@ -424,7 +428,7 @@ class ParkingBehaviour(BehaviourCallback):
 
             if self.phase == 1:
 
-                tx = self.initx + 0.6
+                tx = self.initx + 0.6 + offsetx_1
                 ty = self.inity
                 print("In Phase 1", tx, ty)
                 # go to check spot
@@ -441,7 +445,8 @@ class ParkingBehaviour(BehaviourCallback):
                 # check if empty
                 if car_state.side_distance < 0.5:
                     print("Parking Spot full")
-                    self.over = True
+                    offsetx_1+=0.5
+                    # self.over = True
                 else:
                     print("Parking Empty, Trying to Park!!")
                     self.phase = 3
@@ -449,7 +454,7 @@ class ParkingBehaviour(BehaviourCallback):
                 print("In Phase 3")
 
                 # go to safe spot for reverse
-                tx = self.initx + 1.1
+                tx = self.initx + 1.1 +  offsetx_1
                 ty = self.inity - 0.25
                 print("In Phase 3", tx, ty)
                 d = math.sqrt(
@@ -461,7 +466,7 @@ class ParkingBehaviour(BehaviourCallback):
                 return {"steer": di, "speed": car_state.priority_speed}
 
             elif self.phase == 4:
-                tx = self.initx + 0.55
+                tx = self.initx + 0.55 + offsetx_1
                 ty = self.inity + 0.25
                 print("In Phase 4", tx, ty)
                 d = math.sqrt(
@@ -476,7 +481,7 @@ class ParkingBehaviour(BehaviourCallback):
                 # reverse into parking
                 # tx = 3.3
                 # ty = 2.6
-                tx = self.initx + 0.55
+                tx = self.initx + 0.55 +  offsetx_1
                 ty = self.inity + 1.05
                 print("In Phase 5", tx, ty)
                 d = math.sqrt(
@@ -490,7 +495,7 @@ class ParkingBehaviour(BehaviourCallback):
 
             elif self.phase == 6:
                 print("In Phase 5")
-                tx = self.initx + 0.6
+                tx = self.initx + 0.6 +  offsetx_1
                 ty = self.inity
                 d = math.sqrt(
                     (tx - car_state.rear_x) ** 2 + (ty - car_state.rear_y) ** 2
@@ -644,6 +649,9 @@ class ActionBehaviour:
 
     def check_cooldown(self, **kwargs):
 
+        if self.action_time is None:
+            return False
+
         if not self.state_start or (
             self.state_start + self.action_time + self.release_time < time.time()
         ):
@@ -723,6 +731,7 @@ class ActionManager:
             action.name == "parking"
             or action.name == "overtaking"
             or action.name == "tailing"
+            or action.name == "crosswalk"
         ) and self.l2_ab is None:
             self.l2_ab = action
             self.l2_ab.set(action_time=action_time, **kwargs)
@@ -730,7 +739,6 @@ class ActionManager:
         elif (
             action.name == "stop"
             or action.name == "priority"
-            or action.name == "crosswalk"
         ) and (
             self.l3_ab is None
             or self.l3_ab.check_cooldown()

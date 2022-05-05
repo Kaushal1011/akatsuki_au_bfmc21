@@ -100,7 +100,7 @@ class SignDetectionProcess(WorkerProcess):
                 else:
                     detections = self.detection(img)
                     pub_sd.send_json(detections, flags=zmq.NOBLOCK)
-                logger.log("SD", f"detections -> {detections}")
+                # logger.log("SD", f"detections -> {detections}")
 
             except Exception as e:
                 print("Sign Detection error:")
