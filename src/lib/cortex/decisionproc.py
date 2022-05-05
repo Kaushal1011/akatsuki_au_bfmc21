@@ -317,15 +317,7 @@ class DecisionMakingProcess(WorkerProcess):
                 if "dis" in self.inPsnames:
                     if sub_dis.poll(timeout=0.1):
                         distance_data = sub_dis.recv_json()
-                        final_data = (
-                            distance_data["sonar1"],
-                            distance_data["sonar2"],
-                            False,
-                            False,
-                            False,
-                        )
                         # print("DIS -> ", distance_data)
-                        logger.log("PIPE", f"Recv->DIS {final_data[0]},{final_data[1]}")
                         logger.log(
                             "SYNC", f"dis delta {time()- distance_data['timestamp']}"
                         )
@@ -345,7 +337,7 @@ class DecisionMakingProcess(WorkerProcess):
                 if "sd" in self.inPsnames:
                     if sub_sd.poll(timeout=0.05):
                         detections = sub_sd.recv_json()
-                        print("SD ->", detections)
+                        # print("SD ->", detections)
                         # send data to env server
                         if len(outPs) > 1:
                             for env_data in send_data2env(self.state, detections):
@@ -359,7 +351,7 @@ class DecisionMakingProcess(WorkerProcess):
                 if "tl" in self.inPsnames:
                     if sub_tl.poll(timeout=0.05):
                         trafficlights = sub_tl.recv()
-                        # print(f"TL -> {trafficlights}")
+                        print(f"TL -> {trafficlights}")
 
                 # # update car navigator, current ptype, current etype and current idx
 
@@ -375,8 +367,8 @@ class DecisionMakingProcess(WorkerProcess):
                 logger.debug(f"Sonar Side: {self.state.side_distance}")
 
                 if len(outPs) > 0:
-                    outPs[0].send((self.state.steering_angle, self.state.v))
-                    # outPs[0].send((0, 0))
+                    # outPs[0].send((self.state.steering_angle, self.state.v))
+                    outPs[0].send((0.0, 0.0))
 
                 sleep(0.2)
 
