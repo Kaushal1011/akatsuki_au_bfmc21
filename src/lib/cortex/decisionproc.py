@@ -96,8 +96,7 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
         action_man.set_action(parkobjaction, action_time=None, car_state=carstate)
 
     if (
-        carstate.front_distance
-        < 0.7
+        carstate.front_distance < 0.7
         and carstate.detected["car"]
         and carstate.can_overtake
     ):
@@ -115,9 +114,7 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
         # tailing or stop
         pass
 
-    if (
-        carstate.detected["roadblock"] and carstate.front_distance<0.75
-    ):  # 10 cm
+    if carstate.detected["roadblock"] and carstate.front_distance < 0.75:  # 10 cm
         # replan closed road
         pass
 
@@ -321,7 +318,9 @@ class DecisionMakingProcess(WorkerProcess):
                         logger.log(
                             "SYNC", f"dis delta {time()- distance_data['timestamp']}"
                         )
-                        self.state.update_object_det(distance_data["sonar1"],distance_data["sonar2"] )
+                        self.state.update_object_det(
+                            distance_data["sonar1"], distance_data["sonar2"]
+                        )
 
                 if "pos" in self.inPsnames:
                     if sub_pos.poll(timeout=0.05):
@@ -352,6 +351,7 @@ class DecisionMakingProcess(WorkerProcess):
                     if sub_tl.poll(timeout=0.05):
                         trafficlights = sub_tl.recv()
                         print(f"TL -> {trafficlights}")
+                        # self.state.update_tl()
 
                 # # update car navigator, current ptype, current etype and current idx
 
