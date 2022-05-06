@@ -23,7 +23,8 @@ def localize(img: np.ndarray) -> Tuple[float, float]:
     # (2, 29), (54, 255), (74, 255)
     # 8 116 102
     # 20 252 210
-    frame_threshold = cv2.inRange(frame_HSV, (0, 200, 150), (30, 255, 255))
+    # HUE BLUE | 0 -> 30
+    frame_threshold = cv2.inRange(frame_HSV, (100, 150, 150), (180, 255, 255))
     # processed_img2 = cv2.bitwise_and(img,img, mask=frame_threshold)
     # get contours
     cnts = cv2.findContours(frame_threshold, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -132,7 +133,9 @@ class LocalisationServer:
                 height = 1280
                 # specify conjugate x,y coordinates (not y,x)
                 # input = np.float32([[61, 345], [616, 35], [1279, 51], [870, 676]])
-                input = np.float32([[0, 366], [582, 51], [1257, 66], [788, 715]])
+                # input = np.float32([[0, 366], [582, 51], [1257, 66], [788, 715]])
+                input = np.float32([[38, 344], [617, 38], [1279, 57], [860, 669]])
+
                 output = np.float32(
                     [[0, 0], [width - 1, 0], [width - 1, width - 1], [0, width - 1]]
                 )
