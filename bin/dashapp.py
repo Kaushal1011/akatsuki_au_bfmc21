@@ -47,7 +47,7 @@ app.layout = html.Div(
                                                 html.H2(id="x_coord", children="0"),
                                                 dcc.Interval(
                                                     id="cards",
-                                                    interval=10,  # in milliseconds
+                                                    interval=100,  # in milliseconds
                                                     n_intervals=0,
                                                 ),
                                             ],
@@ -447,7 +447,7 @@ app.layout = html.Div(
                                                 dcc.Graph(id="position"),
                                                 dcc.Interval(
                                                     id="graph-update",
-                                                    interval=10,  # in milliseconds
+                                                    interval=100,  # in milliseconds
                                                     n_intervals=0,
                                                 ),
                                             ]
@@ -527,31 +527,33 @@ app.layout = html.Div(
     Input("cards", "n_intervals"),
 )
 def update_cards(n_intervals):
-    data, _ = sock.recvfrom(4096)
+    data, _ = sock.recvfrom(8192)
     data = data.decode("utf-8")
+    print(data)
     dictData = loads(data)
-    # x =
-    # y =
-    # yaw =
-    # speed = dictData["v"]
-    # pitch =
-    # roll = dictData["roll"]
-    # rx =
-
-    # ty = dictData["target_y"]
-    # tidx =
-    # steer = dictData["steering_angle"]
-    # lk_angle = dictData["lk_angle"]
-    # cs_angle = dictData["cs_angle"]
-    # fsu = dictData["front_distance"]
-    # rsu = dictData["side_distance"]
-    # ptype = dictData["current_ptype"]
-    # curr_target = dictData["current_target"]
-    # id_detect = dictData["detected_intersection"]
-    # car_detect = dictData["car_detected"]
-    # behav = dictData["active_behaviours"]
-    # roadblock = dictData["roadblock"]
-    # pedo = dictData["pedestrian"]
+    x = dictData["x"]
+    y = dictData["y"]
+    yaw = dictData["yaw"]
+    speed = dictData["v"]
+    pitch = dictData["pitch"]
+    roll = dictData["roll"]
+    rx = dictData["rear_x"]
+    ry = dictData["rear_y"]
+    tx = dictData["target_x"]
+    ty = dictData["target_y"]
+    tidx = dictData["target_idx"]
+    steer = dictData["steering_angle"]
+    lk_angle = dictData["lk_angle"]
+    cs_angle = dictData["cs_angle"]
+    fsu = dictData["front_distance"]
+    rsu = dictData["side_distance"]
+    ptype = dictData["current_ptype"]
+    curr_target = dictData["current_target"]
+    id_detect = dictData["detected_intersection"]
+    car_detect = dictData["car_detected"]
+    behav = dictData["active_behaviours"]
+    roadblock = dictData["roadblock"]
+    pedo = dictData["pedestrian"]
     stop = dictData["stop"]
     crosswalk = dictData["crosswalk"]
     highway_entry = dictData["highway_entry"]
@@ -586,132 +588,135 @@ def update_cards(n_intervals):
     # print(dictData)
 
     return (
-        dictData["x"],
-        dictData["y"],
-        dictData["rear_x"],
-        dictData["rear_y"],
-        dictData["target_x"],
-        dictData["target_y"],
-        dictData["target_idx"],
-        dictData["yaw"],
-        dictData["pitch"],
-        dictData["roll"],
-        dictData["v"],
-        dictData["steering_angle"],
-        dictData["lk_angle"],
-        dictData["cs_angle"],
-        dictData["current_ptype"],
-        dictData["current_target"],
-        dictData["active_behaviours"],
-        sign,
-        dictData["front_distance"],
-        dictData["side_distance"],
-        dictData["detected_intersection"],
-        dictData["car_detected"],
-        dictData["pedestrian"],
-        dictData["roadblock"],
-        # ry,
-        # tx,
-        # ty,
-        # tidx,
-        # yaw,
-        # pitch,
-        # roll,
-        # speed,
-        # steer,
-        # lk_angle,
-        # cs_angle,
-        # ptype,
-        # curr_target,
-        # behav,
+        # dictData["x"],
+        # dictData["y"],
+        # dictData["rear_x"],
+        # dictData["rear_y"],
+        # dictData["target_x"],
+        # dictData["target_y"],
+        # dictData["target_idx"],
+        # dictData["yaw"],
+        # dictData["pitch"],
+        # dictData["roll"],
+        # dictData["v"],
+        # dictData["steering_angle"],
+        # dictData["lk_angle"],
+        # dictData["cs_angle"],
+        # dictData["current_ptype"],
+        # dictData["current_target"],
+        # dictData["active_behaviours"],
         # sign,
-        # fsu,
-        # rsu,
-        # str(id_detect),
-        # str(car_detect),
-        # str(pedo),
-        # str(roadblock),
+        # dictData["front_distance"],
+        # dictData["side_distance"],
+        # dictData["detected_intersection"],
+        # dictData["car_detected"],
+        # dictData["pedestrian"],
+        # dictData["roadblock"],
+        x,
+        y,
+        rx,
+        ry,
+        tx,
+        ty,
+        tidx,
+        yaw,
+        pitch,
+        roll,
+        speed,
+        steer,
+        lk_angle,
+        cs_angle,
+        ptype,
+        curr_target,
+        behav,
+        sign,
+        fsu,
+        rsu,
+        str(id_detect),
+        str(car_detect),
+        str(pedo),
+        str(roadblock),
     )
 
 
 # =====Graphs===== #
 
 
-@app.callback(
-    Output("position", "figure"),
-    Output("yaw_polar", "figure"),
-    Output("speed_curve", "figure"),
-    Input("graph-update", "n_intervals"),
-)
-def update_scatter(n_interval):
-    data, _ = sock.recvfrom(4096)
-    data = data.decode("utf-8")
-    data = loads(data)
-    # print(data)
-    in_list = [
-        data["x"],
-        data["y"],
-        data["yaw"],
-        data["v"],
-        data["rear_x"],
-        data["rear_y"],
-        data["target_x"],
-        data["target_y"],
-    ]
-    dff.loc[len(dff)] = in_list
-    print(dff)
-    # =====Position=====#
+# @app.callback(
+#     Output("position", "figure"),
+#     Output("yaw_polar", "figure"),
+#     Output("speed_curve", "figure"),
+#     Input("graph-update", "n_intervals"),
+# )
+# def update_scatter(n_interval):
+#     data, _ = sock.recvfrom(4096)
+#     data = data.decode("utf-8")
+#     data = loads(data)
+#     # print(data)
+#     in_list = [
+#         data["x"],
+#         data["y"],
+#         data["yaw"],
+#         data["v"],
+#         data["rear_x"],
+#         data["rear_y"],
+#         data["target_x"],
+#         data["target_y"],
+#     ]
+#     dff.loc[len(dff)] = in_list
+#     print(dff)
+#     # =====Position=====#
 
-    fig = go.Figure()
-    fig.add_trace(
-        go.Scatter(
-            x=dff["x"], y=dff["y"], mode="lines+markers", name="CUrrent Position"
-        )
-    )
-    fig.add_trace(go.Scatter(x=dff["target_x"], y=dff["target_y"], name="Target Index"))
+#     fig = go.Figure()
+#     fig.add_trace(
+#         go.Scatter(
+#             x=dff["x"], y=dff["y"], mode="lines+markers", name="CUrrent Position"
+#         )
+#     )
+#     fig.add_trace(go.Scatter(x=dff["target_x"], y=dff["target_y"], name="Target Index"))
 
-    fig.update_layout(template="plotly_dark", margin=dict(l=20, r=20, t=30, b=20))
+#     fig.update_layout(template="plotly_dark", margin=dict(l=20, r=20, t=30, b=20))
 
-    # =====Yaw=====#
+#     # =====Yaw=====#
 
-    fig_polar = px.scatter_polar(dff, r=dff.index, theta="yaw", template="plotly_dark")
-    fig_polar.update_layout(margin=dict(l=20, r=20, t=30, b=20))
+#     fig_polar = px.scatter_polar(dff, r=dff.index, theta="yaw", template="plotly_dark")
+#     fig_polar.update_layout(margin=dict(l=20, r=20, t=30, b=20))
 
-    # =====Speed=====#
+#     # =====Speed=====#
 
-    fig_speed = go.Figure(
-        go.Indicator(
-            mode="gauge+number",
-            value=data["v"],
-            domain={"x": [0, 1], "y": [0, 1]},
-            title={"text": "Speed", "font": {"size": 24}},
-            gauge={
-                "axis": {"range": [0, 30], "tickwidth": 1, "tickcolor": "darkblue"},
-                "bar": {"color": "darkblue"},
-                "bgcolor": "white",
-                "borderwidth": 2,
-                "bordercolor": "gray",
-                "steps": [
-                    {"range": [0, 10], "color": "green"},
-                    {"range": [10, 20], "color": "yellow"},
-                    {"range": [20, 30], "color": "red"},
-                ],
-                "threshold": {
-                    "line": {"color": "black", "width": 4},
-                    "thickness": 0.75,
-                    "value": 29,
-                },
-            },
-        )
-    )
+#     fig_speed = go.Figure(
+#         go.Indicator(
+#             mode="gauge+number",
+#             value=data["v"],
+#             domain={"x": [0, 1], "y": [0, 1]},
+#             title={"text": "Speed", "font": {"size": 24}},
+#             gauge={
+#                 "axis": {"range": [0, 30], "tickwidth": 1, "tickcolor": "darkblue"},
+#                 "bar": {"color": "darkblue"},
+#                 "bgcolor": "white",
+#                 "borderwidth": 2,
+#                 "bordercolor": "gray",
+#                 "steps": [
+#                     {"range": [0, 10], "color": "green"},
+#                     {"range": [10, 20], "color": "yellow"},
+#                     {"range": [20, 30], "color": "red"},
+#                 ],
+#                 "threshold": {
+#                     "line": {"color": "black", "width": 4},
+#                     "thickness": 0.75,
+#                     "value": 29,
+#                 },
+#             },
+#         )
+#     )
 
-    fig_speed.update_layout(
-        template="plotly_dark",
-        paper_bgcolor="darkblue",
-        font={"color": "darkblue", "family": "Arial"},
-    )
+#     fig_speed.update_layout(
+#         template="plotly_dark",
+#         paper_bgcolor="darkblue",
+#         font={"color": "darkblue", "family": "Arial"},
+#     )
 
-    return fig, fig_speed, fig_polar
+#     return fig, fig_speed, fig_polar
 
 
 @app.callback(Output("stored_df", "clear_data"), [Input("mem_clear", "n_intervals")])
