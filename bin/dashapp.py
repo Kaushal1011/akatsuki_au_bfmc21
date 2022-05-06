@@ -30,7 +30,7 @@ app.layout = html.Div(
     [
         dcc.Store(id="stored_df", data=[], storage_type="memory", clear_data=True),
         dcc.Interval(
-            id="store_interval", interval=100, n_intervals=0  # in milliseconds
+            id="store_interval", interval=10, n_intervals=0  # in milliseconds
         ),
         dcc.Interval(id="mem_clear", interval=100, n_intervals=0),  # in milliseconds
         dbc.Container(
@@ -47,8 +47,7 @@ app.layout = html.Div(
                                                 html.H2(id="x_coord", children="0"),
                                                 dcc.Interval(
                                                     id="cards",
-                                                    interval=0.01
-                                                    * 1000,  # in milliseconds
+                                                    interval=10,  # in milliseconds
                                                     n_intervals=0,
                                                 ),
                                             ],
@@ -448,7 +447,7 @@ app.layout = html.Div(
                                                 dcc.Graph(id="position"),
                                                 dcc.Interval(
                                                     id="graph-update",
-                                                    interval=100,  # in milliseconds
+                                                    interval=10,  # in milliseconds
                                                     n_intervals=0,
                                                 ),
                                             ]
@@ -531,29 +530,28 @@ def update_cards(n_intervals):
     data, _ = sock.recvfrom(4096)
     data = data.decode("utf-8")
     dictData = loads(data)
-    x = dictData["x"]
-    y = dictData["y"]
-    yaw = dictData["yaw"]
-    speed = dictData["v"]
-    pitch = dictData["pitch"]
-    roll = dictData["roll"]
-    rx = dictData["rear_x"]
-    ry = dictData["rear_y"]
-    tx = dictData["target_x"]
-    ty = dictData["target_y"]
-    tidx = dictData["target_idx"]
-    steer = dictData["steering_angle"]
-    lk_angle = dictData["lk_angle"]
-    cs_angle = dictData["cs_angle"]
-    fsu = dictData["front_distance"]
-    rsu = dictData["side_distance"]
-    ptype = dictData["current_ptype"]
-    curr_target = dictData["current_target"]
-    id_detect = dictData["detected_intersection"]
-    car_detect = dictData["car_detected"]
-    behav = dictData["active_behaviours"]
-    roadblock = dictData["roadblock"]
-    pedo = dictData["pedestrian"]
+    # x =
+    # y =
+    # yaw =
+    # speed = dictData["v"]
+    # pitch =
+    # roll = dictData["roll"]
+    # rx =
+
+    # ty = dictData["target_y"]
+    # tidx =
+    # steer = dictData["steering_angle"]
+    # lk_angle = dictData["lk_angle"]
+    # cs_angle = dictData["cs_angle"]
+    # fsu = dictData["front_distance"]
+    # rsu = dictData["side_distance"]
+    # ptype = dictData["current_ptype"]
+    # curr_target = dictData["current_target"]
+    # id_detect = dictData["detected_intersection"]
+    # car_detect = dictData["car_detected"]
+    # behav = dictData["active_behaviours"]
+    # roadblock = dictData["roadblock"]
+    # pedo = dictData["pedestrian"]
     stop = dictData["stop"]
     crosswalk = dictData["crosswalk"]
     highway_entry = dictData["highway_entry"]
@@ -585,31 +583,54 @@ def update_cards(n_intervals):
     else:
         sign = ["no sign"]
 
+    # print(dictData)
+
     return (
-        x,
-        y,
-        rx,
-        ry,
-        tx,
-        ty,
-        tidx,
-        yaw,
-        pitch,
-        roll,
-        speed,
-        steer,
-        lk_angle,
-        cs_angle,
-        ptype,
-        curr_target,
-        behav,
+        dictData["x"],
+        dictData["y"],
+        dictData["rear_x"],
+        dictData["rear_y"],
+        dictData["target_x"],
+        dictData["target_y"],
+        dictData["target_idx"],
+        dictData["yaw"],
+        dictData["pitch"],
+        dictData["roll"],
+        dictData["v"],
+        dictData["steering_angle"],
+        dictData["lk_angle"],
+        dictData["cs_angle"],
+        dictData["current_ptype"],
+        dictData["current_target"],
+        dictData["active_behaviours"],
         sign,
-        fsu,
-        rsu,
-        str(id_detect),
-        str(car_detect),
-        str(pedo),
-        str(roadblock),
+        dictData["front_distance"],
+        dictData["side_distance"],
+        dictData["detected_intersection"],
+        dictData["car_detected"],
+        dictData["pedestrian"],
+        dictData["roadblock"],
+        # ry,
+        # tx,
+        # ty,
+        # tidx,
+        # yaw,
+        # pitch,
+        # roll,
+        # speed,
+        # steer,
+        # lk_angle,
+        # cs_angle,
+        # ptype,
+        # curr_target,
+        # behav,
+        # sign,
+        # fsu,
+        # rsu,
+        # str(id_detect),
+        # str(car_detect),
+        # str(pedo),
+        # str(roadblock),
     )
 
 
@@ -626,6 +647,7 @@ def update_scatter(n_interval):
     data, _ = sock.recvfrom(4096)
     data = data.decode("utf-8")
     data = loads(data)
+    # print(data)
     in_list = [
         data["x"],
         data["y"],
@@ -637,7 +659,7 @@ def update_scatter(n_interval):
         data["target_y"],
     ]
     dff.loc[len(dff)] = in_list
-
+    print(dff)
     # =====Position=====#
 
     fig = go.Figure()
