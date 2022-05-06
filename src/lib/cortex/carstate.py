@@ -157,8 +157,7 @@ class CarState:
     def update_detected(self, detections: List[Tuple[str, float]]):
         detected_classes = [c for c, _ in detections]
         for c in self.detected.keys():
-            self.detected[c] = (c in detected_classes)
-
+            self.detected[c] = c in detected_classes
 
     def update_tl(self, tl):
         self.tl = tl
@@ -200,4 +199,5 @@ class CarState:
             "stop": self.detected["stop"],
             "trafficlight": self.detected["trafficlight"],
             "active_behaviours": self.active_behaviours,
+            "steering_angle": self.steering_angle,
         }

@@ -1,4 +1,5 @@
 import datetime
+import json
 import math
 from multiprocessing import Pipe
 from multiprocessing.connection import Connection
@@ -8,6 +9,10 @@ from time import time
 from time import sleep
 from typing import Dict, List, Optional, Tuple
 import socket
+
+from src.config import get_config
+
+config = get_config()
 
 from src.lib.cortex.carstate import CarState
 from src.templates.workerprocess import WorkerProcess
@@ -98,8 +103,7 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
         action_man.set_action(parkobjaction, action_time=None, car_state=carstate)
 
     if (
-        carstate.front_distance
-        < 0.7
+        carstate.front_distance < 0.7
         and carstate.detected["car"]
         and carstate.can_overtake
     ):
@@ -117,9 +121,7 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
         # tailing or stop
         pass
 
-    if (
-        carstate.detected["roadblock"] and carstate.front_distance<0.75
-    ):  # 10 cm
+    if carstate.detected["roadblock"] and carstate.front_distance < 0.75:  # 10 cm
         # replan closed road
         pass
     
@@ -223,7 +225,7 @@ class DecisionMakingProcess(WorkerProcess):
         # cx = data["x"]
         # cy = data["y"]
         # coord_list = [x for x in zip(cx, cy)]
-        # coord_list = data[0]
+        # coord_list = data[0]socket.gethostbyname(socket.gethostname())
         #################################################################
 
         # pass coordlist here from navigator config
@@ -304,11 +306,13 @@ class DecisionMakingProcess(WorkerProcess):
         if "tel" in self.inPsnames:
             # TODO : use zmq PUB/SUB
             # context_tel = zmq.Context()
-            host = socket.gethostbyname(socket.gethostname())
+            host = config["pc_ip"]
             port = 12345
-            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # TCP socket object
-            addr = (host, port)
-            sock.connect((host, port))
+            tel_sock = socket.socket(
+                socket.AF_INET, socket.SOCK_DGRAM
+            )  # TCP socket object
+            tel_addr = (host, port)
+            tel_sock.connect(tel_addr)
 
         while True:
             try:
@@ -335,7 +339,9 @@ class DecisionMakingProcess(WorkerProcess):
                         logger.log(
                             "SYNC", f"dis delta {time()- distance_data['timestamp']}"
                         )
-                        self.state.update_object_det(distance_data["sonar1"],distance_data["sonar2"] )
+                        self.state.update_object_det(
+                            distance_data["sonar1"], distance_data["sonar2"]
+                        )
 
                 if "pos" in self.inPsnames:
                     if sub_pos.poll(timeout=0.05):
@@ -366,11 +372,14 @@ class DecisionMakingProcess(WorkerProcess):
                     if sub_tl.poll(timeout=0.05):
                         trafficlights = sub_tl.recv()
                         print(f"TL -> {trafficlights}")
+                        # self.state.update_tl()
 
                 # # update car navigator, current ptype, current etype and current idx
 
                 trigger_behaviour(self.state, self.actman)
                 # print(self.state.detected)
+                if "tel" in self.inPsnames:
+                    tel_sock.sendto(json.dumps(self.state.asdict()), tel_addr)
                 speed, steer = self.actman(self.state)
                 self.state.v = speed
                 self.state.steering_angle = steer
