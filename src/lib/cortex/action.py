@@ -324,7 +324,7 @@ class ControlSystemBehaviour(BehaviourCallback):
         self.cs = Pure_Pursuit(coord_list)
 
     def __call__(self, car_state: CarState):
-        ind, lf = self.cs.search_target_index(car_state)
+        ind, lf = self.cs.search_target_index(car_state,flag="roundabout")
         logger.info(
             f"({car_state.x}, {car_state.y}) Target: {ind} ({self.cs.cx[ind]:.2f}, {self.cs.cy[ind]:.2f})"
         )

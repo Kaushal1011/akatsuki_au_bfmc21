@@ -306,7 +306,7 @@ class DecisionMakingProcess(WorkerProcess):
             sub_tl.connect("ipc:///tmp/vtl")
             sub_tl.setsockopt_string(zmq.SUBSCRIBE, "")
 
-        if "tel" in self.inPsnames:
+        if "tel" in self.inPsnames or True:
             # TODO : use zmq PUB/SUB
             # context_tel = zmq.Context()
             host = config["pc_ip"]
@@ -393,7 +393,7 @@ class DecisionMakingProcess(WorkerProcess):
 
                 trigger_behaviour(self.state, self.actman)
                 # print(self.state.detected)
-                if "tel" in self.inPsnames:
+                if "tel" in self.inPsnames or True:
                     tel_sock.sendto(
                         json.dumps(self.state.asdict()).encode("utf-8"), tel_addr
                     )
@@ -407,8 +407,8 @@ class DecisionMakingProcess(WorkerProcess):
                 logger.debug(f"Sonar Side: {self.state.side_distance}")
 
                 if len(outPs) > 0:
-                    outPs[0].send((self.state.steering_angle, self.state.v))
-                    # outPs[0].send((0.0, 0.0))
+#                     outPs[0].send((self.state.steering_angle, self.state.v))
+                   outPs[0].send((0.0, 0.0))
 
                 sleep(0.2)
 
