@@ -29,7 +29,7 @@ from src.lib.cortex.action import (
     PriorityBehaviour,
     OvertakeBehaviour,
     RoundAboutBehaviour,
-    TLBehaviour
+    TLBehaviour,
 )
 import joblib
 from loguru import logger
@@ -124,11 +124,11 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
     if carstate.detected["roadblock"] and carstate.front_distance < 0.75:  # 10 cm
         # replan closed road
         pass
-    
-    if (
-        carstate.detected["roundabout"] or (carstate.current_ptype=="roundabout" and action_man.l1_ab is None)
-    ):  
-        print("In round about trigger: ",carstate.current_ptype)
+
+    if carstate.detected["roundabout"] or (
+        carstate.current_ptype == "roundabout" and action_man.l1_ab is None
+    ):
+        print("In round about trigger: ", carstate.current_ptype)
         rabobj = RoundAboutBehaviour(car_state=carstate)
         rabobjaction = ActionBehaviour(name="roundabout", callback=rabobj)
         action_man.set_action(rabobjaction, action_time=None, car_state=carstate)
@@ -155,7 +155,7 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
 
     if carstate.detected["trafficlight"]:
         tlobj = TLBehaviour(carstate=carstate)
-        tlaction = ActionBehaviour(name ="trafficlight", callback=tlobj)
+        tlaction = ActionBehaviour(name="trafficlight", callback=tlobj)
         action_man.set_action(tlaction, action_time=None, carstate=carstate)
 
     if carstate.pitch > 0.2:
@@ -217,20 +217,22 @@ class DecisionMakingProcess(WorkerProcess):
         self.actman.set_action(lkaction)
 
         ##################################################################
-        # data_path = pathlib.Path(
-        #     pathlib.Path(__file__).parent.parent.parent.resolve(),
-        #     "data",
-        #     "mid_course.z",
-        # )
-        # data = joblib.load(data_path)
-        # cx = data["x"]
-        # cy = data["y"]
-        # coord_list = [x for x in zip(cx, cy)]
-        # coord_list = data[0]socket.gethostbyname(socket.gethostname())
+        data_path = pathlib.Path(
+            pathlib.Path(__file__).parent.parent.parent.resolve(),
+            "data",
+            "new_course.z",
+        )
+        data = joblib.load(data_path)
+        cx = data["x"]
+        cy = data["y"]
+        coord_list = [x for x in zip(cx, cy)]
+        # coord_list = data[0]
         #################################################################
 
         # pass coordlist here from navigator config
-        csobj = ControlSystemBehaviour(coord_list=self.state.navigator.coords)
+        # csobj = ControlSystemBehaviour(coord_list=self.state.navigator.coords)
+        csobj = ControlSystemBehaviour(coord_list=coord_list)
+
         csaction = ActionBehaviour(name="cs", callback=csobj)
         self.actman.set_action(csaction)
 
@@ -341,14 +343,14 @@ class DecisionMakingProcess(WorkerProcess):
                         distance_data = sub_dis.recv_json()
                         while sub_dis.poll(timeout=0.05):
                             distance_data = sub_dis.recv_json()
-                    
+
                         print("DIS -> ", distance_data)
                         logger.log(
-                                "SYNC", f"dis delta {time()- distance_data['timestamp']}"
-                            )
+                            "SYNC", f"dis delta {time()- distance_data['timestamp']}"
+                        )
                         self.state.update_object_det(
-                                distance_data["sonar1"], distance_data["sonar2"]
-                            )
+                            distance_data["sonar1"], distance_data["sonar2"]
+                        )
 
                 if "pos" in self.inPsnames:
                     if sub_pos.poll(timeout=0.05):
@@ -368,7 +370,7 @@ class DecisionMakingProcess(WorkerProcess):
                         detections = sub_sd.recv_json()
                         while sub_sd.poll(timeout=0.01):
                             detections = sub_sd.recv_json()
-                            
+
                         print("SD ->", detections)
                         # send data to env server
                         if len(outPs) > 1:
@@ -384,7 +386,7 @@ class DecisionMakingProcess(WorkerProcess):
                     if sub_tl.poll(timeout=0.05):
                         tl_data = sub_tl.recv()
                         # print(f"TL -> {tl_data}")
-                        
+
                         self.state.update_tl(tl_data)
 
                 # # update car navigator, current ptype, current etype and current idx
@@ -392,7 +394,9 @@ class DecisionMakingProcess(WorkerProcess):
                 trigger_behaviour(self.state, self.actman)
                 # print(self.state.detected)
                 if "tel" in self.inPsnames:
-                    tel_sock.sendto(json.dumps(self.state.asdict()).encode("utf-8"), tel_addr)
+                    tel_sock.sendto(
+                        json.dumps(self.state.asdict()).encode("utf-8"), tel_addr
+                    )
                 speed, steer = self.actman(self.state)
                 self.state.v = speed
                 self.state.steering_angle = steer

@@ -8,6 +8,7 @@ import socket
 from threading import Thread
 
 from workerprocess import WorkerProcess
+import joblib
 
 PI_IP = "192.168.186.89"
 PORT = 8888
@@ -112,6 +113,8 @@ class LocalisationServer:
         r = requests.get(
             "http://10.20.2.114/asp/video.cgi", auth=("admin", "admin"), stream=True
         )
+        rx = []
+        ry = []
         bytes1 = bytes()  # buffer
         if r.status_code == 200:
             for idx, chunk in enumerate(r.iter_content(chunk_size=100_000)):
@@ -158,6 +161,8 @@ class LocalisationServer:
                 )
                 x, y = localize(image)
                 if x and y:
+                    # rx.append(x)
+                    # ry.append(y)
                     data = {
                         "timestamp": time.time(),
                         "posA": x,
@@ -174,6 +179,7 @@ class LocalisationServer:
                     cv2.imshow("Track Image", imgOutput)
                     key = cv2.waitKey(1)
                     if key == 27 or key == 113:
+                        # joblib.dump({"x": rx, "y": ry}, "coordlist.z")
                         cv2.destroyAllWindows()
                         break
                     else:
