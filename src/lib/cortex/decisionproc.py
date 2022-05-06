@@ -11,6 +11,7 @@ from typing import Dict, List, Optional, Tuple
 import socket
 
 from src.config import get_config
+
 config = get_config()
 
 from src.lib.cortex.carstate import CarState
@@ -178,7 +179,6 @@ def send_data2env(car_state: CarState, detections: List[Tuple[str, float]]):
     ]
 
 
-
 class DecisionMakingProcess(WorkerProcess):
     # ===================================== Worker process =========================================
     def __init__(self, inPs, outPs, inPsnames=[]):
@@ -292,9 +292,11 @@ class DecisionMakingProcess(WorkerProcess):
         if "tel" in self.inPsnames:
             # TODO : use zmq PUB/SUB
             # context_tel = zmq.Context()
-            host = config['pc_ip']
+            host = config["pc_ip"]
             port = 12345
-            tel_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # TCP socket object
+            tel_sock = socket.socket(
+                socket.AF_INET, socket.SOCK_DGRAM
+            )  # TCP socket object
             tel_addr = (host, port)
             tel_sock.connect(tel_addr)
 

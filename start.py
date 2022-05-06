@@ -155,7 +155,7 @@ if config["enableSIM"]:
     allProcesses.append(trafficProc)
     dataFusionInputName.append("tl")
 
-elif config["using_server"] and False:
+elif config["using_server"]:
     # Traffic Semaphore -> Decision Making (data fusion)
     trafficProc = TrafficProcess([], [])
     allProcesses.append(trafficProc)
@@ -201,7 +201,7 @@ FzzMcR, FzzMcS = Pipe(duplex=False)
 dataFusionOutPs.append(FzzMcS)
 
 # ======================= Environment Server ======================================
-if config["using_server"] or True:
+if config["using_server"]:
     beacon = 23456
     id = 120
     serverpublickey = "publickey_server_test.pem"
@@ -217,6 +217,9 @@ if config["using_server"] or True:
 
 
 # ======================= Decision Making =========================================
+# TODO enableTelemtry
+if True:
+    dataFusionInputName.append("tel")
 
 datafzzProc = DecisionMakingProcess([], dataFusionOutPs, inPsnames=dataFusionInputName)
 allProcesses.append(datafzzProc)
