@@ -659,7 +659,7 @@ def update_scatter(n_interval):
         data["target_y"],
     ]
     dff.loc[len(dff)] = in_list
-    print(dff)
+    # print(dff)
     # =====Position=====#
 
     fig = go.Figure()
