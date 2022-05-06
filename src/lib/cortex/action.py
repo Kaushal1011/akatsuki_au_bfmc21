@@ -66,38 +66,43 @@ class TLBehaviour(BehaviourCallback):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.loc = {
-            "s0":(1,1),
-            "s1":(4,4),
-            "s2":(5,5),
-            "s3":(6,6),
+            "s0": (1, 1),
+            "s1": (4, 4),
+            "s2": (5, 5),
+            "s3": (6, 6),
         }
         self.current_tl = None
         self.over = False
-    
-    def __call__(self, car_state:CarState):
+
+    def __call__(self, car_state: CarState):
         if self.current_tl is None:
             min_d = float("inf")
             min_d_sem = None
             for sem in self.loc.keys():
-                d = math.sqrt((car_state.x-self.loc[sem])**2+(car_state.y-self.loc[sem])**2)
+                d = math.sqrt(
+                    (car_state.x - self.loc[sem]) ** 2
+                    + (car_state.y - self.loc[sem]) ** 2
+                )
                 if d < min_d:
                     min_d = d
                     min_d_sem = sem
             self.current_tl = min_d_sem
 
         if car_state.tl[self.current_tl] != 2:
-            return {"speed":0.0}
+            return {"speed": 0.0}
         else:
             self.over = True
-    
+
     def out_condition(self, **kwargs) -> bool:
         return self.over
-    
+
     def set(self, **kwargs):
         pass
 
+
 class RampBehaviour(BehaviourCallback):
     pass
+
 
 class StopBehvaiour(BehaviourCallback):
     def __call__(self, car_state):
@@ -333,8 +338,11 @@ class ControlSystemBehaviour(BehaviourCallback):
         # car_state.can_overtake = car_state.navigator.etype[ind]
         # car_state.activity_type = car_state.navigator.activity[ind]
 
-        car_state.current_ptype = car_state.navigator.ptype[ind]
-        car_state.can_overtake = car_state.navigator.etype[ind]
+        # car_state.current_ptype = car_state.navigator.ptype[ind]
+        # car_state.can_overtake = car_state.navigator.etype[ind]
+
+        car_state.current_ptype = "int"
+        car_state.can_overtake = True
 
         di = self.cs.purest_pursuit_steer_control(car_state, ind, lf)
         di = di * 180 / math.pi
@@ -410,8 +418,8 @@ class ParkingBehaviour(BehaviourCallback):
         self.phase = 0
         self.over = False
         self.WB = 0.3
-        self.slot=1
-        self.offsetx=0
+        self.slot = 1
+        self.offsetx = 0
         # 0 init 1 reach empty 2 check empty 3 reach comfortable park spot 4 park 5 out of park
 
     def out_condition(self, **kwargs) -> bool:
@@ -438,8 +446,12 @@ class ParkingBehaviour(BehaviourCallback):
         return di
 
     def reverse_chase(self, car_state: CarState, tx, ty):
-        car_state.f_x = car_state.x - ((car_state.car_len / 2) * math.cos(car_state.yaw))
-        car_state.f_y = car_state.y - ((car_state.car_len / 2) * math.sin(car_state.yaw))
+        car_state.f_x = car_state.x - (
+            (car_state.car_len / 2) * math.cos(car_state.yaw)
+        )
+        car_state.f_y = car_state.y - (
+            (car_state.car_len / 2) * math.sin(car_state.yaw)
+        )
 
         # alpha = math.atan2(ty - car_state.rear_y, tx - car_state.rear_x) - (
         #     car_state.yaw
@@ -451,9 +463,7 @@ class ParkingBehaviour(BehaviourCallback):
         #     / math.sqrt((ty - car_state.rear_y) ** 2 + (tx - car_state.rear_x) ** 2),
         #     1.0,
         # )
-        alpha = math.atan2(ty - car_state.f_y, tx - car_state.f_x) - (
-            car_state.yaw
-        )
+        alpha = math.atan2(ty - car_state.f_y, tx - car_state.f_x) - (car_state.yaw)
         delta = math.atan2(
             2.0
             * self.WB
@@ -470,8 +480,6 @@ class ParkingBehaviour(BehaviourCallback):
         return di
 
     def __call__(self, car_state: CarState):
-        
-        
 
         if self.type == "perpendicular":
             if self.initx is None and self.inity is None:
@@ -483,8 +491,8 @@ class ParkingBehaviour(BehaviourCallback):
 
                 # tx = self.initx + 0.5 + offsetx_1
                 # ty = self.inity
-                tx=3.4 + self.offsetx
-                ty=2.0
+                tx = 3.4 + self.offsetx
+                ty = 2.0
 
                 print("In Phase 1", tx, ty)
                 # go to check spot
@@ -500,11 +508,11 @@ class ParkingBehaviour(BehaviourCallback):
                 print("In Phase 2")
                 # check if empty
                 if car_state.side_distance < 0.5:
-                    if self.slot==1:
+                    if self.slot == 1:
                         print("Parking Spot full")
-                        self.offsetx+=0.45
-                        self.slot=2
-                        self.phase=1
+                        self.offsetx += 0.45
+                        self.slot = 2
+                        self.phase = 1
                     else:
                         self.over = True
                 else:
@@ -516,8 +524,8 @@ class ParkingBehaviour(BehaviourCallback):
                 # go to safe spot for reverse
                 # tx = self.initx + 0.5 +  offsetx_1
                 # ty = self.inity - 0.35
-                tx=3.75 + self.offsetx
-                ty=1.75
+                tx = 3.75 + self.offsetx
+                ty = 1.75
                 print("In Phase 3", tx, ty)
                 d = math.sqrt(
                     (tx - car_state.rear_x) ** 2 + (ty - car_state.rear_y) ** 2
@@ -540,7 +548,7 @@ class ParkingBehaviour(BehaviourCallback):
                     self.phase = 5
                 di = self.reverse_chase(car_state, tx, ty)
                 return {"steer": di, "speed": -car_state.priority_speed}
-            
+
             elif self.phase == 5:
                 print("In Phase 5")
                 # reverse into parking
@@ -581,32 +589,33 @@ class ParkingBehaviour(BehaviourCallback):
     def set(self, **kwargs):
         pass
 
+
 class RoundAboutBehaviour(BehaviourCallback):
     def __init__(self, **kwargs):
-        car_state : CarState=kwargs["car_state"]
-        indexes,indexesmax=car_state.target_ind,car_state.target_ind+10
-        self.coords=[]
-        for i in range(indexes,indexesmax):
-            if car_state.navigator.ptype[i]=="roundabout":
+        car_state: CarState = kwargs["car_state"]
+        indexes, indexesmax = car_state.target_ind, car_state.target_ind + 10
+        self.coords = []
+        for i in range(indexes, indexesmax):
+            if car_state.navigator.ptype[i] == "roundabout":
                 self.coords.append(car_state.navigator.coords[i])
             else:
                 break
-        if len(self.coords)==0:
-            self.over=True
-            return 
-        x,y=zip(*self.coords)
-        cx,cy,_,_,_= calc_spline_course(x,y,0.1)
-        self.coords=[i for i in zip(cx,cy)]
-        self.cs = Pure_Pursuit(self.coords,0.175)
-        self.over=False
-    
-    def __call__(self, car_state:CarState):
+        if len(self.coords) == 0:
+            self.over = True
+            return
+        x, y = zip(*self.coords)
+        cx, cy, _, _, _ = calc_spline_course(x, y, 0.1)
+        self.coords = [i for i in zip(cx, cy)]
+        self.cs = Pure_Pursuit(self.coords, 0.175)
+        self.over = False
+
+    def __call__(self, car_state: CarState):
         try:
-            if car_state.current_ptype!="roundabout":
-                self.over=True
-            
-            ind, lf = self.cs.search_target_index(car_state,flag="roundabout")
-            
+            if car_state.current_ptype != "roundabout":
+                self.over = True
+
+            ind, lf = self.cs.search_target_index(car_state, flag="roundabout")
+
             logger.info(
                 f"({car_state.x}, {car_state.y}) Target: {ind} ({self.cs.cx[ind]:.2f}, {self.cs.cy[ind]:.2f})"
             )
@@ -621,12 +630,13 @@ class RoundAboutBehaviour(BehaviourCallback):
             return {"steer": di, "speed": car_state.max_v}
         except:
             return {"steer": car_state.cs_angle, "speed": car_state.max_v}
-    
+
     def out_condition(self, **kwargs) -> bool:
         return self.over
 
     def set(self, **kwargs):
         pass
+
 
 class RoadBlocked(BehaviourCallback):
     def __init__(self, **kwargs):
@@ -703,6 +713,7 @@ class RoadBlocked(BehaviourCallback):
         else:
             return None
 
+
 # offsetx_1 = 0
 class ActionBehaviour:
     def __init__(self, name, release_time=0.0, callback=None):
@@ -777,7 +788,7 @@ class ActionManager:
         self.lk = None
         self.cs = None
         self.objstop = None
-        self.tflight=None
+        self.tflight = None
         self.l1_ab = None
         self.l2_ab = None
         self.l3_ab = None
@@ -848,10 +859,7 @@ class ActionManager:
             self.l2_ab = action
             self.l2_ab.set(action_time=action_time, **kwargs)
             return True
-        elif (
-            action.name == "stop"
-            or action.name == "priority"
-        ) and (
+        elif (action.name == "stop" or action.name == "priority") and (
             self.l3_ab is None
             or self.l3_ab.check_cooldown()
             or action.name != self.l3_ab.name
@@ -863,7 +871,7 @@ class ActionManager:
             self.l4_ab = action
             self.l4_ab.set(action_time=action_time, **kwargs)
             return True
-        elif action.name=="tflight":
+        elif action.name == "tflight":
             self.tflight = action
             self.tflight.set(action_time=action_time, **kwargs)
             return True
