@@ -40,6 +40,7 @@ class DistanceSIM(WorkerProcess):
         print("Server Connect started! Now listening:\n")
         context_send = zmq.Context()
         pub_sim = context_send.socket(zmq.PUB)
+        pub_sim.setsockopt(zmq.CONFLATE, 1)
         pub_sim.bind(f"ipc:///tmp/v11")
 
         # Subscribe to data from simulator
@@ -54,7 +55,7 @@ class DistanceSIM(WorkerProcess):
             while True:
                 data = distance_socket.recv_json()
                 if self.log:
-                    print(data)
+                    print("DIS sent ->", data)
                 pub_sim.send_json(data, flags=zmq.NOBLOCK)
                 # for outP in outPs:
                 #     outP.send(command)

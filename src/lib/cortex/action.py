@@ -502,7 +502,7 @@ class ParkingBehaviour(BehaviourCallback):
                 if car_state.side_distance < 0.5:
                     if self.slot==1:
                         print("Parking Spot full")
-                        self.offsetx_1+=0.45
+                        self.offsetx+=0.45
                         self.slot=2
                         self.phase=1
                     else:
@@ -516,7 +516,7 @@ class ParkingBehaviour(BehaviourCallback):
                 # go to safe spot for reverse
                 # tx = self.initx + 0.5 +  offsetx_1
                 # ty = self.inity - 0.35
-                tx=3.85 + self.offsetx
+                tx=3.75 + self.offsetx
                 ty=1.75
                 print("In Phase 3", tx, ty)
                 d = math.sqrt(
@@ -530,7 +530,7 @@ class ParkingBehaviour(BehaviourCallback):
             elif self.phase == 4:
                 # tx = self.initx + 0.75 + offsetx_1
                 # ty = self.inity + 0.35
-                tx = 3.2 + self.offsetx
+                tx = 3.3 + self.offsetx
                 ty = 2.6
                 print("In Phase 4", tx, ty)
                 d = math.sqrt(
@@ -544,8 +544,8 @@ class ParkingBehaviour(BehaviourCallback):
             elif self.phase == 5:
                 print("In Phase 5")
                 # reverse into parking
-                tx = 3.2 + self.offsetx
-                ty = 3.1
+                tx = 3.3 + self.offsetx
+                ty = 2.95
                 # tx = self.initx + 0.75 +  offsetx_1
                 # ty = self.inity + 1
                 print("In Phase 5", tx, ty)
@@ -591,6 +591,9 @@ class RoundAboutBehaviour(BehaviourCallback):
                 self.coords.append(car_state.navigator.coords[i])
             else:
                 break
+        if len(self.coords)==0:
+            self.over=True
+            return 
         x,y=zip(*self.coords)
         cx,cy,_,_,_= calc_spline_course(x,y,0.1)
         self.coords=[i for i in zip(cx,cy)]
@@ -618,6 +621,9 @@ class RoundAboutBehaviour(BehaviourCallback):
     
     def out_condition(self, **kwargs) -> bool:
         return self.over
+
+    def set(self, **kwargs):
+        pass
 
 class RoadBlocked(BehaviourCallback):
     def __init__(self, **kwargs):

@@ -18,6 +18,7 @@ config = get_config()
 target_idx = config["end_idx"]
 
 
+
 def dijkstra(G, start, target):
     d = {start: 0}
     parent = {start: None}
@@ -30,46 +31,55 @@ def dijkstra(G, start, target):
         if u == target:
             break
         visited.add(u)
-        for v in G.adj[u]:
+        for v  in G.adj[u]:
             if v not in d or d[v] > du + 1:
                 d[v] = du + 1
                 parent[v] = u
                 heapq.heappush(pq, (d[v], v))
 
+    
     fp = [target]
     tg = target
-    ptype = [("lk" if len([i for i in G.neighbors(tg)]) < 2 else "int")]
-
+    ptype=[("lk" if len([i for i in G.neighbors(tg)])<2 else "int")]
+    
+    roundabout_pts=['267','268','269','270','271','302','303','304','305','306','307']
+    
     while tg != start:
         fp.insert(0, parent[tg])
         tg = parent[tg]
-        ptype.insert(0, ("lk" if len([i for i in G.neighbors(tg)]) < 2 else "int"))
+        ptype.insert(0,("lk" if len([i for i in G.neighbors(tg)])<2 else "int"))
         # print([i for i in G.neighbors(tg)])
-
-    ptyperet = ptype.copy()
+        
+   
+    
+    
+    ptyperet=ptype.copy()
     for i in range(len(ptype)):
-        if ptype[i] == "int":
+        if ptype[i]=='int':
             try:
-                ptyperet[i - 1] = "int"
-            except Exception as e:
-                print("pathplanning.py[46]", e)
-
+                ptyperet[i-1]="int"
+            except:
+                pass
             try:
-                ptyperet[i + 1] = "int"
-                i += 1
-            except Exception as e:
-                print("pathplanning.py[52]", e)
-
-    edgeret = []
-
-    for i in range(len(fp) - 1):
-        dt = G.get_edge_data(fp[i], fp[i + 1])
-        edgeret.append(dt["dotted"])
-
+                ptyperet[i+1]="int"
+                i+=1
+            except:
+                pass
+    
+    for i in range(len(ptyperet)):
+        if fp[i] in roundabout_pts:
+            ptyperet[i]="roundabout"
+    
+    edgeret=[]
+    
+    for i in range(len(fp)-1):
+        dt=G.get_edge_data(fp[i],fp[i+1])
+        edgeret.append(dt['dotted'])
+        
     edgeret.append(None)
-
-    return fp, ptyperet, edgeret
-
+        
+            
+    return fp,ptyperet,edgeret
 
 def isLeft(A, B, isleftpoint):
     yd = math.atan2(B[1] - A[1], B[0] - A[0])

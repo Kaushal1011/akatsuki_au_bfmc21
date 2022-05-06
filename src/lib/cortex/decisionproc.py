@@ -126,8 +126,9 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
         pass
     
     if (
-        carstate.detected["roundabout"]
-    ):
+        carstate.detected["roundabout"] or carstate.current_ptype=="roundabout"
+    ):  
+        print("In round about trigger: ",carstate.current_ptype)
         rabobj = RoundAboutBehaviour(car_state=carstate)
         rabobjaction = ActionBehaviour(name="roundabout", callback=rabobj)
         action_man.set_action(rabobjaction, action_time=None, car_state=carstate)
@@ -335,13 +336,16 @@ class DecisionMakingProcess(WorkerProcess):
                 if "dis" in self.inPsnames:
                     if sub_dis.poll(timeout=0.1):
                         distance_data = sub_dis.recv_json()
-                        # print("DIS -> ", distance_data)
+                        while sub_dis.poll(timeout=0.05):
+                            distance_data = sub_dis.recv_json()
+                    
+                        print("DIS -> ", distance_data)
                         logger.log(
-                            "SYNC", f"dis delta {time()- distance_data['timestamp']}"
-                        )
+                                "SYNC", f"dis delta {time()- distance_data['timestamp']}"
+                            )
                         self.state.update_object_det(
-                            distance_data["sonar1"], distance_data["sonar2"]
-                        )
+                                distance_data["sonar1"], distance_data["sonar2"]
+                            )
 
                 if "pos" in self.inPsnames:
                     if sub_pos.poll(timeout=0.05):
@@ -370,16 +374,17 @@ class DecisionMakingProcess(WorkerProcess):
 
                 if "tl" in self.inPsnames:
                     if sub_tl.poll(timeout=0.05):
-                        trafficlights = sub_tl.recv()
-                        print(f"TL -> {trafficlights}")
-                        # self.state.update_tl()
+                        tl_data = sub_tl.recv()
+                        # print(f"TL -> {tl_data}")
+                        
+                        self.state.update_tl(tl_data)
 
                 # # update car navigator, current ptype, current etype and current idx
 
                 trigger_behaviour(self.state, self.actman)
                 # print(self.state.detected)
                 if "tel" in self.inPsnames:
-                    tel_sock.sendto(json.dumps(self.state.asdict()), tel_addr)
+                    tel_sock.sendto(json.dumps(self.state.asdict()).encode("utf-8"), tel_addr)
                 speed, steer = self.actman(self.state)
                 self.state.v = speed
                 self.state.steering_angle = steer
@@ -390,8 +395,8 @@ class DecisionMakingProcess(WorkerProcess):
                 logger.debug(f"Sonar Side: {self.state.side_distance}")
 
                 if len(outPs) > 0:
-                    # outPs[0].send((self.state.steering_angle, self.state.v))
-                    outPs[0].send((0.0, 0.0))
+                    outPs[0].send((self.state.steering_angle, self.state.v))
+                    # outPs[0].send((0.0, 0.0))
 
                 sleep(0.2)
 

@@ -66,7 +66,7 @@ def filter(level: List[int]):
     return lambda r: r["level"].no in level or r["level"].no > 19
 
 
-TEST_PIPE = False
+TEST_PIPE = True
 logger.remove()
 if TEST_PIPE:
     logger.add(sys.stderr, filter=filter([18]))
@@ -218,7 +218,7 @@ if config["using_server"]:
 
 # ======================= Decision Making =========================================
 # TODO enableTelemtry
-if True:
+if False:
     dataFusionInputName.append("tel")
 
 datafzzProc = DecisionMakingProcess([], dataFusionOutPs, inPsnames=dataFusionInputName)
