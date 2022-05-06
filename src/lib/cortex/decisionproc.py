@@ -318,6 +318,7 @@ class DecisionMakingProcess(WorkerProcess):
             tel_addr = (host, port)
             tel_sock.connect(tel_addr)
 
+        got_loc = False
         while True:
             try:
                 # c = time()
@@ -354,7 +355,16 @@ class DecisionMakingProcess(WorkerProcess):
                         )
 
                 if "pos" in self.inPsnames:
-                    if sub_pos.poll(timeout=0.05):
+                    # wait until you get the first loc data
+                    if not got_loc:
+                        pos = sub_pos.recv_json()
+                        got_loc = True
+                        if pos[0] == 0 and pos[1] == 0:
+                            pass
+                        else:
+                            self.state.update_pos(*pos)
+
+                    elif sub_pos.poll(timeout=0.05):
                         pos = sub_pos.recv_json()
                         while sub_pos.poll(timeout=0.01):
                             pos = sub_pos.recv_json()
@@ -363,6 +373,7 @@ class DecisionMakingProcess(WorkerProcess):
                             pass
                         else:
                             self.state.update_pos(*pos)
+
                     else:
                         self.state.update_pos_noloc()
 
