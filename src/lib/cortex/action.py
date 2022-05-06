@@ -62,6 +62,43 @@ class BehaviourCallback:
         raise NotImplementedError
 
 
+class TLBehaviour(BehaviourCallback):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.loc = {
+            "s0":(1,1),
+            "s1":(4,4),
+            "s2":(5,5),
+            "s3":(6,6),
+        }
+        self.current_tl = None
+        self.over = False
+    
+    def __call__(self, car_state:CarState):
+        if self.current_tl is None:
+            min_d = float("inf")
+            min_d_sem = None
+            for sem in self.loc.keys():
+                d = math.sqrt((car_state.x-self.loc[sem])**2+(car_state.y-self.loc[sem])**2)
+                if d < min_d:
+                    min_d = d
+                    min_d_sem = sem
+            self.current_tl = min_d_sem
+
+        if car_state.tl[self.current_tl] != 2:
+            return {"speed":0.0}
+        else:
+            self.over = True
+    
+    def out_condition(self, **kwargs) -> bool:
+        return self.over
+    
+    def set(self, **kwargs):
+        pass
+
+class RampBehaviour(BehaviourCallback):
+    pass
+
 class StopBehvaiour(BehaviourCallback):
     def __call__(self, car_state):
         # return 0 speed and 0 steering

@@ -23,7 +23,8 @@ from src.lib.cortex.action import (
     StopBehvaiour,
     PriorityBehaviour,
     OvertakeBehaviour,
-    RoundAboutBehaviour
+    RoundAboutBehaviour,
+    TLBehaviour
 )
 import joblib
 from loguru import logger
@@ -148,6 +149,11 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
         cwobj = CrosswalkBehavior(car_state=carstate)
         cwobjaction = ActionBehaviour(name="crosswalk", callback=cwobj)
         action_man.set_action(cwobjaction, action_time=None, car_state=carstate)
+
+    if carstate.detected["trafficlight"]:
+        tlobj = TLBehaviour(carstate=carstate)
+        tlaction = ActionBehaviour(name ="trafficlight", callback=tlobj)
+        action_man.set_action(tlaction, action_time=None, carstate=carstate)
 
     if carstate.pitch > 0.2:
         # incline trigger ramp
