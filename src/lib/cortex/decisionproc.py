@@ -23,6 +23,7 @@ from src.lib.cortex.action import (
     StopBehvaiour,
     PriorityBehaviour,
     OvertakeBehaviour,
+    RoundAboutBehaviour
 )
 import joblib
 from loguru import logger
@@ -120,6 +121,13 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
     ):  # 10 cm
         # replan closed road
         pass
+    
+    if (
+        carstate.detected["roundabout"]
+    ):
+        rabobj = RoundAboutBehaviour(car_state=carstate)
+        rabobjaction = ActionBehaviour(name="roundabout", callback=rabobj)
+        action_man.set_action(rabobjaction, action_time=None, car_state=carstate)
 
     if carstate.detected["stop"]:
         # stop for t secs
