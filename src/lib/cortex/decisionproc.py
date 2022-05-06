@@ -15,6 +15,7 @@ from src.config import get_config
 config = get_config()
 
 from src.lib.cortex.carstate import CarState
+from src.lib.perception.signdetection import loaded_model
 from src.templates.workerprocess import WorkerProcess
 from time import time
 from src.lib.cortex.action import (
@@ -407,8 +408,11 @@ class DecisionMakingProcess(WorkerProcess):
                 logger.debug(f"Sonar Side: {self.state.side_distance}")
 
                 if len(outPs) > 0:
-#                     outPs[0].send((self.state.steering_angle, self.state.v))
-                   outPs[0].send((0.0, 0.0))
+                    if config["enableSignDet"] and not loaded_model.value:
+                        outPs[0].send((0.0, 0.0))
+                    else:
+                        # outPs[0].send((self.state.steering_angle, self.state.v))
+                        outPs[0].send((0.0, 0.0))
 
                 sleep(0.2)
 

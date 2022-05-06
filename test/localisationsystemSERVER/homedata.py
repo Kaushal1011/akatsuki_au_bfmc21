@@ -10,7 +10,7 @@ from threading import Thread
 from workerprocess import WorkerProcess
 import joblib
 
-PI_IP = "192.168.186.89"
+PI_IP = "192.168.220.89"
 PORT = 8888
 
 
