@@ -1,13 +1,11 @@
-from re import template
-from time import process_time_ns
-
+from turtle import width
+from matplotlib import widgets
 from matplotlib.pyplot import connect
 from dash import Dash, html, dcc
 from dash.dependencies import Output, Input
 import dash_bootstrap_components as dbc
 import plotly.express as px
 import pandas as pd
-import csv, pickle
 from json import loads
 import plotly.graph_objects as go
 # from socket import *
@@ -35,7 +33,7 @@ app.layout = html.Div([
         clear_data=True
     ), dcc.Interval(
         id='store_interval',
-        interval=10,  # in milliseconds
+        interval=100,  # in milliseconds
         n_intervals=0
     ), dcc.Interval(
         id='mem_clear',
@@ -254,7 +252,7 @@ app.layout = html.Div([
                     dbc.CardBody([
                         dcc.Graph(id='position'), dcc.Interval(
                             id='graph-update',
-                            interval=1000,  # in milliseconds
+                            interval=100,  # in milliseconds
                             n_intervals=0
                         )
                     ])
@@ -268,14 +266,14 @@ app.layout = html.Div([
                         dcc.Graph(id='speed_curve')
                     ])
                 ]),
-            ]),
+            ], width=6),
             dbc.Col([
                 dbc.Card([
                     dbc.CardBody([
                         dcc.Graph(id='yaw_polar')
                     ])
                 ]),
-            ]),
+            ], width=6),
         ], className='mb-2'),
     ], fluid=True)
 ])
@@ -328,7 +326,7 @@ def update_cards(n_intervals):
     data = data.decode('utf-8')  
     dictData=loads(data)
     x = dictData["x"]
-    y = dictData["x"]
+    y = dictData["y"]
     yaw = dictData["yaw"]
     speed = dictData["v"]
     pitch  = dictData["pitch"]
@@ -383,7 +381,7 @@ def update_cards(n_intervals):
 
 
     
-    return x, y, rx, ry, tx, ty, tidx, yaw, pitch, roll, speed, steer, lk_angle, cs_angle, ptype, curr_target, behav, sign, fsu, rsu, id_detect, car_detect, pedo, roadblock
+    return x, y, rx, ry, tx, ty, tidx, yaw, pitch, roll, speed, steer, lk_angle, cs_angle, ptype, curr_target, behav, sign, fsu, rsu, str(id_detect), str(car_detect), str(pedo), str(roadblock)
 
 
 #=====Graphs===== #
@@ -398,32 +396,53 @@ def update_cards(n_intervals):
 def update_scatter(n_interval):
     data, _ = sock.recvfrom(4096)
     data = data.decode('utf-8')
+    data = loads(data)
     in_list = [data['x'], data['y'], data['yaw'], data['v'], data['rear_x'], data['rear_y'], data['target_x'], data['target_y']]
     dff.loc[len(dff)] = in_list
 
 
     #=====Position=====#
+    
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=dff['x'], y=dff['y'],
                     mode='lines+markers',
-                    name='lines+markers'))
+                    name='CUrrent Position'))
     fig.add_trace(go.Scatter(x=dff['target_x'], y=dff['target_y'],
-                    mode='lines+markers',
-                    name='lines+markers'))
+                    name='Target Index'))
 
     fig.update_layout(template="plotly_dark",margin=dict(l=20, r=20, t=30, b=20))
 
     #=====Yaw=====#
+
     fig_polar = px.scatter_polar(dff, r=dff.index, theta="yaw", template='plotly_dark')
     fig_polar.update_layout(margin=dict(l=20, r=20, t=30, b=20))
 
     #=====Speed=====#
-    fig_line = px.line(dff, x=dff.index, y="v", template='plotly_dark',
-                       title="v", markers=True)
-    fig_line.update_layout(margin=dict(l=20, r=20, t=30, b=20))
+
+    fig_speed = go.Figure(go.Indicator(
+    mode = "gauge+number",
+    value = data['v'],
+    domain = {'x': [0, 1], 'y': [0, 1]},
+    title = {'text': "Speed", 'font': {'size': 24}},
+    gauge = {
+        'axis': {'range': [0, 30], 'tickwidth': 1, 'tickcolor': "darkblue"},
+        'bar': {'color': "darkblue"},
+        'bgcolor': "white",
+        'borderwidth': 2,
+        'bordercolor': "gray",
+        'steps': [
+            {'range': [0, 10], 'color': 'green'},
+            {'range': [10, 20], 'color': 'yellow'},
+            {'range': [20, 30], 'color': 'red'}],
+        'threshold': {
+            'line': {'color': "black", 'width': 4},
+            'thickness': 0.75,
+            'value': 29}}))
+
+    fig_speed.update_layout(template="plotly_dark", paper_bgcolor = "darkblue", font = {'color': "darkblue", 'family': "Arial"})
 
 
-    return fig, fig_line, fig_polar
+    return fig, fig_speed, fig_polar
 
 
 @app.callback(Output('stored_df', 'clear_data'),
