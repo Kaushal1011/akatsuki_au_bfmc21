@@ -126,7 +126,7 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
         pass
     
     if (
-        carstate.detected["roundabout"] or carstate.current_ptype=="roundabout"
+        carstate.detected["roundabout"] or (carstate.current_ptype=="roundabout" and action_man.l1_ab is None)
     ):  
         print("In round about trigger: ",carstate.current_ptype)
         rabobj = RoundAboutBehaviour(car_state=carstate)
@@ -323,6 +323,9 @@ class DecisionMakingProcess(WorkerProcess):
                 if "lk" in self.inPsnames:
                     if sub_lk.poll(timeout=0.05):
                         lk_angle, detected_intersection = sub_lk.recv_json()
+                        while sub_lk.poll(timeout=0.01):
+                            lk_angle, detected_intersection = sub_lk.recv_json()
+
                         # print("LK -> ", lk_angle, detected_intersection)
                         self.state.update_lk_angle(lk_angle)
                         self.state.update_intersection(detected_intersection)
@@ -350,6 +353,8 @@ class DecisionMakingProcess(WorkerProcess):
                 if "pos" in self.inPsnames:
                     if sub_pos.poll(timeout=0.05):
                         pos = sub_pos.recv_json()
+                        while sub_pos.poll(timeout=0.01):
+                            pos = sub_pos.recv_json()
                         # print(f"POS -> {pos}")
                         if pos[0] == 0 and pos[1] == 0:
                             pass
@@ -361,6 +366,9 @@ class DecisionMakingProcess(WorkerProcess):
                 if "sd" in self.inPsnames:
                     if sub_sd.poll(timeout=0.05):
                         detections = sub_sd.recv_json()
+                        while sub_sd.poll(timeout=0.01):
+                            detections = sub_sd.recv_json()
+                            
                         print("SD ->", detections)
                         # send data to env server
                         if len(outPs) > 1:

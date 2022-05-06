@@ -597,27 +597,30 @@ class RoundAboutBehaviour(BehaviourCallback):
         x,y=zip(*self.coords)
         cx,cy,_,_,_= calc_spline_course(x,y,0.1)
         self.coords=[i for i in zip(cx,cy)]
-        self.cs = Pure_Pursuit(self.coords,0.12)
+        self.cs = Pure_Pursuit(self.coords,0.175)
         self.over=False
     
     def __call__(self, car_state:CarState):
-        if car_state.current_ptype!="roundabout":
-            self.over=True
-        
-        ind, lf = self.cs.search_target_index(car_state)
-        
-        logger.info(
-            f"({car_state.x}, {car_state.y}) Target: {ind} ({self.cs.cx[ind]:.2f}, {self.cs.cy[ind]:.2f})"
-        )
+        try:
+            if car_state.current_ptype!="roundabout":
+                self.over=True
+            
+            ind, lf = self.cs.search_target_index(car_state,flag="roundabout")
+            
+            logger.info(
+                f"({car_state.x}, {car_state.y}) Target: {ind} ({self.cs.cx[ind]:.2f}, {self.cs.cy[ind]:.2f})"
+            )
 
-        di = self.cs.purest_pursuit_steer_control(car_state, ind, lf)
-        di = di * 180 / math.pi
-        if di > 23:
-            di = 23
-        elif di < -23:
-            di = -23
-        car_state.cs_angle = di
-        return {"steer": di, "speed": car_state.max_v}
+            di = self.cs.purest_pursuit_steer_control(car_state, ind, lf)
+            di = di * 180 / math.pi
+            if di > 23:
+                di = 23
+            elif di < -23:
+                di = -23
+            car_state.cs_angle = di
+            return {"steer": di, "speed": car_state.max_v}
+        except:
+            return {"steer": car_state.cs_angle, "speed": car_state.max_v}
     
     def out_condition(self, **kwargs) -> bool:
         return self.over
