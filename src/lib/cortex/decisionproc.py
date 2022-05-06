@@ -365,7 +365,7 @@ class DecisionMakingProcess(WorkerProcess):
                 trigger_behaviour(self.state, self.actman)
                 # print(self.state.detected)
                 if "tel" in self.inPsnames:
-                    tel_sock.sendto(json.dumps(self.state.asdict()), tel_addr)
+                    tel_sock.sendto(json.dumps(self.state.asdict()).encode('utf-8'), tel_addr)
                 speed, steer = self.actman(self.state)
                 self.state.v = speed
                 self.state.steering_angle = steer
