@@ -94,13 +94,15 @@ class SignDetectionProcess(WorkerProcess):
                 logger.log("PIPE", f"recv image {time.time() - recv_time}")
                 count += 1
                 start_time = time.time()
+                #     detections, outimage = self.detection(img, bbox=True)
+                #     pub_sd.send_json(detections, flags=zmq.NOBLOCK)
+                #     pub_sd_img.send(outimage.tobytes(), flags=zmq.NOBLOCK)
+                # else:
+                detections = self.detection(img)
+                pub_sd.send_json(detections, flags=zmq.NOBLOCK)
                 if self.enable_steam:
-                    detections, outimage = self.detection(img, bbox=True)
-                    pub_sd.send_json(detections, flags=zmq.NOBLOCK)
-                    pub_sd_img.send(outimage.tobytes(), flags=zmq.NOBLOCK)
-                else:
-                    detections = self.detection(img)
-                    pub_sd.send_json(detections, flags=zmq.NOBLOCK)
+                    pub_sd_img.send(img.tobytes(), flags=zmq.NOBLOCK)
+
                 # logger.log("SD", f"detections -> {detections}")
 
             except Exception as e:

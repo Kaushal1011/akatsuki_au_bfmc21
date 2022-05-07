@@ -3,7 +3,6 @@
   "enableCameraSpoof": false,
   "enableRc": false,
   "enableLaneKeeping": true,
-  "enableIntersectionDet": false,
   "enableSignDet": true,
   "enableSIM": false,
   "loc_server": false,
