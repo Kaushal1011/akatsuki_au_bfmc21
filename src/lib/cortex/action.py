@@ -324,7 +324,7 @@ class ControlSystemBehaviour(BehaviourCallback):
         self.cs = Pure_Pursuit(coord_list)
 
     def __call__(self, car_state: CarState):
-        ind, lf = self.cs.search_target_index(car_state,flag="roundabout")
+        ind, lf = self.cs.search_target_index(car_state, flag="roundabout")
         logger.info(
             f"({car_state.x}, {car_state.y}) Target: {ind} ({self.cs.cx[ind]:.2f}, {self.cs.cy[ind]:.2f})"
         )
@@ -338,11 +338,11 @@ class ControlSystemBehaviour(BehaviourCallback):
         # car_state.can_overtake = car_state.navigator.etype[ind]
         # car_state.activity_type = car_state.navigator.activity[ind]
 
-        # car_state.current_ptype = car_state.navigator.ptype[ind]
-        # car_state.can_overtake = car_state.navigator.etype[ind]
+        car_state.current_ptype = car_state.navigator.ptype[ind]
+        car_state.can_overtake = car_state.navigator.etype[ind]
 
-        car_state.current_ptype = "int"
-        car_state.can_overtake = True
+        # car_state.current_ptype = "int"
+        # car_state.can_overtake = True
 
         di = self.cs.purest_pursuit_steer_control(car_state, ind, lf)
         di = di * 180 / math.pi

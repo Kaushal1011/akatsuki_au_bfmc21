@@ -41,36 +41,6 @@ rx = []
 ry = []
 
 
-def get_last(inP: Pipe, delta_time: float = 1e-2):
-    timestamp, data = inP.recv()
-    while (time() - timestamp) > delta_time:
-        timestamp, data = inP.recv()
-    return timestamp, data
-
-
-def get_last_value(inP: Connection, required: bool = True):
-    timestamp, data = inP.recv()
-
-    while inP.poll():
-        timestamp, data = inP.recv()
-    return timestamp, data
-
-
-def get_last_lk_id(inP: Connection):
-    timestamp, lk, id = inP.recv()
-
-    while inP.poll():
-        timestamp, lk, id = inP.recv()
-    return timestamp, lk, id
-
-
-def get_last_distance(inP: Connection):
-    data = inP.recv()
-    while inP.poll():
-        data = inP.recv()
-    return data
-
-
 def trigger_behaviour(carstate: CarState, action_man: ActionManager):
     triggerparking = False
 
@@ -217,21 +187,21 @@ class DecisionMakingProcess(WorkerProcess):
         self.actman.set_action(lkaction)
 
         ##################################################################
-        data_path = pathlib.Path(
-            pathlib.Path(__file__).parent.parent.parent.resolve(),
-            "data",
-            "new_course.z",
-        )
-        data = joblib.load(data_path)
-        cx = data["x"]
-        cy = data["y"]
-        coord_list = [x for x in zip(cx, cy)]
-        # coord_list = data[0]
+        # data_path = pathlib.Path(
+        #     pathlib.Path(__file__).parent.parent.parent.resolve(),
+        #     "data",
+        #     "new_course.z",
+        # )
+        # data = joblib.load(data_path)
+        # cx = data["x"]
+        # cy = data["y"]
+        # coord_list = [x for x in zip(cx, cy)]
+        # # coord_list = data[0]
         #################################################################
 
         # pass coordlist here from navigator config
-        # csobj = ControlSystemBehaviour(coord_list=self.state.navigator.coords)
-        csobj = ControlSystemBehaviour(coord_list=coord_list)
+        csobj = ControlSystemBehaviour(coord_list=self.state.navigator.coords)
+        # csobj = ControlSystemBehaviour(coord_list=coord_list)
 
         csaction = ActionBehaviour(name="cs", callback=csobj)
         self.actman.set_action(csaction)
@@ -305,7 +275,6 @@ class DecisionMakingProcess(WorkerProcess):
             # sub_dis.setsockopt(zmq.CONFLATE, 1)
             sub_tl.connect("ipc:///tmp/vtl")
             sub_tl.setsockopt_string(zmq.SUBSCRIBE, "")
-
 
         while True:
             try:
@@ -393,9 +362,8 @@ class DecisionMakingProcess(WorkerProcess):
                 logger.debug(f"Sonar Side: {self.state.side_distance}")
 
                 if len(outPs) > 0:
-                   outPs[0].send((self.state.steering_angle, self.state.v))
-                   # outPs[0].send((0.0, 0.0))
-
+                    outPs[0].send((self.state.steering_angle, self.state.v))
+                    # outPs[0].send((0.0, 0.0))
 
             except Exception as e:
                 print("Decision Process error:")
