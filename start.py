@@ -174,12 +174,6 @@ elif config["tl_server"]:
 
 
 #
-# # ===================== Position Fusion ==========================================
-if len(posFusionInputName) > 0:
-    posfzzProc = PositionFusionProcess([], [], inPsnames=posFusionInputName)
-    allProcesses.append(posfzzProc)
-    dataFusionInputName.append("pos")
-
 # ===================== Distance Sensor ==========================================
 # Distance Sensor -> Decision Making (data fusion)
 
@@ -206,6 +200,12 @@ else:
     allProcesses.append(imuProc)
     posFusionInputName.append("imu")
 
+
+# # ===================== Position Fusion ==========================================
+if len(posFusionInputName) > 0:
+    posfzzProc = PositionFusionProcess([], [], inPsnames=posFusionInputName)
+    allProcesses.append(posfzzProc)
+    dataFusionInputName.append("pos")
 
 
 # ==== Movement Control pipe
