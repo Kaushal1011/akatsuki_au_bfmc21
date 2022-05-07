@@ -63,7 +63,7 @@ class LaneKeep:
         adpt_Th_C: int = 4,
         canny_thres1: int = 50,
         canny_thres2: int = 150,
-        luroi: float = 0.,
+        luroi: float = 0.0,
         ruroi: float = 1,
         lbroi: float = 0,
         rbroi: float = 1,
@@ -212,17 +212,18 @@ class LaneKeep:
 
         mask = cv2.inRange(imgn, lower, upper)
         return mask
-#     
-#         """Preprocess image for edge detection"""
-#         # Apply HLS color filtering to filter out white lane lines
-#         imgn = img.copy()
-# 
-#         lower = np.array([237 ,237, 237], np.uint8)
-# 
-#         upper = np.array([255, 255, 255], np.uint8)
-# 
-#         mask = cv2.inRange(imgn, lower, upper)
-#         return mask
+
+    #
+    #         """Preprocess image for edge detection"""
+    #         # Apply HLS color filtering to filter out white lane lines
+    #         imgn = img.copy()
+    #
+    #         lower = np.array([237 ,237, 237], np.uint8)
+    #
+    #         upper = np.array([255, 255, 255], np.uint8)
+    #
+    #         mask = cv2.inRange(imgn, lower, upper)
+    #         return mask
 
     def intersection_det(self, img: np.ndarray, area_threshold=5_500):
         # detect horizontal lines
@@ -423,14 +424,15 @@ def average_slope_intercept(frame, line_segments):
                 intercept = fit[1]
                 if slope < 0:
                     if x1 < left_region_boundary and x2 < left_region_boundary:
-                        if slope<-0.2:
+                        if slope < -0.2:
                             left_fit.append((slope, intercept))
                 else:
                     if x1 > right_region_boundary and x2 > right_region_boundary:
-                        if slope>0.2:
+                        if slope > 0.2:
                             right_fit.append((slope, intercept))
     except ValueError as e:
-        print(line_segment)
+        # print(line_segment)
+        print(e)
         raise e
 
     left_fit_average = np.average(left_fit, axis=0)
