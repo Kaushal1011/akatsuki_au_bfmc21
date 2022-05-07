@@ -63,19 +63,19 @@ class CarState:
 
         # sign detection
         self.detected = {
-            "car": False,
-            "crosswalk": False,
-            "highway_entry": False,
-            "highway_exit": False,
-            "no_entry": False,
-            "onewayroad": False,
-            "parking": False,
-            "pedestrian": False,
-            "priority": False,
-            "roadblock": False,
-            "roundabout": False,
-            "stop": False,
-            "trafficlight": False,
+            "car": (False, 0, (-1, 1)),
+            "crosswalk": (False, 0, (-1, 1)),
+            "highway_entry": (False, 0, (-1, 1)),
+            "highway_exit": (False, 0, (-1, 1)),
+            "no_entry": (False, 0, (-1, 1)),
+            "onewayroad": (False, 0, (-1, 1)),
+            "parking": (False, 0, (-1, 1)),
+            "pedestrian": (False, 0, (-1, 1)),
+            "priority": (False, 0, (-1, 1)),
+            "roadblock": (False, 0, (-1, 1)),
+            "roundabout": (False, 0, (-1, 1)),
+            "stop": (False, 0, (-1, 1)),
+            "trafficlight": (False, 0, (-1, 1)),
         }
 
         # distance sensor
@@ -154,10 +154,12 @@ class CarState:
         self.front_distance = front_distance
         self.side_distance = side_distance
 
-    def update_detected(self, detections: List[Tuple[str, float]]):
-        detected_classes = [c for c, _ in detections]
+    def update_detected(self, detections: dict):
         for c in self.detected.keys():
-            self.detected[c] = c in detected_classes
+            if c in detections:
+                self.detected[c] = (True, detections[c])
+            else:
+                self.detected[c] = (False, 0, (-1, -1))
 
     def update_tl(self, tl):
         self.tl = tl
@@ -175,13 +177,13 @@ class CarState:
             "roll": float(self.roll),
             "rear_x": float(self.rear_x),
             "rear_y": float(self.rear_y),
-            "target_x": 0, #float(self.target_x),
-            "target_y": 0, #float(self.target_y),
-            "target_idx": 0, #float(self.target_ind),
+            "target_x": 0,  # float(self.target_x),
+            "target_y": 0,  # float(self.target_y),
+            "target_idx": 0,  # float(self.target_ind),
             "lk_angle": float(self.lanekeeping_angle),
             "cs_angle": float(self.cs_angle),
-            "front_distance": 0, #float(self.front_distance),
-            "side_distance": 0, #float(self.side_distance),
+            "front_distance": 0,  # float(self.front_distance),
+            "side_distance": 0,  # float(self.side_distance),
             "current_ptype": self.current_ptype,
             "current_target": self.current_target,
             "detected_intersection": self.detected_intersection,

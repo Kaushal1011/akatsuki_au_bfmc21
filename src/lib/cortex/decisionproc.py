@@ -65,8 +65,8 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
         stopaction = ActionBehaviour(name="stop", release_time=6.0, callback=stopobj)
         action_man.set_action(stopaction, action_time=3.0)
 
-    if carstate.detected["parking"]:
-        print("In parking trigger: ", triggerparking, carstate.detected["parking"])
+    if carstate.detected["parking"][0]:
+        print("In parking trigger: ", triggerparking, carstate.detected["parking"][0])
         # Parking
         parkobj = ParkingBehaviour(car_state=carstate)
         parkobjaction = ActionBehaviour(name="parking", callback=parkobj)
@@ -74,7 +74,7 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
 
     if (
         carstate.front_distance < 0.7
-        and carstate.detected["car"]
+        and carstate.detected["car"][0]
         and carstate.can_overtake
     ):
         print("Overtake Trigger")
@@ -85,17 +85,17 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
 
     if (
         carstate.front_distance < 0.6
-        and carstate.detected["car"]
+        and carstate.detected["car"][0]
         and not carstate.can_overtake
     ):
         # tailing or stop
         pass
 
-    if carstate.detected["roadblock"] and carstate.front_distance < 0.75:  # 10 cm
+    if carstate.detected["roadblock"][0] and carstate.front_distance < 0.75:  # 10 cm
         # replan closed road
         pass
 
-    if carstate.detected["roundabout"] or (
+    if carstate.detected["roundabout"][0] or (
         carstate.current_ptype == "roundabout" and action_man.l1_ab is None
     ):
         print("In round about trigger: ", carstate.current_ptype)
@@ -103,13 +103,13 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
         rabobjaction = ActionBehaviour(name="roundabout", callback=rabobj)
         action_man.set_action(rabobjaction, action_time=None, car_state=carstate)
 
-    if carstate.detected["stop"]:
+    if carstate.detected["stop"][0]:
         # stop for t secs
         stopobj = StopBehvaiour()
         stopaction = ActionBehaviour(name="stop", release_time=6.0, callback=stopobj)
         action_man.set_action(stopaction, action_time=3.0)
 
-    if carstate.detected["priority"]:
+    if carstate.detected["priority"][0]:
         # slowdown for t secs
         priorityobj = PriorityBehaviour()
         priorityaction = ActionBehaviour(
@@ -117,13 +117,13 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
         )
         action_man.set_action(priorityaction, action_time=9.0)
 
-    if carstate.detected["crosswalk"]:
+    if carstate.detected["crosswalk"][0]:
         # stop detected pedestrain or crosswalk
         cwobj = CrosswalkBehavior(car_state=carstate)
         cwobjaction = ActionBehaviour(name="crosswalk", callback=cwobj)
         action_man.set_action(cwobjaction, action_time=None, car_state=carstate)
 
-    if carstate.detected["trafficlight"]:
+    if carstate.detected["trafficlight"][0]:
         tlobj = TLBehaviour(carstate=carstate)
         tlaction = ActionBehaviour(name="trafficlight", callback=tlobj)
         action_man.set_action(tlaction, action_time=None, carstate=carstate)
@@ -154,14 +154,25 @@ ENVID = {
 }
 
 
-def send_data2env(car_state: CarState, detections: List[Tuple[str, float]]):
+def send_data2env(car_state: CarState, detections: dict):
     x = car_state.x
     y = car_state.y
     return [
         {"obstacle_id": ENVID[c], "x": x, "y": y}
-        for c, _ in detections
-        if not car_state.detected[c]
+        for c in detections.keys()
+        if not car_state.detected[c][0]
     ]
+
+
+def get_last(socket):
+    data = socket.recv_json()
+    count = 0
+    while socket.poll(timeout=0.05):
+        data = socket.recv_json()
+        count += 1
+        if count == 10:
+            break
+    return data
 
 
 class DecisionMakingProcess(WorkerProcess):
@@ -283,9 +294,7 @@ class DecisionMakingProcess(WorkerProcess):
                 # t_lk = time()
                 if "lk" in self.inPsnames:
                     if sub_lk.poll(timeout=0.05):
-                        lk_angle, detected_intersection = sub_lk.recv_json()
-                        while sub_lk.poll(timeout=0.01):
-                            lk_angle, detected_intersection = sub_lk.recv_json()
+                        lk_angle, detected_intersection = get_last(sub_lk)
 
                         # print("LK -> ", lk_angle, detected_intersection)
                         self.state.update_lk_angle(lk_angle)
@@ -299,9 +308,7 @@ class DecisionMakingProcess(WorkerProcess):
                 # t_sD = time()
                 if "dis" in self.inPsnames:
                     if sub_dis.poll(timeout=0.1):
-                        distance_data = sub_dis.recv_json()
-                        while sub_dis.poll(timeout=0.05):
-                            distance_data = sub_dis.recv_json()
+                        distance_data = get_last(sub_dis)
 
                         print("DIS -> ", distance_data)
                         logger.log(
@@ -313,9 +320,7 @@ class DecisionMakingProcess(WorkerProcess):
 
                 if "pos" in self.inPsnames:
                     if sub_pos.poll(timeout=0.05):
-                        pos = sub_pos.recv_json()
-                        while sub_pos.poll(timeout=0.01):
-                            pos = sub_pos.recv_json()
+                        pos = get_last(sub_pos)
                         # print(f"POS -> {pos}")
                         if pos[0] == 0 and pos[1] == 0:
                             pass
@@ -326,9 +331,7 @@ class DecisionMakingProcess(WorkerProcess):
 
                 if "sd" in self.inPsnames:
                     if sub_sd.poll(timeout=0.05):
-                        detections = sub_sd.recv_json()
-                        while sub_sd.poll(timeout=0.01):
-                            detections = sub_sd.recv_json()
+                        detections = get_last(sub_sd)
 
                         print("SD ->", detections)
                         # send data to env server

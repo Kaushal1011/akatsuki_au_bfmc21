@@ -7,20 +7,20 @@ import time
 FONT = "Arial.ttf"  # https://ultralytics.com/assets/Arial.ttf
 
 AREA_THRESHOLD = {
-    'car':5000,
-    'crosswalk':6200,
-    'doll':5000,
-    'highway_entry':5300,
-    'highway_exit':5000,
-    'no_entry':6000,
-    'onewayroad':7000,
-    'parking':10000,
-    'pedestrian':50,
-    'priority':11000,
-    'roadblock':50,
-    'roundabout':15000,
-    'stop':5500,
-    'trafficlight':50
+    "car": 5000,
+    "crosswalk": 6200,
+    "doll": 5000,
+    "highway_entry": 5300,
+    "highway_exit": 5000,
+    "no_entry": 6000,
+    "onewayroad": 7000,
+    "parking": 10000,
+    "pedestrian": 50,
+    "priority": 11000,
+    "roadblock": 50,
+    "roundabout": 15000,
+    "stop": 5500,
+    "trafficlight": 50,
 }
 
 
@@ -334,9 +334,16 @@ def non_max_suppression_np(
     return output
 
 
-def get_area(bbox: np.ndarray) -> list:
+def get_area_and_loc(bbox: np.ndarray) -> Tuple[list, list]:
     # (x1, y1, x2, y2)
-    return ((bbox[:, 2] - bbox[:, 0]) * (bbox[:, 3] - bbox[:, 1])).tolist()
+    loc = list(
+        zip(
+            ((bbox[:, 2] + bbox[:, 0]) / 2).tolist(),
+            ((bbox[:, 3] + bbox[:, 1]) / 2).tolist(),
+        )
+    )
+    area = ((bbox[:, 2] - bbox[:, 0]) * (bbox[:, 3] - bbox[:, 1])).tolist()
+    return area, loc
 
 
 def roi_func(img: np.ndarray) -> np.ndarray:
@@ -356,35 +363,50 @@ def roi_func(img: np.ndarray) -> np.ndarray:
     broi = 0
     # create stencil just the first time and then save for later use
     roi = [
-            (
-                int(luroi * ((img.shape[1] - 1))),
-                int(hroi * (img.shape[0] - 1)),
-            ),
-            (
-                int(lbroi * ((img.shape[1] - 1))),
-                int((img.shape[0] - 1) * (1 - broi)),
-            ),
-            (
-                int(rbroi * ((img.shape[1] - 1))),
-                int((img.shape[0] - 1) * (1 - broi)),
-            ),
-            (
-                int(ruroi * ((img.shape[1] - 1))),
-                int(hroi * (img.shape[0] - 1)),
-            ),
-        ]
+        (
+            int(luroi * ((img.shape[1] - 1))),
+            int(hroi * (img.shape[0] - 1)),
+        ),
+        (
+            int(lbroi * ((img.shape[1] - 1))),
+            int((img.shape[0] - 1) * (1 - broi)),
+        ),
+        (
+            int(rbroi * ((img.shape[1] - 1))),
+            int((img.shape[0] - 1) * (1 - broi)),
+        ),
+        (
+            int(ruroi * ((img.shape[1] - 1))),
+            int(hroi * (img.shape[0] - 1)),
+        ),
+    ]
     stencil = np.zeros_like(img, dtype="uint8")
-        # specify coordinates of the polygon
+    # specify coordinates of the polygon
     polygon = np.array(roi)
 
-        # fill polygon with ones
+    # fill polygon with ones
     cv2.fillConvexPoly(stencil, polygon, [255, 255, 255])
 
     img = cv2.bitwise_and(img, img, mask=stencil[:, :, 0])
     return img
 
 
-map2label = ['car', 'crosswalk', 'doll', 'highway_entry', 'highway_exit', 'no_entry', 'onewayroad', 'parking', 'pedestrian', 'priority', 'roadblock', 'roundabout', 'stop', 'trafficlight']
+map2label = [
+    "car",
+    "crosswalk",
+    "doll",
+    "highway_entry",
+    "highway_exit",
+    "no_entry",
+    "onewayroad",
+    "parking",
+    "pedestrian",
+    "priority",
+    "roadblock",
+    "roundabout",
+    "stop",
+    "trafficlight",
+]
 
 
 class Detection:
@@ -422,19 +444,29 @@ class Detection:
         pred_nms = pred_nms[0]
         pred_nms[:, :4] = scale_coords(x.shape[2:], pred_nms[:, :4], img.shape).round()
         classes = np.unique(pred_nms[:, -1]).tolist()
-        area = get_area(pred_nms[:, :4])
+        area, loc = get_area_and_loc(pred_nms[:, :4])
         if bbox:
             out_image = self.draw_bbox(pred_nms, classes=classes, image=img)
             classes = [map2label[int(x)] for x in classes]
-            detections = [
-                (c, a) for c, a in zip(classes, area) if a > AREA_THRESHOLD[c]
-            ]
+            detections = dict(
+                [
+                    (c, (a, l))
+                    for c, a, l in zip(classes, area, loc)
+                    if a > AREA_THRESHOLD[c]
+                ]
+            )
             return (detections, out_image)
         else:
             if classes:
                 classes = [map2label[int(x)] for x in classes]
-                return [(c, a) for c, a in zip(classes, area) if a > AREA_THRESHOLD[c]]
-            return []
+                return dict(
+                    [
+                        (c, (a, l))
+                        for c, a, l in zip(classes, area, loc)
+                        if a > AREA_THRESHOLD[c]
+                    ]
+                )
+            return {}
 
     def draw_bbox(
         self, pred_nms: np.ndarray, classes: Tuple[int], image: np.ndarray
