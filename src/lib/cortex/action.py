@@ -1,7 +1,5 @@
 import time
 
-from matplotlib import offsetbox
-
 from src.lib.cortex.control_sys import Pure_Pursuit
 import math
 import joblib

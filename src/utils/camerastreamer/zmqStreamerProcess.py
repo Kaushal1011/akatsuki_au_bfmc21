@@ -49,10 +49,10 @@ class CameraStreamerProcess(WorkerProcess):
         self.addr = f"tcp://{HOST}:{port}"
         self.file_id = connect2file[connect]
         self.connect = connect
-        if connect == "lk":
-            self.shape = (480, 640, 1)
-        else:
-            self.shape = (480, 640, 3)
+#         if connect == "lk":
+#             self.shape = (480, 640, 1)
+#         else:
+        self.shape = (480, 640, 3)
 
     #         self.frame_shm = sa.attach("shm://shared_frame1")
 
@@ -105,8 +105,10 @@ class CameraStreamerProcess(WorkerProcess):
                     image = image[...,::-1]
                 encoded, buffer = cv2.imencode(".jpg", image, encode_param)
                 jpg_as_text = base64.b64encode(buffer)
-                footage_socket.send(jpg_as_text)
 
+                footage_socket.send(jpg_as_text)
+                print("Streamer -> sending Image")
+                
             except Exception as e:
                 print("CameraStreamer failed to stream images:", e, "\n")
                 # Reinitialize the socket for reconnecting to client.

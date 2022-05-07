@@ -66,19 +66,19 @@ def filter(level: List[int]):
     return lambda r: r["level"].no in level or r["level"].no > 19
 
 
-TEST_PIPE = True
+TEST_PIPE = False
 logger.remove()
 if TEST_PIPE:
     logger.add(
         sys.stderr,
         filter=filter([18]),
-        format="<green>{HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+        format="<level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
     )
 
 logger.add(
     "file1.log",
     filter=lambda r: r["level"] == 14,
-    format="<green>{HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+    format="<level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
 )
 
 
@@ -95,7 +95,7 @@ STREAM_PORT1 = 2244
 STREAM_PORT2 = 4422
 # ["cam", "lk", "sd"]
 
-streams = ["sd"]
+streams = ["lk"]
 # =============================== INITIALIZING PROCESSES =================================
 # Pipe collections
 allProcesses: List[Process] = []
@@ -112,12 +112,13 @@ if config["enableRc"]:
 
 
 # ===================================== PERCEPTION ===================================
-
-lkProc = LaneKeeping([], [], enable_stream=("lk" in streams))
-allProcesses.append(lkProc)
-dataFusionInputName.append("lk")
-camOutNames.append("lk")
 dataFusionOutPs: List[Connection] = []
+
+if config["enableLaneKeeping"]:
+    lkProc = LaneKeeping([], [], enable_stream=("lk" in streams))
+    allProcesses.append(lkProc)
+    dataFusionInputName.append("lk")
+    camOutNames.append("lk")
 
 if not config["enableSignDet"]:
     if "sd" in streams:
@@ -147,7 +148,7 @@ elif config["home_loc"]:
     posFusionInputName.append("loc")
 
 
-elif config["using_server"]:
+elif config["loc_server"]:
     # LocSys -> Position Fusion
     locsysProc = LocalisationSystemProcess([], [])
     allProcesses.append(locsysProc)
@@ -161,7 +162,7 @@ if config["enableSIM"]:
     allProcesses.append(trafficProc)
     dataFusionInputName.append("tl")
 
-elif config["using_server"]:
+elif config["tl_server"]:
     # Traffic Semaphore -> Decision Making (data fusion)
     trafficProc = TrafficProcess([], [])
     allProcesses.append(trafficProc)
@@ -207,7 +208,7 @@ FzzMcR, FzzMcS = Pipe(duplex=False)
 dataFusionOutPs.append(FzzMcS)
 
 # ======================= Environment Server ======================================
-if config["using_server"]:
+if config["env_server"]:
     beacon = 23456
     id = 120
     serverpublickey = "publickey_server_test.pem"

@@ -6,7 +6,6 @@ from typing import List, Optional, Tuple
 from xml.dom import ValidationErr
 
 import cv2
-import matplotlib.pyplot as plt
 import numpy as np
 
 from src.lib.perception.graph_func import bfs_4
