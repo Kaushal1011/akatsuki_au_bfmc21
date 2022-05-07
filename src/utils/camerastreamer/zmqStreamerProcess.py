@@ -107,7 +107,7 @@ class CameraStreamerProcess(WorkerProcess):
                 jpg_as_text = base64.b64encode(buffer)
 
                 footage_socket.send(jpg_as_text)
-                print("Streamer -> sending Image")
+                # print("Streamer -> sending Image")
                 
             except Exception as e:
                 print("CameraStreamer failed to stream images:", e, "\n")

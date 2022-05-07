@@ -296,7 +296,7 @@ class DecisionMakingProcess(WorkerProcess):
                     if sub_lk.poll(timeout=0.05):
                         lk_angle, detected_intersection = get_last(sub_lk)
 
-                        print("LK -> ", lk_angle, detected_intersection)
+                        # print("LK -> ", lk_angle, detected_intersection)
                         self.state.update_lk_angle(lk_angle)
                         self.state.update_intersection(detected_intersection)
                 # logger.log("PIPE", f"Recv->LK {lk_angle}")
@@ -307,7 +307,7 @@ class DecisionMakingProcess(WorkerProcess):
                 # TODO
                 # t_sD = time()
                 if "dis" in self.inPsnames:
-                    if sub_dis.poll(timeout=0.1):
+                    if sub_dis.poll(timeout=0.05):
                         distance_data = get_last(sub_dis)
 
                         print("DIS -> ", distance_data)
@@ -333,7 +333,7 @@ class DecisionMakingProcess(WorkerProcess):
                     if sub_sd.poll(timeout=0.05):
                         detections = get_last(sub_sd)
 
-                        print("SD ->", detections)
+                        # print("SD ->", detections)
                         # send data to env server
                         if len(outPs) > 1:
                             for env_data in send_data2env(self.state, detections):
