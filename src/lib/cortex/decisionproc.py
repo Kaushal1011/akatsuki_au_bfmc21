@@ -306,16 +306,6 @@ class DecisionMakingProcess(WorkerProcess):
             sub_tl.connect("ipc:///tmp/vtl")
             sub_tl.setsockopt_string(zmq.SUBSCRIBE, "")
 
-        if "tel" in self.inPsnames or True:
-            # TODO : use zmq PUB/SUB
-            # context_tel = zmq.Context()
-            host = config["pc_ip"]
-            port = 12345
-            tel_sock = socket.socket(
-                socket.AF_INET, socket.SOCK_DGRAM
-            )  # TCP socket object
-            tel_addr = (host, port)
-            tel_sock.connect(tel_addr)
 
         while True:
             try:
@@ -393,10 +383,6 @@ class DecisionMakingProcess(WorkerProcess):
 
                 trigger_behaviour(self.state, self.actman)
                 # print(self.state.detected)
-                if "tel" in self.inPsnames or True:
-                    tel_sock.sendto(
-                        json.dumps(self.state.asdict()).encode("utf-8"), tel_addr
-                    )
                 speed, steer = self.actman(self.state)
                 self.state.v = speed
                 self.state.steering_angle = steer
@@ -407,10 +393,9 @@ class DecisionMakingProcess(WorkerProcess):
                 logger.debug(f"Sonar Side: {self.state.side_distance}")
 
                 if len(outPs) > 0:
-#                     outPs[0].send((self.state.steering_angle, self.state.v))
-                   outPs[0].send((0.0, 0.0))
+                   outPs[0].send((self.state.steering_angle, self.state.v))
+                   # outPs[0].send((0.0, 0.0))
 
-                sleep(0.2)
 
             except Exception as e:
                 print("Decision Process error:")
