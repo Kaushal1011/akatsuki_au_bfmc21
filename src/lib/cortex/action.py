@@ -1,4 +1,3 @@
-from hashlib import sha3_384
 import time
 
 from matplotlib import offsetbox
@@ -308,7 +307,8 @@ class LaneKeepBehaviour(BehaviourCallback):
         # print("Lanekeeping angle: ", car_state.lanekeeping_angle)
         # print("Lanekeeping angle: ", angle)
         # return  {"steer":angle}
-        if abs(car_state.cs_angle - angle) > 20:
+        if abs(car_state.cs_angle - angle) > 20 and car_state.current_ptype == "lk":
+            # return {"steer": (angle+car_state.cs_angle*2)/3}
             return None
         elif car_state.current_ptype == "lk":
             # return {"steer": (angle+car_state.cs_angle*2)/3}
@@ -324,7 +324,7 @@ class ControlSystemBehaviour(BehaviourCallback):
         self.cs = Pure_Pursuit(coord_list)
 
     def __call__(self, car_state: CarState):
-        ind, lf = self.cs.search_target_index(car_state, flag="roundabout")
+        ind, lf = self.cs.search_target_index(car_state)
         logger.info(
             f"({car_state.x}, {car_state.y}) Target: {ind} ({self.cs.cx[ind]:.2f}, {self.cs.cy[ind]:.2f})"
         )
@@ -334,12 +334,12 @@ class ControlSystemBehaviour(BehaviourCallback):
         car_state.current_target = (car_state.target_x, car_state.target_y)
         car_state.target_ind = ind
 
-        # car_state.current_ptype = car_state.navigator.ptype[ind]
-        # car_state.can_overtake = car_state.navigator.etype[ind]
-        # car_state.activity_type = car_state.navigator.activity[ind]
-
         car_state.current_ptype = car_state.navigator.ptype[ind]
         car_state.can_overtake = car_state.navigator.etype[ind]
+        car_state.activity_type = car_state.navigator.activity[ind]
+
+        # car_state.current_ptype = car_state.navigator.ptype[ind]
+        # car_state.can_overtake = car_state.navigator.etype[ind]
 
         # car_state.current_ptype = "int"
         # car_state.can_overtake = True
