@@ -9,6 +9,11 @@ from loguru import logger
 import zmq
 import numpy as np
 
+from multiprocessing import Value
+import ctypes
+
+loaded_model = Value(ctypes.c_bool, False)
+
 
 class SignDetectionProcess(WorkerProcess):
     # ===================================== Worker process =========================================
@@ -65,8 +70,9 @@ class SignDetectionProcess(WorkerProcess):
         count = 0
         self.detection = Detection()
         print(">>> Starting Sign Detection")
+        global loaded_model
+        loaded_model.value = True
         context_recv = zmq.Context()
-
         sub_cam = context_recv.socket(zmq.SUB)
         sub_cam.setsockopt(zmq.CONFLATE, 1)
         sub_cam.connect("ipc:///tmp/v4ls")
@@ -74,6 +80,7 @@ class SignDetectionProcess(WorkerProcess):
 
         context_send = zmq.Context()
         pub_sd = context_send.socket(zmq.PUB)
+        pub_sd.setsockopt(zmq.CONFLATE, 1)
         pub_sd.bind("ipc:///tmp/v61")
 
         if self.enable_steam:

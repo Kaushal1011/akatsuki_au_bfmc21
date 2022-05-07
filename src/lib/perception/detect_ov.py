@@ -18,7 +18,7 @@ AREA_THRESHOLD = {
     'pedestrian':50,
     'priority':11000,
     'roadblock':50,
-    'roundabout':6000,
+    'roundabout':15000,
     'stop':5500,
     'trafficlight':50
 }
@@ -429,7 +429,6 @@ class Detection:
             detections = [
                 (c, a) for c, a in zip(classes, area) if a > AREA_THRESHOLD[c]
             ]
-            detections.append()
             return (detections, out_image)
         else:
             if classes:

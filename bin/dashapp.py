@@ -30,7 +30,7 @@ app.layout = html.Div(
     [
         dcc.Store(id="stored_df", data=[], storage_type="memory", clear_data=True),
         dcc.Interval(
-            id="store_interval", interval=10, n_intervals=0  # in milliseconds
+            id="store_interval", interval=100, n_intervals=0  # in milliseconds
         ),
         dcc.Interval(id="mem_clear", interval=10, n_intervals=0),  # in milliseconds
         dbc.Container(
