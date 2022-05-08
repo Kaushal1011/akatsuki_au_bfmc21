@@ -37,29 +37,39 @@ class Ultrasonic(threading.Thread):
 
     @staticmethod
     def get_distance(GPIO_TRIGGER: int, GPIO_ECHO: int) -> float:
+#         GPIO.setmode(GPIO.BCM)
         # set Trigger to HIGH
         GPIO.output(GPIO_TRIGGER, True)
-
+        
         # set Trigger after 0.01ms to LOW
         time.sleep(0.00001)
         GPIO.output(GPIO_TRIGGER, False)
 
         StartTime = time.time()
         StopTime = time.time()
-
+        try:
         # save StartTime
-        while GPIO.input(GPIO_ECHO) == 0:
-            StartTime = time.time()
-
-        # save time of arrival
-        while GPIO.input(GPIO_ECHO) == 1:
-            StopTime = time.time()
-
+            st=time.time()
+            while st-time.time()>0.4 or GPIO.input(GPIO_ECHO) == 0:
+                StartTime = time.time()
+                if st-time.time() > 0.4:
+                    print("Exceeding Process Time ")
+                    return 1.2
+            # save time of arrival
+            st=time.time()
+            while st-time.time()>0.4 or GPIO.input(GPIO_ECHO) == 1:
+                StopTime = time.time()
+                if st-time.time() > 0.4:
+                    print("Exceeding Process Time ")
+                    return 1.2
+        except Exception as e:
+            print(e)    
         # time difference between start and arrival
         TimeElapsed = StopTime - StartTime
         # multiply with the sonic speed (34300 cm/s)
         # and divide by 2, because there and back
-        distance = (TimeElapsed * 34300) / 2
+        distance = (TimeElapsed * 343) / 2
+        
 
         return distance
 
@@ -69,14 +79,17 @@ class Ultrasonic(threading.Thread):
         pub_dis.bind(f"ipc:///tmp/v11")
 
         while True:
-            sonar2 = self.get_distance(GPIO_TRIGGER_FRONT, GPIO_ECHO_FRONT)
-            sonar1 = self.get_distance(GPIO_TRIGGER_SIDE, GPIO_ECHO_SIDE)
+            sonar1 = self.get_distance(GPIO_TRIGGER_FRONT, GPIO_ECHO_FRONT)
+            time.sleep(0.25)
+            sonar2 = self.get_distance(GPIO_TRIGGER_SIDE, GPIO_ECHO_SIDE)
             data = {"timestamp": time.time(), "sonar1": sonar1, "sonar2": sonar2}
-            pub_dis.send_json(data)
-            time.sleep(0.05)
+            pub_dis.send_json(data, flags=zmq.NOBLOCK)
+            time.sleep(0.25)
 
     def stop(self):
+        print("IN STOP")
         self.running = False
+        GPIO.cleanup()
 
 
 if __name__ == "__main__":
@@ -84,12 +97,12 @@ if __name__ == "__main__":
         ultrasonic = Ultrasonic()
         while True:
             dist_1 = ultrasonic.get_distance(GPIO_TRIGGER_FRONT, GPIO_ECHO_FRONT)
+            time.sleep(0.25)
             dist_2 = ultrasonic.get_distance(GPIO_TRIGGER_SIDE, GPIO_ECHO_SIDE)
 
             print("Measured Distance front = %.1f cm" % dist_1)
             print("Measured Distance side = %.1f cm" % dist_2)
-
-            time.sleep(0.5)
+            time.sleep(0.25)
 
         # Reset by pressing CTRL + C
     except KeyboardInterrupt:

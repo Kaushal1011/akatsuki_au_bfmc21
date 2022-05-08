@@ -8,7 +8,6 @@ import argparse
 from multiprocessing.connection import Connection
 
 from src import config as config_module
-from time import sleep
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -44,7 +43,6 @@ from src.utils.remotecontrol.RemoteControlReceiverProcess import (
     RemoteControlReceiverProcess,
 )
 from src.lib.cortex.decisionproc import DecisionMakingProcess
-from src.lib.perception.signdetection import loaded_model
 
 import sys
 from loguru import logger
@@ -68,20 +66,22 @@ def filter(level: List[int]):
     return lambda r: r["level"].no in level or r["level"].no > 19
 
 
-TEST_PIPE = False
+TEST_PIPE = True
 logger.remove()
 if TEST_PIPE:
     logger.add(
         sys.stderr,
         filter=filter([18]),
-        format="<level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+        format="<green>{HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
     )
 
 logger.add(
     "file1.log",
     filter=lambda r: r["level"] == 14,
-    format="<level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+    format="<green>{HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
 )
+# logger.level("LK", no=10, color="<blue>", icon='' )
+# logger.level("INT", no=10, color="<blue>", icon='' )
 
 
 # ========================================================================
@@ -97,7 +97,7 @@ STREAM_PORT1 = 2244
 STREAM_PORT2 = 4422
 # ["cam", "lk", "sd"]
 
-streams = ["sd"]
+streams = ["lk"]
 # =============================== INITIALIZING PROCESSES =================================
 # Pipe collections
 allProcesses: List[Process] = []
@@ -114,23 +114,21 @@ if config["enableRc"]:
 
 
 # ===================================== PERCEPTION ===================================
-dataFusionOutPs: List[Connection] = []
 
-sDProc = None
 if config["enableLaneKeeping"]:
     lkProc = LaneKeeping([], [], enable_stream=("lk" in streams))
     allProcesses.append(lkProc)
     dataFusionInputName.append("lk")
     camOutNames.append("lk")
+    dataFusionOutPs: List[Connection] = []
 
 if not config["enableSignDet"]:
     if "sd" in streams:
         streams.remove("sd")
 
 if config["enableSignDet"]:
-    print("Sign Detection will start in a while")
     sDProc = SignDetectionProcess([], [], [], enable_stream=("sd" in streams))
-    # allProcesses.append(sDProc)
+    allProcesses.append(sDProc)
     dataFusionInputName.append("sd")
     camOutNames.append("sd")
 
@@ -172,21 +170,6 @@ elif config["tl_server"]:
     allProcesses.append(trafficProc)
     dataFusionInputName.append("tl")
 
-
-#
-# ===================== Distance Sensor ==========================================
-# Distance Sensor -> Decision Making (data fusion)
-
-if config["enableSIM"]:
-    disProc = DistanceSIM([], [], 6666, log=False)
-    allProcesses.append(disProc)
-    dataFusionInputName.append("dis")
-
-elif isPI:
-    disProc = DistanceProcess([], [])
-    allProcesses.append(disProc)
-    dataFusionInputName.append("dis")
-
 # ========================= IMU ===================================================
 # IMU -> Position Fusino
 if isPI and not config["enableSIM"]:
@@ -201,12 +184,25 @@ else:
     posFusionInputName.append("imu")
 
 
+#
 # # ===================== Position Fusion ==========================================
 if len(posFusionInputName) > 0:
     posfzzProc = PositionFusionProcess([], [], inPsnames=posFusionInputName)
     allProcesses.append(posfzzProc)
     dataFusionInputName.append("pos")
 
+# ===================== Distance Sensor ==========================================
+# Distance Sensor -> Decision Making (data fusion)
+
+if config["enableSIM"]:
+    disProc = DistanceSIM([], [], 6666, log=False)
+    allProcesses.append(disProc)
+    dataFusionInputName.append("dis")
+
+elif isPI:
+    disProc = DistanceProcess([], [])
+    allProcesses.append(disProc)
+    dataFusionInputName.append("dis")
 
 # ==== Movement Control pipe
 # Decision Process -> Movement control
@@ -302,21 +298,9 @@ else:
 
 # ===================================== START PROCESSES ==================================
 print("Starting the processes!", allProcesses)
-if sDProc is not None:
-    sDProc.daemon = True
-    sDProc.start()
-    while not loaded_model.value:
-        print("Waiting on sDProc")
-        sleep(1)
-        
-    for proc in allProcesses:
-        proc.daemon = True
-        proc.start()
-    allProcesses.append(sDProc)
-else:
-    for proc in allProcesses:
-        proc.daemon = True
-        proc.start()    
+for proc in allProcesses:
+    proc.daemon = True
+    proc.start()
 
 
 # ===================================== STAYING ALIVE ====================================

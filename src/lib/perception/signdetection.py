@@ -8,12 +8,16 @@ from src.lib.perception.detect_ov import Detection
 from loguru import logger
 import zmq
 import numpy as np
+import cv2
 
 from multiprocessing import Value
 import ctypes
 
 loaded_model = Value(ctypes.c_bool, False)
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/zeta
 
 class SignDetectionProcess(WorkerProcess):
     # ===================================== Worker process =========================================
@@ -72,6 +76,7 @@ class SignDetectionProcess(WorkerProcess):
         print(">>> Starting Sign Detection")
         global loaded_model
         loaded_model.value = True
+
         context_recv = zmq.Context()
         sub_cam = context_recv.socket(zmq.SUB)
         sub_cam.setsockopt(zmq.CONFLATE, 1)
@@ -95,18 +100,22 @@ class SignDetectionProcess(WorkerProcess):
                 data = sub_cam.recv()
                 data = np.frombuffer(data, dtype=np.uint8)
                 img = np.reshape(data, (480, 640, 3))
+                 #img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                
                 # print("sD img recv")
                 # print(f"Sign Detection timedelta {time.time() - recv_time}")
                 logger.log("PIPE", f"recv image {time.time() - recv_time}")
                 count += 1
                 start_time = time.time()
+                #     detections, outimage = self.detection(img, bbox=True)
+                #     pub_sd.send_json(detections, flags=zmq.NOBLOCK)
+                #     pub_sd_img.send(outimage.tobytes(), flags=zmq.NOBLOCK)
+                # else:
+                detections, outimage = self.detection(img, bbox=True)
+                pub_sd.send_json(detections, flags=zmq.NOBLOCK)
                 if self.enable_steam:
-                    detections, outimage = self.detection(img, bbox=True)
-                    pub_sd.send_json(detections, flags=zmq.NOBLOCK)
                     pub_sd_img.send(outimage.tobytes(), flags=zmq.NOBLOCK)
-                else:
-                    detections = self.detection(img)
-                    pub_sd.send_json(detections, flags=zmq.NOBLOCK)
+
                 # logger.log("SD", f"detections -> {detections}")
 
             except Exception as e:

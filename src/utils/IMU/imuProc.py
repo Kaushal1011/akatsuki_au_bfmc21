@@ -28,7 +28,7 @@
 
 from src.hardware.IMU.imu import imu
 from src.templates.workerprocess import WorkerProcess
-
+from multiprocessing import Event
 
 class IMUProcess(WorkerProcess):
     # ================================ CAMERA PROCESS =====================================
@@ -54,5 +54,28 @@ class IMUProcess(WorkerProcess):
     # ===================================== INIT TH ======================================
     def _init_threads(self):
         """Create the Camera Publisher thread and add to the list of threads."""
-        imuTh = imu(self.outPs)
+        imuTh = imu()
         self.threads.append(imuTh)
+
+if __name__ == "__main__":
+    proc = IMUProcess([],[])
+    proc.daemon = True
+    proc.start()
+
+
+    # ===================================== STAYING ALIVE ====================================
+    blocker = Event()
+
+    try:
+        blocker.wait()
+    except KeyboardInterrupt:
+        print("\nCatching a KeyboardInterruption exception! Shutdown all processes.\n")
+        if hasattr(proc, "stop") and callable(getattr(proc, "stop")):
+            print("Process with stop", proc)
+            proc.stop()
+            proc.join()
+        else:
+            print("Process witouth stop", proc)
+            proc.terminate()
+            proc.join()
+

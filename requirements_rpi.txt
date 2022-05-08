@@ -1,9 +1,11 @@
-# RTIMULib
-# picamera
+RTIMULib
+picamera
 pyserial
 numpy
-opencv-python
+# opencv-python
 networkx
-matplotlib
+# matplotlib
 scipy
 joblib
+filterpy
+pykalman

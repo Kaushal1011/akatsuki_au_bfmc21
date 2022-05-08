@@ -67,12 +67,12 @@ class imu(threading.Thread):
 
         self.poll_interval = self.imu.IMUGetPollInterval()
         print("Recommended Poll Interval: %dmS\n" % self.poll_interval)
-        
+
     def run(self):
         context_send = zmq.Context()
         pub_imu = context_send.socket(zmq.PUB)
         pub_imu.bind(f"ipc:///tmp/v21")
-
+        print("Starting IMU")
         while self.running is True:
             if self.imu.IMURead():
                 self.data = self.imu.getIMUData()
@@ -84,7 +84,7 @@ class imu(threading.Thread):
                 self.accelx = self.accel[0]
                 self.accely = self.accel[1]
                 self.accelz = self.accel[2]
-
+                # print("yaw",yaw)
                 # fix yaw
                 yaw = yaw * math.pi / 180
                 if yaw > math.pi:
@@ -100,7 +100,7 @@ class imu(threading.Thread):
                     "accely": self.accely,
                     "accelz": self.accelz,
                 }
-                # print("IMU send", data)
+                print(data)
                 pub_imu.send_json(data)
 
                 # time.sleep(self.poll_interval * 1.0 / 1000.0)
@@ -109,3 +109,5 @@ class imu(threading.Thread):
 
     def stop(self):
         self.running = False
+
+    
