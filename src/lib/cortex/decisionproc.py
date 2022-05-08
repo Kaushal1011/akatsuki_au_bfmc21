@@ -72,7 +72,9 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
         parkobj = ParkingBehaviour(car_state=carstate)
         parkobjaction = ActionBehaviour(name="parking", callback=parkobj)
         action_man.set_action(parkobjaction, action_time=None, car_state=carstate)
-
+    
+    print(carstate.front_distance)
+    print(carstate.can_overtake)
     if (
         carstate.front_distance < 0.7
         and carstate.detected["car"][0]
@@ -111,12 +113,13 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
         action_man.set_action(stopaction, action_time=3.0)
 
     if carstate.detected["priority"][0]:
+        pass
         # slowdown for t secs
-        priorityobj = PriorityBehaviour()
-        priorityaction = ActionBehaviour(
-            name="priority", release_time=6.0, callback=priorityobj
-        )
-        action_man.set_action(priorityaction, action_time=9.0)
+        # priorityobj = PriorityBehaviour()
+        # priorityaction = ActionBehaviour(
+        #     name="priority", release_time=6.0, callback=priorityobj
+        # )
+        # action_man.set_action(priorityaction, action_time=9.0)
 
     if carstate.detected["crosswalk"][0]:
         # stop detected pedestrain or crosswalk
@@ -367,8 +370,8 @@ class DecisionMakingProcess(WorkerProcess):
                 logger.debug(f"Sonar Side: {self.state.side_distance}")
 
                 if len(outPs) > 0:
-                    # outPs[0].send((self.state.steering_angle, self.state.v))
-                    outPs[0].send((0.0, 0.0))
+                    outPs[0].send((self.state.steering_angle, self.state.v))
+                    # outPs[0].send((0.0, 0.0))
                 sleep(0.1)
 
             except Exception as e:

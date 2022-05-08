@@ -5,7 +5,7 @@ import math
 
 from src.lib.cortex.carstate import CarState
 class Pure_Pursuit:
-    def __init__(self, coord_list,Lfc=0.325):
+    def __init__(self, coord_list,Lfc=0.150):
         self.k = 0.01  # look forward gain
         self.Lfc = Lfc  # [m] look-ahead distance
         self.Kp = 1.0  # speed proportional gain

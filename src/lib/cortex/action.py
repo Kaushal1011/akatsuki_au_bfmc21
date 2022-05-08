@@ -522,7 +522,7 @@ class ParkingBehaviour(BehaviourCallback):
                 # go to safe spot for reverse
                 # tx = self.initx + 0.5 +  offsetx_1
                 # ty = self.inity - 0.35
-                tx = 3.75 + self.offsetx
+                tx = 3.8 + self.offsetx
                 ty = 1.75
                 print("In Phase 3", tx, ty)
                 d = math.sqrt(

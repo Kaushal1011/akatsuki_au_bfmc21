@@ -1,6 +1,8 @@
+from curses import window
 import heapq
 import math
 from typing import List, Optional, Tuple
+import incremental
 
 # from scipy.interpolate import interp1d
 # from src.lib.cortex import cubic_spline_planner
@@ -101,64 +103,191 @@ def isLeft(A, B, isleftpoint):
 
 
 # TODO: smooth path
-def smooth_point_list(G, coord_list1, ptype, etype):
-    node_dict = deepcopy(dict(G.nodes(data=True)))
-    coord_list = []
-    for i in coord_list1:
-        data = node_dict[i]
-        coord_list.append([data["x"], data["y"]])
-    coordlist_new = []
-    count = 0
-    sizeincrease = 0
-    countfinal = len(coord_list)
-    # print(countfinal)
-    ptype_new = ptype.copy()
-    etype_new = etype.copy()
+def _smooth_point_list(G,coord_list1, ptype,etype) :
+        node_dict = deepcopy(dict(G.nodes(data=True)))
+        coord_list=[]
+        for i in coord_list1:
+            data=node_dict[i]
+            coord_list.append([data['x'],data['y']]) 
+        coordlist_new = []
+        count = 0
+        sizeincrease=0
+        countfinal = len(coord_list)
+        # print(countfinal)
+        ptype_new=ptype.copy()
+        etype_new=etype.copy()
 
-    while count < countfinal:
-        if ptype[count] == "int":
-            # append first point
-            coordlist_new.append(coord_list[count])
-            # find midpoint of intersection start and end
-            xmidint = (coord_list[count][0] + coord_list[count + 2][0]) / 2
-            ymidint = (coord_list[count][1] + coord_list[count + 2][1]) / 2
+        while count < countfinal:
+            if ptype[count] == "int":
+                # append first point
+                coordlist_new.append(coord_list[count])
+                # find midpoint of intersection start and end
+                xmidint = (coord_list[count][0] + coord_list[count + 2][0]) / 2
+                ymidint = (coord_list[count][1] + coord_list[count + 2][1]) / 2
+                
+                
+                
+                flag,value=isLeft(coord_list[count],coord_list[count+1],coord_list[count+2])
+                
+                if flag and abs(value)>0.3:
+                    xfinmid = (xmidint + coord_list[count + 1][0]*5) / 6
+                    yfinmid = (ymidint + coord_list[count + 1][1]*5) / 6
+                    pts=[coord_list[count],(xfinmid,yfinmid),coord_list[count+2]]
+                elif not flag and abs(value)>0.3:
+                    xfinmid = (xmidint*2 + coord_list[count + 1][0]) / 3
+                    yfinmid = (ymidint*2 + coord_list[count + 1][1]) / 3
+                    pts=[coord_list[count],(xfinmid,yfinmid),coord_list[count+2]]
+                    
+                else:
+                    pts=[coord_list[count],coord_list[count+2]]
+                    
+                
+                
 
-            flag, value = isLeft(
-                coord_list[count], coord_list[count + 1], coord_list[count + 2]
-            )
+                x,y=zip(*pts)
+                
+                i = np.arange(len(x))
 
-            if flag and abs(value) > 0.3:
-                xfinmid = (xmidint + coord_list[count + 1][0] * 5) / 6
-                yfinmid = (ymidint + coord_list[count + 1][1] * 5) / 6
-                pts = [coord_list[count], (xfinmid, yfinmid), coord_list[count + 2]]
-            elif not flag and abs(value) > 0.3:
-                xfinmid = (xmidint * 2 + coord_list[count + 1][0]) / 3
-                yfinmid = (ymidint * 2 + coord_list[count + 1][1]) / 3
-                pts = [coord_list[count], (xfinmid, yfinmid), coord_list[count + 2]]
+                cx,cy,_,_,_=cubic_spline_planner.calc_spline_course(x,y,0.15)
 
+                for i in range(len(cx)):
+                    coordlist_new.append((cx[i],cy[i]))
+                    ptype_new.insert(count+sizeincrease,"int")
+                    etype_new.insert(count+sizeincrease,False)
+                    sizeincrease+=1
+                
+                
+                coordlist_new.append(coord_list[count+2])
+                coordlist_new.append(coord_list[count+2])
+                count+=3
+            elif ptype[count]=="lk" and count<countfinal-2 and ptype[count+1]=="lk" and isSmoothNeeded(coord_list[count],coord_list[count+1],coord_list[count+2]):
+                pts=[coord_list[count],coord_list[count+1],coord_list[count+2]]
+                x,y=zip(*pts)
+                
+                i = np.arange(len(x))
+
+                cx,cy,_,_,_=cubic_spline_planner.calc_spline_course(x,y,0.15)
+
+                for i in range(len(cx)):
+                    coordlist_new.append((cx[i],cy[i]))
+                    ptype_new.insert(count+sizeincrease,"lk")
+                    etype_new.insert(count+sizeincrease,False)
+                    sizeincrease+=1
+                coordlist_new.append(coord_list[count+2])
+                coordlist_new.append(coord_list[count+2])
+                coordlist_new.append(coord_list[count+2])
+                count+=3
             else:
-                pts = [coord_list[count], coord_list[count + 2]]
+                coordlist_new.append(coord_list[count])
+                count += 1
 
-            x, y = zip(*pts)
+        return coordlist_new,ptype_new,etype_new
 
-            i = np.arange(len(x))
 
-            cx, cy, _, _, _ = cubic_spline_planner.calc_spline_course(x, y, 0.15)
+def _smooth_point_list_o(G,coord_list1, ptype,etype) :
+        node_dict = deepcopy(dict(G.nodes(data=True)))
+        coord_list=[]
+        for i in coord_list1:
+            data=node_dict[i]
+            coord_list.append([data['x'],data['y']]) 
+        coordlist_new = []
+        count = 0
+        sizeincrease=0
+        countfinal = len(coord_list)
+        # print(countfinal)
+        ptype_new=ptype.copy()
+        etype_new=etype.copy()
 
-            for i in range(len(cx)):
-                coordlist_new.append((cx[i], cy[i]))
-                ptype_new.insert(count + sizeincrease, "int")
-                etype_new.insert(count + sizeincrease, False)
-                sizeincrease += 1
+        while count < countfinal:
+            if ptype[count] == "int":
+                # append first point
+                coordlist_new.append(coord_list[count])
+                # find midpoint of intersection start and end
+                xmidint = (coord_list[count][0] + coord_list[count + 2][0]) / 2
+                ymidint = (coord_list[count][1] + coord_list[count + 2][1]) / 2
+                
+                
+                
+                flag,value=isLeft(coord_list[count],coord_list[count+1],coord_list[count+2])
+                
+                if flag and abs(value)>0.3:
+                    xfinmid = (xmidint + coord_list[count + 1][0]*5) / 6
+                    yfinmid = (ymidint + coord_list[count + 1][1]*5) / 6
+                    pts=[coord_list[count],(xfinmid,yfinmid),coord_list[count+2]]
+                elif not flag and abs(value)>0.3:
+                    xfinmid = (xmidint*2 + coord_list[count + 1][0]) / 3
+                    yfinmid = (ymidint*2 + coord_list[count + 1][1]) / 3
+                    pts=[coord_list[count],(xfinmid,yfinmid),coord_list[count+2]]
+                    
+                else:
+                    pts=[coord_list[count],coord_list[count+2]]
+                    
+                
+                
 
-            coordlist_new.append(coord_list[count + 2])
-            coordlist_new.append(coord_list[count + 2])
-            count += 3
-        else:
-            coordlist_new.append(coord_list[count])
-            count += 1
+                x,y=zip(*pts)
+                
+                i = np.arange(len(x))
 
-    return coordlist_new, ptype_new, etype_new
+                cx,cy,_,_,_=cubic_spline_planner.calc_spline_course(x,y,0.15)
+
+                for i in range(len(cx)):
+                    coordlist_new.append((cx[i],cy[i]))
+                    ptype_new.insert(count+sizeincrease,"int")
+                    etype_new.insert(count+sizeincrease,False)
+                    sizeincrease+=1
+                
+                
+                coordlist_new.append(coord_list[count+2])
+                coordlist_new.append(coord_list[count+2])
+                count+=3
+            elif ptype[count]=="lk" or  ptype[count]=="roundabout":
+                icount=count
+                pts=[]
+                while True:
+                    if ptype[count]!="lk" and ptype[count]!="roundabout":
+                        "broke"
+                        break
+                    pts.append(coord_list[count])
+                    count+=1
+                    if count>=countfinal:
+                        break
+                # print(pts)
+                
+                if len(pts)==1:
+                    coordlist_new.append(coord_list[icount])
+                    # ptype_new.insert(icount,"lk")
+                    # etype_new.insert(icount,False)
+                    continue
+                    
+                x,y=zip(*pts)
+                
+                i = np.arange(len(x))
+
+                cx,cy,_,_,_=cubic_spline_planner.calc_spline_course(x,y,0.15)
+
+                for i in range(len(cx)):
+                    coordlist_new.append((cx[i],cy[i]))
+
+                windowsize=len(cx)//(count-icount)
+                    
+                incrementor=0    
+                for i in range(len(cx)-(count-icount)):
+                    # add incrementor increment logic
+                    if sizeincrease>windowsize*(incrementor+1) and incrementor!=(count-icount):
+                        incrementor+=1
+                    ptype_new.insert(icount+sizeincrease,"lk")
+                    if len(etype)<icount+incrementor-1:
+                        etype_new.insert(icount+sizeincrease,etype[icount+incrementor])
+                    else:
+                        etype_new.insert(icount+sizeincrease,etype[icount+incrementor-1])
+                    sizeincrease+=1
+                    
+            else:
+                coordlist_new.append(coord_list[count])
+                count += 1
+
+        return coordlist_new,ptype_new,etype_new
 
 
 def add_yaw(G):
@@ -203,7 +332,7 @@ class Navigator:
     def create_path(self):
         for i in range(len(self.config["nodes"])):
             # print(config["nodes"][i],config["activity"][i])
-            c, p, e = smooth_point_list(
+            c, p, e = _smooth_point_list_o(
                 self.graph,
                 *dijkstra(
                     self.graph,

@@ -14,10 +14,6 @@ from multiprocessing import Value
 import ctypes
 
 loaded_model = Value(ctypes.c_bool, False)
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/zeta
 
 class SignDetectionProcess(WorkerProcess):
     # ===================================== Worker process =========================================
