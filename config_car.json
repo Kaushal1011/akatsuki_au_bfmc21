@@ -12,6 +12,6 @@
   "end_idx": "40",
   "pc_ip": "192.168.220.18",
   "pi_ip": "192.168.220.89",
-  "home_loc": false,
+  "home_loc": true,
   "preplan": false
 }

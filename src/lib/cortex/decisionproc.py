@@ -15,6 +15,7 @@ from src.config import get_config
 config = get_config()
 
 from src.lib.cortex.carstate import CarState
+from src.lib.perception.signdetection import loaded_model
 from src.templates.workerprocess import WorkerProcess
 from time import time
 from src.lib.cortex.action import (
@@ -29,7 +30,7 @@ from src.lib.cortex.action import (
     PriorityBehaviour,
     OvertakeBehaviour,
     RoundAboutBehaviour,
-    TLBehaviour
+    TLBehaviour,
 )
 import joblib
 from loguru import logger
@@ -124,11 +125,11 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
     if carstate.detected["roadblock"] and carstate.front_distance < 0.75:  # 10 cm
         # replan closed road
         pass
-    
-    if (
-        carstate.detected["roundabout"] or (carstate.current_ptype=="roundabout" and action_man.l1_ab is None)
-    ):  
-        print("In round about trigger: ",carstate.current_ptype)
+
+    if carstate.detected["roundabout"] or (
+        carstate.current_ptype == "roundabout" and action_man.l1_ab is None
+    ):
+        print("In round about trigger: ", carstate.current_ptype)
         rabobj = RoundAboutBehaviour(car_state=carstate)
         rabobjaction = ActionBehaviour(name="roundabout", callback=rabobj)
         action_man.set_action(rabobjaction, action_time=None, car_state=carstate)
@@ -155,7 +156,7 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
 
     if carstate.detected["trafficlight"]:
         tlobj = TLBehaviour(carstate=carstate)
-        tlaction = ActionBehaviour(name ="trafficlight", callback=tlobj)
+        tlaction = ActionBehaviour(name="trafficlight", callback=tlobj)
         action_man.set_action(tlaction, action_time=None, carstate=carstate)
 
     if carstate.pitch > 0.2:
@@ -217,20 +218,22 @@ class DecisionMakingProcess(WorkerProcess):
         self.actman.set_action(lkaction)
 
         ##################################################################
-        # data_path = pathlib.Path(
-        #     pathlib.Path(__file__).parent.parent.parent.resolve(),
-        #     "data",
-        #     "mid_course.z",
-        # )
-        # data = joblib.load(data_path)
-        # cx = data["x"]
-        # cy = data["y"]
-        # coord_list = [x for x in zip(cx, cy)]
-        # coord_list = data[0]socket.gethostbyname(socket.gethostname())
+        data_path = pathlib.Path(
+            pathlib.Path(__file__).parent.parent.parent.resolve(),
+            "data",
+            "new_course.z",
+        )
+        data = joblib.load(data_path)
+        cx = data["x"]
+        cy = data["y"]
+        coord_list = [x for x in zip(cx, cy)]
+        # coord_list = data[0]
         #################################################################
 
         # pass coordlist here from navigator config
-        csobj = ControlSystemBehaviour(coord_list=self.state.navigator.coords)
+        # csobj = ControlSystemBehaviour(coord_list=self.state.navigator.coords)
+        csobj = ControlSystemBehaviour(coord_list=coord_list)
+
         csaction = ActionBehaviour(name="cs", callback=csobj)
         self.actman.set_action(csaction)
 
@@ -304,7 +307,7 @@ class DecisionMakingProcess(WorkerProcess):
             sub_tl.connect("ipc:///tmp/vtl")
             sub_tl.setsockopt_string(zmq.SUBSCRIBE, "")
 
-        if "tel" in self.inPsnames:
+        if "tel" in self.inPsnames or True:
             # TODO : use zmq PUB/SUB
             # context_tel = zmq.Context()
             host = config["pc_ip"]
@@ -315,6 +318,7 @@ class DecisionMakingProcess(WorkerProcess):
             tel_addr = (host, port)
             tel_sock.connect(tel_addr)
 
+        got_loc = False
         while True:
             try:
                 # c = time()
@@ -341,17 +345,26 @@ class DecisionMakingProcess(WorkerProcess):
                         distance_data = sub_dis.recv_json()
                         while sub_dis.poll(timeout=0.05):
                             distance_data = sub_dis.recv_json()
-                    
+
                         print("DIS -> ", distance_data)
                         logger.log(
-                                "SYNC", f"dis delta {time()- distance_data['timestamp']}"
-                            )
+                            "SYNC", f"dis delta {time()- distance_data['timestamp']}"
+                        )
                         self.state.update_object_det(
-                                distance_data["sonar1"], distance_data["sonar2"]
-                            )
+                            distance_data["sonar1"], distance_data["sonar2"]
+                        )
 
                 if "pos" in self.inPsnames:
-                    if sub_pos.poll(timeout=0.05):
+                    # wait until you get the first loc data
+                    if not got_loc:
+                        pos = sub_pos.recv_json()
+                        got_loc = True
+                        if pos[0] == 0 and pos[1] == 0:
+                            pass
+                        else:
+                            self.state.update_pos(*pos)
+
+                    elif sub_pos.poll(timeout=0.05):
                         pos = sub_pos.recv_json()
                         while sub_pos.poll(timeout=0.01):
                             pos = sub_pos.recv_json()
@@ -360,6 +373,7 @@ class DecisionMakingProcess(WorkerProcess):
                             pass
                         else:
                             self.state.update_pos(*pos)
+
                     else:
                         self.state.update_pos_noloc()
 
@@ -368,7 +382,7 @@ class DecisionMakingProcess(WorkerProcess):
                         detections = sub_sd.recv_json()
                         while sub_sd.poll(timeout=0.01):
                             detections = sub_sd.recv_json()
-                            
+
                         print("SD ->", detections)
                         # send data to env server
                         if len(outPs) > 1:
@@ -384,7 +398,7 @@ class DecisionMakingProcess(WorkerProcess):
                     if sub_tl.poll(timeout=0.05):
                         tl_data = sub_tl.recv()
                         # print(f"TL -> {tl_data}")
-                        
+
                         self.state.update_tl(tl_data)
 
                 # # update car navigator, current ptype, current etype and current idx
@@ -392,7 +406,7 @@ class DecisionMakingProcess(WorkerProcess):
                 trigger_behaviour(self.state, self.actman)
                 # print(self.state.detected)
                 if "tel" in self.inPsnames:
-                    tel_sock.sendto(json.dumps(self.state.asdict()).encode("utf-8"), tel_addr)
+                    tel_sock.sendto(json.dumps(self.state.asdict()).encode('utf-8'), tel_addr)
                 speed, steer = self.actman(self.state)
                 self.state.v = speed
                 self.state.steering_angle = steer
@@ -403,8 +417,11 @@ class DecisionMakingProcess(WorkerProcess):
                 logger.debug(f"Sonar Side: {self.state.side_distance}")
 
                 if len(outPs) > 0:
-                    # outPs[0].send((self.state.steering_angle, self.state.v))
-                    outPs[0].send((0.0, 0.0))
+                    if config["enableSignDet"] and not loaded_model.value:
+                        outPs[0].send((0.0, 0.0))
+                    else:
+                        # outPs[0].send((self.state.steering_angle, self.state.v))
+                        outPs[0].send((0.0, 0.0))
 
                 sleep(0.2)
 
