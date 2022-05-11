@@ -5,7 +5,7 @@
   "enableLaneKeeping": true,
   "enableSignDet": true,
   "enableSIM": false,
-  "loc_server": false,
+  "loc_server": true,
   "tl_server": false,
   "test_track": false,
   "env_server": false,
