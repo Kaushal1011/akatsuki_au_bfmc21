@@ -32,11 +32,13 @@ import struct
 import time
 from threading import Thread
 import zmq
+
 # import SharedArray as sa
 import cv2
 import base64
 from src.config import get_config
 import numpy as np
+
 config = get_config()
 HOST = config["pc_ip"]
 from src.templates.workerprocess import WorkerProcess
@@ -50,13 +52,16 @@ def get_last(inP: Connection):
         timestamp, data = inP.recv()
     return timestamp, data
 
+
 connect2file = {
-    "cam":"4l",
-    "sd":"62",
+    "cam": "4l",
+    "sd": "62",
 }
+
+
 class CameraStreamerProcess(WorkerProcess):
     # ===================================== INIT =========================================
-    def __init__(self, inPs, outPs, connect:str="sd",  port: int = 2244):
+    def __init__(self, inPs, outPs, connect: str = "sd", port: int = 2244):
         """Process used for sending images over the network to a targeted IP via UDP protocol
         (no feedback required). The image is compressed before sending it.
 
@@ -136,9 +141,9 @@ class CameraStreamerProcess(WorkerProcess):
         sub_stream = context.socket(zmq.SUB)
         # print("Binding Socket to", self.addr)
         sub_stream.setsockopt(zmq.CONFLATE, 1)
-        
+
         sub_stream.connect(f"ipc:///tmp/v{self.file_id}")
-        sub_stream.setsockopt_string(zmq.SUBSCRIBE, '')
+        sub_stream.setsockopt_string(zmq.SUBSCRIBE, "")
         while True:
             try:
                 # stamp, image = get_last(inP)
@@ -147,17 +152,17 @@ class CameraStreamerProcess(WorkerProcess):
                 # print(stamps, image)
                 # cv2.imshow("Image", image)
                 # cv2.waitKey(1)
-                
+
                 data = sub_stream.recv()
                 data = np.frombuffer(data, dtype=np.uint8)
                 image = np.reshape(data, (480, 640, 3))
-                print("Stream", image.shape)
+                # print("Stream", image.shape)
                 pack_time = time.time()
                 # print(f"Streamer timedelta {(time.time() - stamp):.4f}s")
                 result, image = cv2.imencode(".jpg", image, encode_param)
                 data = image.tobytes()
                 size = len(data)
-            
+
                 self.connection.write(struct.pack("d", 1.0))
                 # print(f"Streaming | sending data size: {size}, timestamp:{stamp}")
                 self.connection.write(struct.pack("<L", size))
