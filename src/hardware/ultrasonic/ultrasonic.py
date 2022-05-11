@@ -68,10 +68,10 @@ class Ultrasonic(threading.Thread):
         TimeElapsed = StopTime - StartTime
         # multiply with the sonic speed (34300 cm/s)
         # and divide by 2, because there and back
-        distance = (TimeElapsed * 343) / 2
+        distance = (TimeElapsed * 34300) / 2.0
         
 
-        return distance
+        return distance / 100
 
     def run(self):
         context_send = zmq.Context()
@@ -80,11 +80,12 @@ class Ultrasonic(threading.Thread):
 
         while True:
             sonar1 = self.get_distance(GPIO_TRIGGER_FRONT, GPIO_ECHO_FRONT)
-            time.sleep(0.25)
+            time.sleep(0.3)
             sonar2 = self.get_distance(GPIO_TRIGGER_SIDE, GPIO_ECHO_SIDE)
             data = {"timestamp": time.time(), "sonar1": sonar1, "sonar2": sonar2}
             pub_dis.send_json(data, flags=zmq.NOBLOCK)
-            time.sleep(0.25)
+            print("Ultrasonic ", data)
+            time.sleep(0.3)
 
     def stop(self):
         print("IN STOP")
