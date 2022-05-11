@@ -14,6 +14,8 @@ import numpy as np
 
 from src.templates.workerprocess import WorkerProcess
 
+from src.lib.perception.detect_ov import Detection
+
 
 class CameraReceiverProcess(WorkerProcess):
     # ===================================== INIT =========================================
@@ -52,13 +54,19 @@ class CameraReceiverProcess(WorkerProcess):
         footage_socket.bind(self.addr)
         footage_socket.setsockopt_string(zmq.SUBSCRIBE, "")
         count = 1
+        detection = Detection()
+
         while True:
             try:
                 frame = footage_socket.recv_string()
                 img = base64.b64decode(frame)
                 npimg = np.fromstring(img, dtype=np.uint8)
                 source = cv2.imdecode(npimg, 1)
-                cv2.imshow("Stream", source)
+                img_in = cv2.cvtColor(source, cv2.COLOR_BGR2RGB)
+                _, det_out = detection(img_in, bbox=True)
+
+                cv2.imshow("StreamPI", source)
+                cv2.imshow("StreamPC", det_out)
                 if cv2.waitKey(1) & 0xFF == ord("s"):
                     count += 1
                     print("Saving Image")

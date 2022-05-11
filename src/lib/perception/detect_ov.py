@@ -411,7 +411,7 @@ map2label = [
 
 class Detection:
     def __init__(
-        self, model_path: str = "best1yet_openvino_model/best1yet.xml"
+        self, model_path: str = "model32s255_openvino_model/model32s255.xml"
     ) -> None:
         ie = Core()
         model = ie.read_model(model=model_path)
@@ -429,8 +429,8 @@ class Detection:
         if not img.shape == (640, 640, 3):
             img_resized = cv2.resize(img, (640, 640))
 
-        x: np.ndarray = img_resized / 255
-        x = x.astype(np.float32)
+        # x: np.ndarray = img_resized / 255
+        x = img_resized.astype(np.float32)
         x = np.expand_dims(x.transpose(2, 0, 1), 0)
         request = self.compiled_model.create_infer_request()
         request.infer({self.input_layer_ir.any_name: x})
