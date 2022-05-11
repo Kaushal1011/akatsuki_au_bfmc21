@@ -367,8 +367,9 @@ class ObjectStopBehaviour(BehaviourCallback):
         thyh=480
 
         if car_state.detected["pedestrian"][0]:
-            x,y=car_state.detected[2]
-
+            # x,y=car_state.detected["pedestrian"][2]
+            print(car_state.detected["pedestrian"])
+            x,y=0,0
             if x>thxl and x<thxh and y>thyl and y<thyh:
                 return {"speed": 0.0}
             else:
@@ -520,7 +521,7 @@ class ParkingBehaviour(BehaviourCallback):
                 if car_state.side_distance < 0.5:
                     if self.slot == 1:
                         print("Parking Spot full")
-                        self.offsetx += 0.45
+                        self.offsetx += 0.55
                         self.slot = 2
                         self.phase = 1
                     else:
