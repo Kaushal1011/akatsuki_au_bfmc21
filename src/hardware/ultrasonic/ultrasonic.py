@@ -37,10 +37,10 @@ class Ultrasonic(threading.Thread):
 
     @staticmethod
     def get_distance(GPIO_TRIGGER: int, GPIO_ECHO: int) -> float:
-#         GPIO.setmode(GPIO.BCM)
+        #         GPIO.setmode(GPIO.BCM)
         # set Trigger to HIGH
         GPIO.output(GPIO_TRIGGER, True)
-        
+
         # set Trigger after 0.01ms to LOW
         time.sleep(0.00001)
         GPIO.output(GPIO_TRIGGER, False)
@@ -48,28 +48,27 @@ class Ultrasonic(threading.Thread):
         StartTime = time.time()
         StopTime = time.time()
         try:
-        # save StartTime
-            st=time.time()
-            while st-time.time()>0.4 or GPIO.input(GPIO_ECHO) == 0:
+            # save StartTime
+            st = time.time()
+            while st - time.time() > 0.4 or GPIO.input(GPIO_ECHO) == 0:
                 StartTime = time.time()
-                if st-time.time() > 0.4:
+                if st - time.time() > 0.4:
                     print("Exceeding Process Time ")
                     return 1.2
             # save time of arrival
-            st=time.time()
-            while st-time.time()>0.4 or GPIO.input(GPIO_ECHO) == 1:
+            st = time.time()
+            while st - time.time() > 0.4 or GPIO.input(GPIO_ECHO) == 1:
                 StopTime = time.time()
-                if st-time.time() > 0.4:
+                if st - time.time() > 0.4:
                     print("Exceeding Process Time ")
                     return 1.2
         except Exception as e:
-            print(e)    
+            print(e)
         # time difference between start and arrival
         TimeElapsed = StopTime - StartTime
         # multiply with the sonic speed (34300 cm/s)
         # and divide by 2, because there and back
         distance = (TimeElapsed * 343) / 2
-        
 
         return distance
 

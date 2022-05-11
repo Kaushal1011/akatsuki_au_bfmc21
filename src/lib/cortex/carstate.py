@@ -26,10 +26,27 @@ from typing import List, Tuple
 #     ],
 # }
 
-activity_config={
-    "nodes":[[86,69],[110,145],[61,168],[169,229],[230,104],[105,465],[466,85]],
-    "activity":["navigation","roadblocked","parking","overtaking","highway","oneway","finish"]
+activity_config = {
+    "nodes": [
+        [86, 69],
+        [110, 145],
+        [61, 168],
+        [169, 229],
+        [230, 104],
+        [105, 465],
+        [466, 85],
+    ],
+    "activity": [
+        "navigation",
+        "roadblocked",
+        "parking",
+        "overtaking",
+        "highway",
+        "oneway",
+        "finish",
+    ],
 }
+
 
 class CarState:
     def __init__(self, max_v=0.25, dt=0.13, car_len=0.365, **kwargs) -> None:

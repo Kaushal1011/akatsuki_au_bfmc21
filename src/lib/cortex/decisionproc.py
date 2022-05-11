@@ -73,9 +73,9 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
         parkobj = ParkingBehaviour(car_state=carstate)
         parkobjaction = ActionBehaviour(name="parking", callback=parkobj)
         action_man.set_action(parkobjaction, action_time=None, car_state=carstate)
-    
-    print(carstate.front_distance)
-    print(carstate.can_overtake)
+
+    print("carstate-frnt: ", carstate.front_distance)
+    print("carstate-can-overtake:", carstate.can_overtake)
     if (
         carstate.front_distance < 0.7
         and carstate.detected["car"][0]
