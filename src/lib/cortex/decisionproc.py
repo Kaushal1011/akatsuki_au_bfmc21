@@ -225,9 +225,9 @@ class DecisionMakingProcess(WorkerProcess):
         self.actman.set_action(csaction)
 
         # pass coordlist here from navigator config
-        # stopobj = ObjectStopBehaviour()
-        # stopobjaction = ActionBehaviour(name="objstop", callback=stopobj)
-        # self.actman.set_action(stopobjaction)
+        stopobj = ObjectStopBehaviour()
+        stopobjaction = ActionBehaviour(name="objstop", callback=stopobj)
+        self.actman.set_action(stopobjaction)
 
     def run(self):
         """Apply the initializing methods and start the threads."""

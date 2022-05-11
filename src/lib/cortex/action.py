@@ -360,9 +360,21 @@ class ControlSystemBehaviour(BehaviourCallback):
 
 
 class ObjectStopBehaviour(BehaviourCallback):
-    def __call__(self, car_state):
-        if car_state.front_distance < 0.3:
-            return {"speed": 0.0}
+    def __call__(self, car_state:CarState):
+        thxl=0
+        thxh=640
+        thyl=0
+        thyh=480
+
+        if car_state.detected["pedestrian"][0]:
+            x,y=car_state.detected[2]
+
+            if x>thxl and x<thxh and y>thyl and y<thyh:
+                return {"speed": 0.0}
+            else:
+                return None
+        else:
+            return None
 
     def set(self, **kwargs):
         pass
