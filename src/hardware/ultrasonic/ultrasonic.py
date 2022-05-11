@@ -50,16 +50,16 @@ class Ultrasonic(threading.Thread):
         try:
         # save StartTime
             st=time.time()
-            while st-time.time()>0.4 or GPIO.input(GPIO_ECHO) == 0:
+            while st-time.time()>0.2 or GPIO.input(GPIO_ECHO) == 0:
                 StartTime = time.time()
-                if st-time.time() > 0.4:
+                if st-time.time() > 0.2:
                     print("Exceeding Process Time ")
                     return 1.2
             # save time of arrival
             st=time.time()
-            while st-time.time()>0.4 or GPIO.input(GPIO_ECHO) == 1:
+            while st-time.time()>0.2 or GPIO.input(GPIO_ECHO) == 1:
                 StopTime = time.time()
-                if st-time.time() > 0.4:
+                if st-time.time() > 0.2:
                     print("Exceeding Process Time ")
                     return 1.2
         except Exception as e:
