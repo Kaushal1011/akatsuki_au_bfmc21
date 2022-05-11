@@ -1,5 +1,5 @@
 {
-  "enableStream": false,
+  "enableStream": true,
   "enableCameraSpoof": false,
   "enableRc": false,
   "enableLaneKeeping": true,
@@ -11,8 +11,8 @@
   "env_server": false,
   "start_idx": "86",
   "end_idx": "40",
-  "pc_ip": "192.168.43.61",
-  "pi_ip": "192.168.43.225",
+  "pc_ip": "192.168.204.18",
+  "pi_ip": "192.168.204.89",
   "home_loc": false,
   "preplan": false
 }
