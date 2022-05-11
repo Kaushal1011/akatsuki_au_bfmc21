@@ -68,7 +68,7 @@ def filter(level: List[int]):
     return lambda r: r["level"].no in level or r["level"].no > 19
 
 
-TEST_PIPE = True
+TEST_PIPE = False
 logger.remove()
 if TEST_PIPE:
     logger.add(
@@ -77,12 +77,12 @@ if TEST_PIPE:
         format="<level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
     )
 
-logger.add(
-    "file1.log",
-    filter=lambda r: r["level"] == 14,
-    format="<level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
-)
-
+# logger.add(
+#     "file1.log",
+#     filter=lambda r: r["level"] == 14,
+#     format="<level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+# )
+# 
 
 # ========================================================================
 # SCRIPT USED FOR WIRING ALL COMPONENTS

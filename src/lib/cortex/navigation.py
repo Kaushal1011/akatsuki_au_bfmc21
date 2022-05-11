@@ -411,7 +411,7 @@ class Navigator:
         for idx in idxs[:10]:
             try:
                 dyaw = self.yaw[idx] - yaw
-                print("Navigator 414:", self.yaw[idx], yaw)
+                # print(self.yaw[idx], yaw)
 
                 if abs(dyaw) < 0.2:
                     return idx

@@ -446,7 +446,7 @@ class Detection:
         pred_nms = pred_nms[0]
         pred_nms[:, :4] = scale_coords(x.shape[2:], pred_nms[:, :4], img.shape).round()
         classes = np.unique(pred_nms[:, -1]).tolist()
-        print("classes", classes)
+        # print("classes", classes)
         area, loc = get_area_and_loc(pred_nms[:, :4])
         if bbox:
             out_image = self.draw_bbox(pred_nms, classes=classes, image=img)
