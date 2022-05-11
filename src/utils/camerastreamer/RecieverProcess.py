@@ -62,7 +62,7 @@ class CameraReceiverProcess(WorkerProcess):
                 img = base64.b64decode(frame)
                 npimg = np.fromstring(img, dtype=np.uint8)
                 image = cv2.imdecode(npimg, 1)
-                imagedet=cv2.cvtColor(image,cv2.COLOR_BGR2RGB)
+                imagedet = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
                 _, _, lk_out = self.lk(image, True)
                 _, det_out = detection(imagedet, bbox=True)
                 cv2.imshow("LK Stream", lk_out)

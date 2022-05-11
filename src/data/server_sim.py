@@ -1,7 +1,7 @@
 import json
 import socket
 from threading import Thread
-
+from time import sleep
 from src.templates.workerprocess import WorkerProcess
 import zmq
 
@@ -18,6 +18,7 @@ class ServerSIM(WorkerProcess):
         self.port = port
         self.host_ip = host_ip
         self.log = log
+        self.connect = connect
         self.file_id = connect2file[connect]
         super(ServerSIM, self).__init__(inPs, outPs)
 
@@ -68,6 +69,8 @@ class ServerSIM(WorkerProcess):
                 command = json.loads(bts)
                 if self.log:
                     print(command)
+                if self.connect == "loc":
+                    sleep(0.5)
                 pub_sim.send_json(command, flags=zmq.NOBLOCK)
                 # for outP in outPs:
                 #     outP.send(command)

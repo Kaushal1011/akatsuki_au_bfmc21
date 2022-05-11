@@ -26,7 +26,10 @@ from src.hardware.camera.SIMCameraProcess import SIMCameraProcess
 from src.lib.perception.lanekeepz import LaneKeepingProcess as LaneKeeping
 from src.lib.perception.signdetection import SignDetectionProcess
 from src.data.localisationssystem.home_locProc import LocalisationProcess
+
 from src.data.localisationssystem.locsysProc import LocalisationSystemProcess
+
+# from src.data.localisationssystem.dummy_loc import LocalisationSystemProcess
 from src.data.server_sim import ServerSIM as LocSysSIM
 from src.data.server_sim import ServerSIM as IMUSIM
 from src.lib.cortex.posfusproc import PositionFusionProcess
@@ -68,7 +71,7 @@ def filter(level: List[int]):
     return lambda r: r["level"].no in level or r["level"].no > 19
 
 
-TEST_PIPE = True
+TEST_PIPE = False
 logger.remove()
 if TEST_PIPE:
     logger.add(
@@ -77,12 +80,12 @@ if TEST_PIPE:
         format="<level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
     )
 
-logger.add(
-    "file1.log",
-    filter=lambda r: r["level"] == 14,
-    format="<level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
-)
-
+# logger.add(
+#     "file1.log",
+#     filter=lambda r: r["level"] == 14,
+#     format="<level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+# )
+#
 
 # ========================================================================
 # SCRIPT USED FOR WIRING ALL COMPONENTS
@@ -97,7 +100,7 @@ STREAM_PORT1 = 2244
 STREAM_PORT2 = 4422
 # ["cam", "lk", "sd"]
 
-streams = ["sd"]
+streams = ["cam"]
 # =============================== INITIALIZING PROCESSES =================================
 # Pipe collections
 allProcesses: List[Process] = []
@@ -144,15 +147,15 @@ if config["enableSIM"]:
     allProcesses.append(locsysProc)
     posFusionInputName.append("loc")
 
-elif config["home_loc"]:
-    # LocSys -> Position Fusion
-    print(">>> Starting Home Localization process")
-    locsysProc = LocalisationProcess([], [])
-    allProcesses.append(locsysProc)
-    posFusionInputName.append("loc")
+# elif config["home_loc"]:
+#     # LocSys -> Position Fusion
+#     print(">>> Starting Home Localization process")
+#     locsysProc = LocalisationProcess([], [])
+#     allProcesses.append(locsysProc)
+#     posFusionInputName.append("loc")
+#
 
-
-elif config["loc_server"]:
+if config["loc_server"]:
     # LocSys -> Position Fusion
     locsysProc = LocalisationSystemProcess([], [])
     allProcesses.append(locsysProc)
@@ -308,7 +311,7 @@ if sDProc is not None:
     while not loaded_model.value:
         print("Waiting on sDProc")
         sleep(1)
-        
+
     for proc in allProcesses:
         proc.daemon = True
         proc.start()
@@ -316,7 +319,7 @@ if sDProc is not None:
 else:
     for proc in allProcesses:
         proc.daemon = True
-        proc.start()    
+        proc.start()
 
 
 # ===================================== STAYING ALIVE ====================================
