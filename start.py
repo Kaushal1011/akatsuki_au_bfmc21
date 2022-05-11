@@ -82,7 +82,7 @@ if TEST_PIPE:
 #     filter=lambda r: r["level"] == 14,
 #     format="<level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
 # )
-# 
+#
 
 # ========================================================================
 # SCRIPT USED FOR WIRING ALL COMPONENTS
@@ -308,7 +308,7 @@ if sDProc is not None:
     while not loaded_model.value:
         print("Waiting on sDProc")
         sleep(1)
-        
+
     for proc in allProcesses:
         proc.daemon = True
         proc.start()
@@ -316,7 +316,7 @@ if sDProc is not None:
 else:
     for proc in allProcesses:
         proc.daemon = True
-        proc.start()    
+        proc.start()
 
 
 # ===================================== STAYING ALIVE ====================================
