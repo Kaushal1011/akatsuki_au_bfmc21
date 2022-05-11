@@ -9,6 +9,7 @@ from src.templates.workerprocess import WorkerProcess
 from multiprocessing import Pipe
 import zmq
 
+
 class LocalisationSystemProcess(WorkerProcess):
     # ================================ CAMERA PROCESS =====================================
     def __init__(self, inPs, outPs, daemon=True):
@@ -24,7 +25,7 @@ class LocalisationSystemProcess(WorkerProcess):
             daemon process flag, by default True
         """
         super(LocalisationSystemProcess, self).__init__(inPs, outPs, daemon=True)
-        self.outPs =outPs
+        self.outPs = outPs
 
     # ===================================== RUN ==========================================
     def run(self):
@@ -54,8 +55,8 @@ class LocalisationSystemProcess(WorkerProcess):
         locsys.start()
         # Wait until 60 seconds passed
         context_send = zmq.Context()
-        pub_loc.setsockopt(zmq.CONFLATE, 1)
         pub_loc = context_send.socket(zmq.PUB)
+        pub_loc.setsockopt(zmq.CONFLATE, 1)
         pub_loc.bind("ipc:///tmp/v31")
         print("Starting Localizaion Server")
         while True:
@@ -72,7 +73,7 @@ class LocalisationSystemProcess(WorkerProcess):
                     }
                     print("LOC", data)
                     pub_loc.send_json(data, flags=zmq.NOBLOCK)
-                    
+
                 time.sleep(1)
             except KeyboardInterrupt:
                 break

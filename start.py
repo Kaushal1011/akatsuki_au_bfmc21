@@ -26,8 +26,10 @@ from src.hardware.camera.SIMCameraProcess import SIMCameraProcess
 from src.lib.perception.lanekeepz import LaneKeepingProcess as LaneKeeping
 from src.lib.perception.signdetection import SignDetectionProcess
 from src.data.localisationssystem.home_locProc import LocalisationProcess
-# from src.data.localisationssystem.locsysProc import LocalisationSystemProcess
-from src.data.localisationssystem.dummy_loc import LocalisationSystemProcess
+
+from src.data.localisationssystem.locsysProc import LocalisationSystemProcess
+
+# from src.data.localisationssystem.dummy_loc import LocalisationSystemProcess
 from src.data.server_sim import ServerSIM as LocSysSIM
 from src.data.server_sim import ServerSIM as IMUSIM
 from src.lib.cortex.posfusproc import PositionFusionProcess
@@ -139,21 +141,21 @@ if config["enableSignDet"]:
 # =============================== DATA ===================================================
 
 # -------LOCSYS----------
-# if config["enableSIM"]:
-#     # LocSys -> Position Fusion
-#     locsysProc = LocSysSIM([], [], "loc", LOCSYS_SIM_PORT)
-#     allProcesses.append(locsysProc)
-#     posFusionInputName.append("loc")
-# 
+if config["enableSIM"]:
+    # LocSys -> Position Fusion
+    locsysProc = LocSysSIM([], [], "loc", LOCSYS_SIM_PORT)
+    allProcesses.append(locsysProc)
+    posFusionInputName.append("loc")
+
 # elif config["home_loc"]:
 #     # LocSys -> Position Fusion
 #     print(">>> Starting Home Localization process")
 #     locsysProc = LocalisationProcess([], [])
 #     allProcesses.append(locsysProc)
 #     posFusionInputName.append("loc")
-# 
+#
 
-if config["loc_server"] and False:
+if config["loc_server"]:
     # LocSys -> Position Fusion
     locsysProc = LocalisationSystemProcess([], [])
     allProcesses.append(locsysProc)
