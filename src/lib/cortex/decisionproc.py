@@ -26,6 +26,7 @@ from src.lib.cortex.action import (
     ControlSystemBehaviour,
     ObjectStopBehaviour,
     ParkingBehaviour,
+    RoadBlocked,
     StopBehvaiour,
     PriorityBehaviour,
     OvertakeBehaviour,
@@ -94,9 +95,11 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
         # tailing or stop
         pass
 
-    if carstate.detected["roadblock"][0] and carstate.front_distance < 0.75:  # 10 cm
+    if carstate.detected["roadblock"][0] and carstate.front_distance < 0.45:  # 10 cm
         # replan closed road
-        pass
+        robobj = RoadBlocked(car_state=carstate)
+        robobjaction = ActionBehaviour(name="roadblocked", callback=robobj)
+        action_man.set_action(robobjaction, action_time=None, car_state=carstate)
 
     if carstate.detected["roundabout"][0] or (
         carstate.current_ptype == "roundabout" and action_man.l1_ab is None

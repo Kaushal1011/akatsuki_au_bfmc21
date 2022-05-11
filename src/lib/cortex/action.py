@@ -386,7 +386,7 @@ class CrosswalkBehavior(BehaviourCallback):
             (self.initx - car_state.rear_x) ** 2 + (self.inity - car_state.rear_y) ** 2
         )
 
-        if d > 0.8:
+        if d > 1.1:
             self.active = False
 
         if car_state.front_distance < 0.3:
@@ -710,6 +710,9 @@ class RoadBlocked(BehaviourCallback):
             return {"steer": di, "speed": +car_state.priority_speed}
         else:
             return None
+    
+    def set(self, **kwargs):
+        pass
 
 
 # offsetx_1 = 0
@@ -865,7 +868,7 @@ class ActionManager:
             self.l3_ab = action
             self.l3_ab.set(action_time=action_time, **kwargs)
             return True
-        elif action.name == "ramp" or action.name == "interrupt":
+        elif action.name == "ramp" or action.name == "roadblocked":
             self.l4_ab = action
             self.l4_ab.set(action_time=action_time, **kwargs)
             return True

@@ -7,20 +7,20 @@ import time
 FONT = "Arial.ttf"  # https://ultralytics.com/assets/Arial.ttf
 
 AREA_THRESHOLD = {
-    "car": 50,
-    "crosswalk": 50,
+    "car": 15000,
+    "crosswalk": 7000,
     "doll": 50,
-    "highway_entry": 50,
-    "highway_exit": 50,
-    "no_entry": 50,
-    "onewayroad": 50,
-    "parking": 50,
-    "pedestrian": 50,
-    "priority": 50,
-    "roadblock": 50,
-    "roundabout": 50,
-    "stop": 50,
-    "trafficlight": 50,
+    "highway_entry": 7000,
+    "highway_exit": 7000,
+    "no_entry": 5000,
+    "onewayroad": 5000,
+    "parking": 5000,
+    "pedestrian": 5000,
+    "priority": 5000,
+    "roadblock": 5000,
+    "roundabout": 5000,
+    "stop": 5000,
+    "trafficlight": 500,
 }
 
 

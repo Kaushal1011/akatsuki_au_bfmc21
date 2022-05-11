@@ -5,30 +5,34 @@ from time import time
 from src.lib.cortex.navigation import Navigator
 from typing import List, Tuple
 
-activity_config = {
-    "nodes": [
-        [86, 99],
-        [100, 145],
-        [61, 168],
-        [169, 229],
-        [230, 104],
-        [105, 465],
-        [466, 85],
-    ],
-    "activity": [
-        "navigation",
-        "roadblocked",
-        "parking",
-        "overtaking",
-        "highway",
-        "oneway",
-        "finish",
-    ],
+# activity_config = {
+#     "nodes": [
+#         [86, 99],
+#         [100, 145],
+#         [61, 168],
+#         [169, 229],
+#         [230, 104],
+#         [105, 465],
+#         [466, 85],
+#     ],
+#     "activity": [
+#         "navigation",
+#         "roadblocked",
+#         "parking",
+#         "overtaking",
+#         "highway",
+#         "oneway",
+#         "finish",
+#     ],
+# }
+
+activity_config={
+    "nodes":[[86,69],[110,145],[61,168],[169,229],[230,104],[105,465],[466,85]],
+    "activity":["navigation","roadblocked","parking","overtaking","highway","oneway","finish"]
 }
 
-
 class CarState:
-    def __init__(self, max_v=0.20, dt=0.13, car_len=0.365, **kwargs) -> None:
+    def __init__(self, max_v=0.40, dt=0.13, car_len=0.365, **kwargs) -> None:
 
         self.max_v = max_v
         # position data
@@ -99,8 +103,8 @@ class CarState:
         # control parameters
         self.steering_angle = 0.0
         self.v = max_v
-        self.priority_speed = 0.175
-        self.highway_speed = 0.25
+        self.priority_speed = 0.325
+        self.highway_speed = 0.325
 
         # activity type
 
