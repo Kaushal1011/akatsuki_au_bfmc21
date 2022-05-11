@@ -1,12 +1,15 @@
 import heapq
 import math
+from operator import index
+from pickletools import optimize
 from typing import List, Tuple
 
 from scipy.interpolate import interp1d
+from scipy.optimize import minimize
 from src.lib.cortex import cubic_spline_planner
 import networkx as nx
 import numpy as np
-from copy import deepcopy
+from copy import deepcopy,copy
 
 
 def dijkstra(G, start, target):
@@ -266,3 +269,91 @@ class Purest_Pursuit:
         self.cx, self.cy = zip(*coord_list)
         self.old_nearest_point_index = None
         self.Lfc = Lfc
+
+
+class MPC_Controller:
+    def __init__(self,coords):
+        self.horiz = None
+        self.R = np.diag([0.01, 0.01])                 # input cost matrix
+        self.Rd = np.diag([0.01, 1.0])                 # input difference cost matrix
+        self.Q = np.diag([1.0, 1.0])                   # state cost matrix
+        self.Qf = self.Q                               # state final matrix
+        self.maxvn=-.5
+        self.maxvp=.5
+        self.coords=coords
+        self.MPC_HORIZON=5
+
+    def search_target_index(self, state):
+
+        # To speed up nearest point search, doing it at only first time.
+        if self.old_nearest_point_index is None:
+            # search nearest point index
+            dx = [state.rear_x - icx for icx in self.cx]
+            dy = [state.rear_y - icy for icy in self.cy]
+            d = np.hypot(dx, dy)
+            ind = np.argmin(d)
+            self.old_nearest_point_index = ind
+        else:
+            ind = self.old_nearest_point_index
+            distance_this_index = state.calc_distance(self.cx[ind], self.cy[ind])
+            while True:
+                try:
+                    distance_next_index = state.calc_distance(
+                        self.cx[ind + 1], self.cy[ind + 1]
+                    )
+                except IndexError as e:
+                    distance_next_index = state.calc_distance(self.cx[-1], self.cy[-1])
+                    break
+
+                if distance_this_index < distance_next_index:
+                    break
+                ind = ind + 1 if (ind + 1) < len(self.cx) else ind
+                distance_this_index = distance_next_index
+            self.old_nearest_point_index = ind
+
+        Lf = self.k * state.v + self.Lfc  # update look ahead distance
+
+        # search look ahead target point index
+        while Lf > state.calc_distance(self.cx[ind], self.cy[ind]):
+            if (ind + 1) >= len(self.cx):
+                break  # not exceed goal
+            ind += 1
+
+        return ind, Lf
+
+
+    def mpc_cost(self, u_k, my_car, points):
+        mpc_car = copy(my_car)
+        u_k = u_k.reshape(self.horiz, 2).T
+        z_k = np.zeros((2, self.horiz+1))
+    
+        desired_state = points.T
+        cost = 0.0
+
+        for i in range(self.horiz):
+            state_dot = mpc_car.move(u_k[0,i], u_k[1,i])
+            mpc_car.update_state(state_dot)
+        
+            z_k[:,i] = [mpc_car.x, mpc_car.y]
+            cost += np.sum(self.R@(u_k[:,i]**2))
+            cost += np.sum(self.Q@((desired_state[:,i]-z_k[:,i])**2))
+            if i < (self.horiz-1):     
+                cost += np.sum(self.Rd@((u_k[:,i+1] - u_k[:,i])**2))
+        return cost
+
+    def optimize(self, my_car, index):
+        # print(self.coords)
+        print(index)
+        points=self.coords[index:index+self.MPC_HORIZON]
+        points=np.array(points)
+        print(points)
+        self.horiz = points.shape[0]
+        bnd = [(-self.maxvn, self.maxvp),(np.deg2rad(-21), np.deg2rad(21))]*self.horiz
+        print("in optimise")
+        result = minimize(self.mpc_cost, args=(my_car, points), x0 = np.zeros((2*self.horiz)), method='SLSQP', bounds = bnd)
+        print("out optimise")
+        return result.x[0],  result.x[1]
+
+    
+    def purest_pursuit_steer_control(self, state, ind, Lf):
+        return optimize(self,state,index)
