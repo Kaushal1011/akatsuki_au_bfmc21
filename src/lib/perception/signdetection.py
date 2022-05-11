@@ -8,7 +8,12 @@ from src.lib.perception.detect_ov import Detection
 from loguru import logger
 import zmq
 import numpy as np
+import cv2
 
+from multiprocessing import Value
+import ctypes
+
+loaded_model = Value(ctypes.c_bool, False)
 
 class SignDetectionProcess(WorkerProcess):
     # ===================================== Worker process =========================================
@@ -65,6 +70,9 @@ class SignDetectionProcess(WorkerProcess):
         count = 0
         self.detection = Detection()
         print(">>> Starting Sign Detection")
+        global loaded_model
+        loaded_model.value = True
+        print(">>> Starting Sign Detection")
 
         context_recv = zmq.Context()
         sub_cam = context_recv.socket(zmq.SUB)
@@ -89,6 +97,8 @@ class SignDetectionProcess(WorkerProcess):
                 data = sub_cam.recv()
                 data = np.frombuffer(data, dtype=np.uint8)
                 img = np.reshape(data, (480, 640, 3))
+                 #img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                
                 # print("sD img recv")
                 # print(f"Sign Detection timedelta {time.time() - recv_time}")
                 logger.log("PIPE", f"recv image {time.time() - recv_time}")
@@ -98,10 +108,10 @@ class SignDetectionProcess(WorkerProcess):
                 #     pub_sd.send_json(detections, flags=zmq.NOBLOCK)
                 #     pub_sd_img.send(outimage.tobytes(), flags=zmq.NOBLOCK)
                 # else:
-                detections = self.detection(img)
+                detections, outimage = self.detection(img, bbox=True)
                 pub_sd.send_json(detections, flags=zmq.NOBLOCK)
                 if self.enable_steam:
-                    pub_sd_img.send(img.tobytes(), flags=zmq.NOBLOCK)
+                    pub_sd_img.send(outimage.tobytes(), flags=zmq.NOBLOCK)
 
                 # logger.log("SD", f"detections -> {detections}")
 

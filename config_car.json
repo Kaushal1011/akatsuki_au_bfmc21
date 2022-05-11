@@ -1,9 +1,9 @@
 {
-  "enableStream": true,
+  "enableStream": false,
   "enableCameraSpoof": false,
   "enableRc": false,
   "enableLaneKeeping": true,
-  "enableSignDet": false,
+  "enableSignDet": true,
   "enableSIM": false,
   "loc_server": false,
   "tl_server": false,

@@ -8,6 +8,7 @@ import argparse
 from multiprocessing.connection import Connection
 
 from src import config as config_module
+from time import sleep
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -43,6 +44,7 @@ from src.utils.remotecontrol.RemoteControlReceiverProcess import (
     RemoteControlReceiverProcess,
 )
 from src.lib.cortex.decisionproc import DecisionMakingProcess
+from src.lib.perception.signdetection import loaded_model
 
 import sys
 from loguru import logger
@@ -95,7 +97,7 @@ STREAM_PORT1 = 2244
 STREAM_PORT2 = 4422
 # ["cam", "lk", "sd"]
 
-streams = ["lk"]
+streams = ["sd"]
 # =============================== INITIALIZING PROCESSES =================================
 # Pipe collections
 allProcesses: List[Process] = []
@@ -114,6 +116,7 @@ if config["enableRc"]:
 # ===================================== PERCEPTION ===================================
 dataFusionOutPs: List[Connection] = []
 
+sDProc = None
 if config["enableLaneKeeping"]:
     lkProc = LaneKeeping([], [], enable_stream=("lk" in streams))
     allProcesses.append(lkProc)
@@ -125,8 +128,9 @@ if not config["enableSignDet"]:
         streams.remove("sd")
 
 if config["enableSignDet"]:
+    print("Sign Detection will start in a while")
     sDProc = SignDetectionProcess([], [], [], enable_stream=("sd" in streams))
-    allProcesses.append(sDProc)
+    # allProcesses.append(sDProc)
     dataFusionInputName.append("sd")
     camOutNames.append("sd")
 
@@ -168,6 +172,21 @@ elif config["tl_server"]:
     allProcesses.append(trafficProc)
     dataFusionInputName.append("tl")
 
+
+#
+# ===================== Distance Sensor ==========================================
+# Distance Sensor -> Decision Making (data fusion)
+
+if config["enableSIM"]:
+    disProc = DistanceSIM([], [], 6666, log=False)
+    allProcesses.append(disProc)
+    dataFusionInputName.append("dis")
+
+elif isPI:
+    disProc = DistanceProcess([], [])
+    allProcesses.append(disProc)
+    dataFusionInputName.append("dis")
+
 # ========================= IMU ===================================================
 # IMU -> Position Fusino
 if isPI and not config["enableSIM"]:
@@ -182,25 +201,12 @@ else:
     posFusionInputName.append("imu")
 
 
-#
 # # ===================== Position Fusion ==========================================
 if len(posFusionInputName) > 0:
     posfzzProc = PositionFusionProcess([], [], inPsnames=posFusionInputName)
     allProcesses.append(posfzzProc)
     dataFusionInputName.append("pos")
 
-# ===================== Distance Sensor ==========================================
-# Distance Sensor -> Decision Making (data fusion)
-
-if config["enableSIM"]:
-    disProc = DistanceSIM([], [], 6666, log=False)
-    allProcesses.append(disProc)
-    dataFusionInputName.append("dis")
-
-elif isPI:
-    disProc = DistanceProcess([], [])
-    allProcesses.append(disProc)
-    dataFusionInputName.append("dis")
 
 # ==== Movement Control pipe
 # Decision Process -> Movement control
@@ -296,9 +302,21 @@ else:
 
 # ===================================== START PROCESSES ==================================
 print("Starting the processes!", allProcesses)
-for proc in allProcesses:
-    proc.daemon = True
-    proc.start()
+if sDProc is not None:
+    sDProc.daemon = True
+    sDProc.start()
+    while not loaded_model.value:
+        print("Waiting on sDProc")
+        sleep(1)
+        
+    for proc in allProcesses:
+        proc.daemon = True
+        proc.start()
+    allProcesses.append(sDProc)
+else:
+    for proc in allProcesses:
+        proc.daemon = True
+        proc.start()    
 
 
 # ===================================== STAYING ALIVE ====================================
