@@ -1,5 +1,4 @@
 import json
-from pprint import pprint
 
 # TODO: add argparser for config
 global config_path
