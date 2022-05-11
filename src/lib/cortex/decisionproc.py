@@ -328,7 +328,7 @@ class DecisionMakingProcess(WorkerProcess):
                 if "pos" in self.inPsnames:
                     if sub_pos.poll(timeout=0.05):
                         pos = get_last(sub_pos)
-                        print(f"POS -> {pos}")
+                        # print(f"POS -> {pos}")
                         if pos[0] == 0 and pos[1] == 0:
                             pass
                         else:
@@ -373,8 +373,8 @@ class DecisionMakingProcess(WorkerProcess):
                 logger.debug(f"Sonar Side: {self.state.side_distance}")
 
                 if len(outPs) > 0:
-                    outPs[0].send((self.state.steering_angle, self.state.v))
-                    # outPs[0].send((0.0, 0.0))
+                    # outPs[0].send((self.state.steering_angle, self.state.v))
+                    outPs[0].send((0.0, 0.0))
                 sleep(0.1)
 
             except Exception as e:
