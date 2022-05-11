@@ -225,7 +225,7 @@ class LaneKeep:
     #         mask = cv2.inRange(imgn, lower, upper)
     #         return mask
 
-    def intersection_det(self, img: np.ndarray, area_threshold=5_500):
+    def intersection_det(self, img: np.ndarray, area_threshold=3_500):
         # detect horizontal lines
         horizontal_size = img.shape[1] // 6
         horizontal_kernel = cv2.getStructuringElement(

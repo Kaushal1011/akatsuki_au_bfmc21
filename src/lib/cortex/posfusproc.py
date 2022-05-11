@@ -129,11 +129,12 @@ class PositionFusionProcess(WorkerProcess):
                     gx = loc["posA"]
                     gy = loc["posB"]
                     gyaw = loc["rotA"] if "rotA" in loc.keys() else loc["radA"]
+                    # gyaw = gyaw 
                     # gyaw = 2 * math.pi - (gyaw + math.pi)
 
-                if (iyaw is not None) or (gx is not None):
+                if (iyaw is not None):
                     pos_data = self.localize.update(
-                            iyaw, ipitch, iroll, ax, ay, az, gx, gy, gyaw
+                            iyaw, ipitch, iroll, ax, ay, az, gx, gy, iyaw
                         )
                     
                     # print("pos_data", pos_data)
