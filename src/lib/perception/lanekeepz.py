@@ -109,7 +109,6 @@ class LaneKeepingProcess(WorkerProcess):
                 img = np.reshape(data, (480, 640, 3))
 
                 # print("lk img recv")
-                logger.log("PIPE", "recv image")
                 t_r += time.time() - image_recv_start
                 count += 1
 

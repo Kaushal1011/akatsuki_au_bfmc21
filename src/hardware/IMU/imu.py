@@ -67,7 +67,7 @@ class imu(threading.Thread):
 
         self.poll_interval = self.imu.IMUGetPollInterval()
         print("Recommended Poll Interval: %dmS\n" % self.poll_interval)
-        
+
     def run(self):
         context_send = zmq.Context()
         pub_imu = context_send.socket(zmq.PUB)
@@ -87,6 +87,7 @@ class imu(threading.Thread):
 
                 # fix yaw
                 yaw = yaw * math.pi / 180
+                yaw -= 1.54
                 if yaw > math.pi:
                     yaw = yaw - 2 * math.pi
                 self.yaw = -yaw

@@ -9,6 +9,7 @@ from multiprocessing.connection import Connection
 
 from src import config as config_module
 from time import sleep
+import time
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -25,7 +26,8 @@ from src.hardware.camera.cameraprocess import CameraProcess
 from src.hardware.camera.SIMCameraProcess import SIMCameraProcess
 from src.lib.perception.lanekeepz import LaneKeepingProcess as LaneKeeping
 from src.lib.perception.signdetection import SignDetectionProcess
-from src.data.localisationssystem.home_locProc import LocalisationProcess
+
+# from src.data.localisationssystem.home_locProc import LocalisationProcess
 
 from src.data.localisationssystem.locsysProc import LocalisationSystemProcess
 
@@ -70,23 +72,21 @@ logger.level("TIME", no=15)
 def filter(level: List[int]):
     return lambda r: r["level"].no in level or r["level"].no > 19
 
+def filter_level(level: List[int]):
+    return lambda r: r["level"].no in level
 
-TEST_PIPE = False
+
+LOG_STDOUT = False
 logger.remove()
-if TEST_PIPE:
+if LOG_STDOUT:
     logger.add(
         sys.stderr,
         filter=filter([18]),
         format="<level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
     )
 
-# logger.add(
-#     "file1.log",
-#     filter=lambda r: r["level"] == 14,
-#     format="<level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
-# )
-#
 
+logger.add(f"log/log_data_{time.time():.2f}", filter=filter_level([12]))
 # ========================================================================
 # SCRIPT USED FOR WIRING ALL COMPONENTS
 # ========================================================================
@@ -155,7 +155,7 @@ if config["enableSIM"]:
 #     posFusionInputName.append("loc")
 #
 
-if config["loc_server"]:
+elif config["loc_server"]:
     # LocSys -> Position Fusion
     locsysProc = LocalisationSystemProcess([], [])
     allProcesses.append(locsysProc)
@@ -220,8 +220,8 @@ dataFusionOutPs.append(FzzMcS)
 if config["env_server"]:
     beacon = 23456
     id = 120
-    serverpublickey = "publickey_server_test.pem"
-    clientprivatekey = "privatekey_client_test.pem"
+    serverpublickey = "publickey_server.pem"
+    clientprivatekey = "privatekey_client.pem"
 
     gpsStR, gpsStS = Pipe(duplex=False)
 
@@ -315,6 +315,7 @@ if sDProc is not None:
     for proc in allProcesses:
         proc.daemon = True
         proc.start()
+    
     allProcesses.append(sDProc)
 else:
     for proc in allProcesses:
@@ -338,3 +339,13 @@ except KeyboardInterrupt:
             print("Process witouth stop", proc)
             proc.terminate()
             proc.join()
+    if sDProc is not None:
+        if hasattr(sDProc, "stop") and callable(getattr(sDProc, "stop")):
+            print("Process with stop", sDProc)
+            sDProc.stop()
+            sDProc.join()
+        else:
+            print("Process witouth stop", sDProc)
+            sDProc.terminate()
+            sDProc.join()
+    

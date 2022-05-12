@@ -111,7 +111,7 @@ class PositionFusionProcess(WorkerProcess):
                 pos = list()
                 if "imu" in self.inPsnames:
                     imu = sub_imu.recv_json()
-                    # print("IMU -> ", imu)
+                    print("IMU -> ", imu)
                     # print(f'imu delta {time()-imu["timestamp"]}')
                     logger.log("PIPE", f"imu {imu}")
                     # print("IMU", time(), imu["timestamp"])
@@ -129,14 +129,16 @@ class PositionFusionProcess(WorkerProcess):
                     gx = loc["posA"]
                     gy = loc["posB"]
                     gyaw = loc["rotA"] if "rotA" in loc.keys() else loc["radA"]
-                    # gyaw = gyaw 
+                    logger.log("PIPE", f"loc {loc}")
+
+                    # gyaw = gyaw
                     # gyaw = 2 * math.pi - (gyaw + math.pi)
 
-                if (iyaw is not None):
+                if iyaw is not None:
                     pos_data = self.localize.update(
-                            iyaw, ipitch, iroll, ax, ay, az, gx, gy, iyaw
-                        )
-                    
+                        iyaw, ipitch, iroll, ax, ay, az, gx, gy, iyaw
+                    )
+
                     # print("pos_data", pos_data)
                     pub_pos.send_json(pos_data)
 

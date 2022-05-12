@@ -15,6 +15,7 @@ import ctypes
 
 loaded_model = Value(ctypes.c_bool, False)
 
+
 class SignDetectionProcess(WorkerProcess):
     # ===================================== Worker process =========================================
     def __init__(
@@ -96,11 +97,10 @@ class SignDetectionProcess(WorkerProcess):
                 data = sub_cam.recv()
                 data = np.frombuffer(data, dtype=np.uint8)
                 img = np.reshape(data, (480, 640, 3))
-                 #img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                
+                # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
                 # print("sD img recv")
                 # print(f"Sign Detection timedelta {time.time() - recv_time}")
-                logger.log("PIPE", f"recv image {time.time() - recv_time}")
                 count += 1
                 start_time = time.time()
                 #     detections, outimage = self.detection(img, bbox=True)
