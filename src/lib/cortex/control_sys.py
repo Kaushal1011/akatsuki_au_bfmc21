@@ -1,4 +1,4 @@
-from re import S
+from re import S, X
 from turtle import st
 import numpy as np
 import math
@@ -19,6 +19,15 @@ class Pure_Pursuit:
         if self.old_nearest_point_index is None and flag=="roundabout":
             # search nearest point index
             print("inhere")
+            # state.rear_x=state.x
+            # state.rear_y=state.y
+            state.f_x = state.x - (
+            (state.car_len / 2) * math.cos(state.yaw)
+        )
+            state.f_y = state.y - (
+            (state.car_len / 2) * math.sin(state.yaw)
+        )
+
             dx = [state.rear_x - icx for icx in self.cx]
             dy = [state.rear_y - icy for icy in self.cy]
             d = np.hypot(dx, dy)

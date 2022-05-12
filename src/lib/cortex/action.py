@@ -321,7 +321,7 @@ class LaneKeepBehaviour(BehaviourCallback):
 class ControlSystemBehaviour(BehaviourCallback):
     def __init__(self, coord_list):
         super().__init__()
-        self.cs = Pure_Pursuit(coord_list)
+        self.cs = Pure_Pursuit(coord_list,Lfc=0.5)
 
     def __call__(self, car_state: CarState):
         ind, lf = self.cs.search_target_index(car_state)
@@ -585,8 +585,8 @@ class ParkingBehaviour(BehaviourCallback):
 
             elif self.phase == 6:
                 print("In Phase 6")
-                tx = 3.5 + self.offsetx
-                ty = 2.4
+                tx = 3.4 + self.offsetx
+                ty = 2.2
                 d = math.sqrt(
                     (tx - car_state.rear_x) ** 2 + (ty - car_state.rear_y) ** 2
                 )

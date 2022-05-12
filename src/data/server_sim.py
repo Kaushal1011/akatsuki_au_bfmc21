@@ -69,8 +69,8 @@ class ServerSIM(WorkerProcess):
                 command = json.loads(bts)
                 if self.log:
                     print(command)
-                if self.connect == "loc":
-                    sleep(1.5)
+                # if self.connect == "loc":
+                #     sleep(1.5)
                 pub_sim.send_json(command, flags=zmq.NOBLOCK)
                 # for outP in outPs:
                 #     outP.send(command)

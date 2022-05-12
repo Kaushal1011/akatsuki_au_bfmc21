@@ -5,6 +5,7 @@
 *.onnx
 *.pt
 dataset
+log_data_*
 
 # ignore data directory
 nbs/*/data
