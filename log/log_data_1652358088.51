@@ -1,0 +1,544 @@
+2022-05-12 15:21:30.327 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358090.3255296, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:30.385 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358090.3839588, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:30.438 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358090.436737, 'roll': -8.061679181992076e-06, 'pitch': 0.0004039719933643937, 'yaw': 1.8112913370132446, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
+2022-05-12 15:21:30.442 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358090.4413638, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:30.510 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358090.5089874, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:30.590 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358090.5876184, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:30.641 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:30.672 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358090.6688251, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:30.736 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:30.757 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358090.7550387, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:30.761 | PIPE     | src.lib.cortex.posfusproc:_the_thread:132 - loc {'timestamp': 1652358090.257594, 'posA': 0.7662486433982849, 'posB': 6.88088321685791, 'rotA': 1.811290979385376, 'rotB': 1.811290979385376}
+2022-05-12 15:21:30.794 | PIPE     | src.lib.cortex.decisionproc:_the_thread:337 - POS -> [0.7662486433982849, 6.88088321685791, 1.8112913370132446, 0.0004039719933643937, -8.061679181992076e-06]
+2022-05-12 15:21:30.796 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358090.659603, 'roll': -7.324487341975328e-06, 'pitch': 0.0004044889356009662, 'yaw': 1.811291217803955, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
+2022-05-12 15:21:30.806 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:30.843 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358090.842425, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:30.866 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:30.935 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358090.9327567, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:30.958 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -4 Intersection Det False
+2022-05-12 15:21:31.028 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:31.051 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358091.044687, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:31.179 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:31.190 | PIPE     | src.lib.cortex.decisionproc:_the_thread:354 - SD -> {}
+2022-05-12 15:21:31.258 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358091.2519014, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:31.291 | PIPE     | src.lib.cortex.posfusproc:_the_thread:132 - loc {'timestamp': 1652358090.7899315, 'posA': 0.8552247881889343, 'posB': 6.795374393463135, 'rotA': 1.8112915754318237, 'rotB': 1.8112915754318237}
+2022-05-12 15:21:31.300 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358091.2172296, 'roll': -1.1186990377609618e-05, 'pitch': 0.0004095462500117719, 'yaw': 1.8112908601760864, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
+2022-05-12 15:21:31.304 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:31.310 | PIPE     | src.lib.cortex.decisionproc:_the_thread:337 - POS -> [0.8552247881889343, 6.795374393463135, 1.811291217803955, 0.0004044889356009662, -7.324487341975328e-06]
+2022-05-12 15:21:31.350 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358091.3477397, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:31.403 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:31.473 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -1 Intersection Det False
+2022-05-12 15:21:31.475 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358091.4729583, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:31.553 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -3 Intersection Det False
+2022-05-12 15:21:31.589 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358091.5851216, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:31.632 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:31.707 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358091.7064912, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:31.768 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 23 Intersection Det False
+2022-05-12 15:21:31.836 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358091.829964, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:31.898 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:31.966 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358091.95925, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:32.026 | PIPE     | src.lib.cortex.decisionproc:_the_thread:354 - SD -> {}
+2022-05-12 15:21:32.054 | PIPE     | src.lib.cortex.posfusproc:_the_thread:132 - loc {'timestamp': 1652358091.5518975, 'posA': 0.8732431530952454, 'posB': 6.824777126312256, 'rotA': 1.8112905025482178, 'rotB': 1.8112905025482178}
+2022-05-12 15:21:32.071 | PIPE     | src.lib.cortex.decisionproc:_the_thread:337 - POS -> [0.8732431530952454, 6.824777126312256, 1.8112908601760864, 0.0004095462500117719, -1.1186990377609618e-05]
+2022-05-12 15:21:32.070 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358091.9192514, 'roll': -6.263321665755939e-06, 'pitch': 0.0004044440865982324, 'yaw': 1.811291217803955, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
+2022-05-12 15:21:32.096 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358092.0937216, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:32.133 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:32.224 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358092.2210937, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:32.306 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:32.332 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358092.3289812, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:32.438 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358092.4350328, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:32.450 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -7 Intersection Det False
+2022-05-12 15:21:32.551 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:32.578 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358092.5764654, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:32.697 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358092.695275, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:32.707 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:32.831 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358092.829698, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:32.844 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:32.926 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:32.945 | PIPE     | src.lib.cortex.posfusproc:_the_thread:132 - loc {'timestamp': 1652358092.4444826, 'posA': 0.807488739490509, 'posB': 6.775991439819336, 'rotA': 1.8112905025482178, 'rotB': 1.8112905025482178}
+2022-05-12 15:21:32.957 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358092.642638, 'roll': -6.943186690477887e-06, 'pitch': 0.0004046845715492964, 'yaw': 1.8112907409667969, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
+2022-05-12 15:21:32.958 | PIPE     | src.lib.cortex.decisionproc:_the_thread:337 - POS -> [0.807488739490509, 6.775991439819336, 1.811291217803955, 0.0004044440865982324, -6.263321665755939e-06]
+2022-05-12 15:21:32.978 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358092.9771297, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:33.002 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:33.094 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358093.088718, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:33.137 | PIPE     | src.lib.cortex.decisionproc:_the_thread:354 - SD -> {}
+2022-05-12 15:21:33.181 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -8 Intersection Det False
+2022-05-12 15:21:33.204 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358093.2027984, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:33.269 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:33.338 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358093.3357213, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:33.393 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -13 Intersection Det False
+2022-05-12 15:21:33.449 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358093.446983, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:33.562 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358093.5593665, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:33.604 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:33.682 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358093.6809342, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:33.685 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:33.761 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:33.820 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358093.8179436, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:33.839 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:33.893 | PIPE     | src.lib.cortex.posfusproc:_the_thread:132 - loc {'timestamp': 1652358093.3917823, 'posA': 0.8451009392738342, 'posB': 6.903647422790527, 'rotA': 1.8112901449203491, 'rotB': 1.8112901449203491}
+2022-05-12 15:21:33.924 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358093.7270124, 'roll': -9.632355613575783e-06, 'pitch': 0.00040419530705548823, 'yaw': 1.8112895488739014, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
+2022-05-12 15:21:33.924 | PIPE     | src.lib.cortex.decisionproc:_the_thread:337 - POS -> [0.8451009392738342, 6.903647422790527, 1.8112907409667969, 0.0004046845715492964, -6.943186690477887e-06]
+2022-05-12 15:21:33.960 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358093.9585564, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:33.980 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:34.097 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358094.0943098, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:34.141 | PIPE     | src.lib.cortex.decisionproc:_the_thread:354 - SD -> {}
+2022-05-12 15:21:34.144 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 23 Intersection Det False
+2022-05-12 15:21:34.227 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358094.2253306, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:34.255 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 23 Intersection Det False
+2022-05-12 15:21:34.333 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358094.3306255, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:34.388 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 23 Intersection Det False
+2022-05-12 15:21:34.474 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:34.480 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358094.477795, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:34.595 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358094.5930407, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:34.664 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:34.760 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358094.753518, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:34.783 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:34.810 | PIPE     | src.lib.cortex.posfusproc:_the_thread:132 - loc {'timestamp': 1652358094.3059807, 'posA': 0.7318309545516968, 'posB': 6.819557189941406, 'rotA': 1.8112890720367432, 'rotB': 1.8112890720367432}
+2022-05-12 15:21:34.845 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358094.5057495, 'roll': -7.303417078219354e-06, 'pitch': 0.00040447915671393275, 'yaw': 1.8112895488739014, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
+2022-05-12 15:21:34.846 | PIPE     | src.lib.cortex.decisionproc:_the_thread:337 - POS -> [0.7318309545516968, 6.819557189941406, 1.8112895488739014, 0.00040419530705548823, -9.632355613575783e-06]
+2022-05-12 15:21:34.915 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358094.9068186, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:34.972 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:35.037 | PIPE     | src.lib.cortex.decisionproc:_the_thread:354 - SD -> {}
+2022-05-12 15:21:35.040 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358095.0378451, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:35.092 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:35.169 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358095.1672916, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:35.241 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 23 Intersection Det False
+2022-05-12 15:21:35.309 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358095.3065891, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:35.344 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:35.453 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358095.4514592, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:35.486 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:35.590 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358095.5874307, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:35.680 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:35.699 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358095.6974702, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:35.802 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:35.817 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358095.8156466, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:35.840 | PIPE     | src.lib.cortex.posfusproc:_the_thread:132 - loc {'timestamp': 1652358095.3386147, 'posA': 0.7574320435523987, 'posB': 6.900530815124512, 'rotA': 1.811289668083191, 'rotB': 1.811289668083191}
+2022-05-12 15:21:35.850 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358095.7025418, 'roll': -7.41813482818543e-06, 'pitch': 0.00040377845289185643, 'yaw': 1.8112889528274536, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
+2022-05-12 15:21:35.857 | PIPE     | src.lib.cortex.decisionproc:_the_thread:337 - POS -> [0.7574320435523987, 6.900530815124512, 1.8112895488739014, 0.00040447915671393275, -7.303417078219354e-06]
+2022-05-12 15:21:35.901 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:35.928 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358095.9270844, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:36.011 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:36.053 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358096.049134, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:36.087 | PIPE     | src.lib.cortex.decisionproc:_the_thread:354 - SD -> {}
+2022-05-12 15:21:36.142 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:36.184 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358096.181511, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:36.232 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:36.305 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358096.2965863, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:36.335 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:36.419 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:36.420 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358096.4166584, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:36.524 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358096.5227883, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:36.527 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:36.629 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358096.6257632, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:36.706 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:36.736 | PIPE     | src.lib.cortex.posfusproc:_the_thread:132 - loc {'timestamp': 1652358096.2316506, 'posA': 0.8873580694198608, 'posB': 6.76772403717041, 'rotA': 1.8112893104553223, 'rotB': 1.8112893104553223}
+2022-05-12 15:21:36.748 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358096.746475, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:36.749 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358096.7297683, 'roll': -6.967101853661006e-06, 'pitch': 0.0004046685353387147, 'yaw': 1.8112891912460327, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
+2022-05-12 15:21:36.749 | PIPE     | src.lib.cortex.decisionproc:_the_thread:337 - POS -> [0.8873580694198608, 6.76772403717041, 1.8112889528274536, 0.00040377845289185643, -7.41813482818543e-06]
+2022-05-12 15:21:36.818 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:36.896 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358096.89391, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:36.916 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -6 Intersection Det False
+2022-05-12 15:21:37.008 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:37.011 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358097.0086179, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:37.096 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:37.123 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358097.1221435, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:37.215 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358097.212384, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:37.235 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:37.280 | PIPE     | src.lib.cortex.decisionproc:_the_thread:354 - SD -> {}
+2022-05-12 15:21:37.339 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:37.340 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358097.3336983, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:37.472 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358097.4655204, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:37.481 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:37.591 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358097.5883136, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:37.616 | PIPE     | src.lib.cortex.posfusproc:_the_thread:132 - loc {'timestamp': 1652358097.1138334, 'posA': 0.7645172476768494, 'posB': 6.880821228027344, 'rotA': 1.8112884759902954, 'rotB': 1.8112884759902954}
+2022-05-12 15:21:37.617 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:37.695 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:37.738 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358097.7357326, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:37.815 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:37.900 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358097.893842, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:37.914 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358097.8607872, 'roll': -9.673815839050803e-06, 'pitch': 0.000404197140596807, 'yaw': 1.8112881183624268, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
+2022-05-12 15:21:37.915 | PIPE     | src.lib.cortex.decisionproc:_the_thread:337 - POS -> [0.7886520996490194, 6.8433775510977375, 1.8112891912460327, 0.0004046685353387147, -6.967101853661006e-06]
+2022-05-12 15:21:38.031 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358098.0284798, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:38.102 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:38.140 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358098.138041, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:38.178 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:38.260 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -2 Intersection Det False
+2022-05-12 15:21:38.261 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358098.2585835, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:38.331 | PIPE     | src.lib.cortex.decisionproc:_the_thread:354 - SD -> {}
+2022-05-12 15:21:38.346 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:38.387 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358098.3857484, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:38.446 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:38.505 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358098.5033398, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:38.558 | PIPE     | src.lib.cortex.posfusproc:_the_thread:132 - loc {'timestamp': 1652358098.0478752, 'posA': 0.7685721516609192, 'posB': 6.7986531257629395, 'rotA': 1.811288595199585, 'rotB': 1.811288595199585}
+2022-05-12 15:21:38.574 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:38.576 | PIPE     | src.lib.cortex.decisionproc:_the_thread:337 - POS -> [0.7700554004837787, 6.81154285130583, 1.8112881183624268, 0.000404197140596807, -9.673815839050803e-06]
+2022-05-12 15:21:38.576 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358098.5754554, 'roll': -7.302325684577227e-06, 'pitch': 0.00040447755600325763, 'yaw': 1.8112882375717163, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
+2022-05-12 15:21:38.635 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358098.6332846, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:38.712 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:38.787 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358098.785235, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:38.899 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -22 Intersection Det False
+2022-05-12 15:21:38.933 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358098.9180212, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:38.999 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:39.057 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358099.0550425, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:39.104 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:39.185 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358099.1841776, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:39.214 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:39.309 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358099.3040578, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:39.336 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:39.423 | PIPE     | src.lib.cortex.decisionproc:_the_thread:354 - SD -> {}
+2022-05-12 15:21:39.442 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358099.4402094, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:39.479 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:39.488 | PIPE     | src.lib.cortex.posfusproc:_the_thread:132 - loc {'timestamp': 1652358098.9851162, 'posA': 0.8444004654884338, 'posB': 6.90199613571167, 'rotA': 1.811287522315979, 'rotB': 1.811287522315979}
+2022-05-12 15:21:39.515 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358099.3626492, 'roll': -6.233582098502666e-06, 'pitch': 0.00040442662429995835, 'yaw': 1.8112882375717163, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
+2022-05-12 15:21:39.515 | PIPE     | src.lib.cortex.decisionproc:_the_thread:337 - POS -> [0.8228610979470277, 6.878323057050282, 1.8112882375717163, 0.00040447755600325763, -7.302325684577227e-06]
+2022-05-12 15:21:39.571 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358099.5646033, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:39.680 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:39.689 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358099.6868057, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:39.782 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:39.805 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358099.80149, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:39.875 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:39.932 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358099.9235082, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:40.001 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:40.057 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358100.0558438, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:40.105 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 23 Intersection Det False
+2022-05-12 15:21:40.178 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358100.1759636, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:40.240 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:40.316 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358100.3132806, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:40.342 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:40.416 | PIPE     | src.lib.cortex.posfusproc:_the_thread:132 - loc {'timestamp': 1652358099.9118803, 'posA': 0.7484512329101562, 'posB': 6.821153163909912, 'rotA': 1.8112871646881104, 'rotB': 1.8112871646881104}
+2022-05-12 15:21:40.421 | PIPE     | src.lib.cortex.decisionproc:_the_thread:354 - SD -> {}
+2022-05-12 15:21:40.425 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358100.4223976, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:40.428 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358100.1007845, 'roll': -6.250624210224487e-06, 'pitch': 0.0004044251109007746, 'yaw': 1.8112881183624268, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
+2022-05-12 15:21:40.429 | PIPE     | src.lib.cortex.decisionproc:_the_thread:337 - POS -> [0.7753555887698649, 6.839285034991857, 1.8112882375717163, 0.00040442662429995835, -6.233582098502666e-06]
+2022-05-12 15:21:40.457 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:40.537 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358100.5365937, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:40.650 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358100.6451483, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:40.677 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:40.769 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358100.765612, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:40.779 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:40.877 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358100.8738003, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:40.888 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:40.977 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:41.000 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358100.9927375, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:41.059 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -4 Intersection Det False
+2022-05-12 15:21:41.099 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358101.0911546, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:41.139 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:41.228 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358101.2250562, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:41.230 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -4 Intersection Det False
+2022-05-12 15:21:41.303 | PIPE     | src.lib.cortex.posfusproc:_the_thread:132 - loc {'timestamp': 1652358100.8005686, 'posA': 0.7932103872299194, 'posB': 6.759814262390137, 'rotA': 1.811287522315979, 'rotB': 1.811287522315979}
+2022-05-12 15:21:41.314 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358101.108551, 'roll': -7.062421445880318e-06, 'pitch': 0.00040403188904747367, 'yaw': 1.8112868070602417, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
+2022-05-12 15:21:41.316 | PIPE     | src.lib.cortex.decisionproc:_the_thread:337 - POS -> [0.7831263060353528, 6.7717421790340975, 1.8112881183624268, 0.0004044251109007746, -6.250624210224487e-06]
+2022-05-12 15:21:41.344 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358101.3418562, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:41.351 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:41.430 | PIPE     | src.lib.cortex.decisionproc:_the_thread:354 - SD -> {}
+2022-05-12 15:21:41.448 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358101.4430766, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:41.469 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -2 Intersection Det False
+2022-05-12 15:21:41.539 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358101.5371275, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:41.583 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:41.651 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358101.6452463, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:41.687 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:41.746 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358101.7433004, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:41.763 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:41.863 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358101.8497593, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:41.875 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -3 Intersection Det False
+2022-05-12 15:21:41.965 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358101.9607925, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:41.997 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -7 Intersection Det False
+2022-05-12 15:21:42.074 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:42.102 | PIPE     | src.lib.cortex.posfusproc:_the_thread:132 - loc {'timestamp': 1652358101.6010492, 'posA': 0.8903401494026184, 'posB': 6.888078689575195, 'rotA': 1.8112869262695312, 'rotB': 1.8112869262695312}
+2022-05-12 15:21:42.115 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358102.0666249, 'roll': -8.061642802204005e-06, 'pitch': 0.000403972138883546, 'yaw': 1.8112868070602417, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
+2022-05-12 15:21:42.116 | PIPE     | src.lib.cortex.decisionproc:_the_thread:337 - POS -> [0.8551268110088174, 6.85690765614601, 1.8112868070602417, 0.00040403188904747367, -7.062421445880318e-06]
+2022-05-12 15:21:42.173 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358102.1716683, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:42.245 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:42.271 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358102.2694619, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:42.328 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -9 Intersection Det False
+2022-05-12 15:21:42.364 | PIPE     | src.lib.cortex.decisionproc:_the_thread:354 - SD -> {}
+2022-05-12 15:21:42.381 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358102.380084, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:42.395 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:42.484 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:42.488 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358102.4867673, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:42.588 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358102.587177, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:42.611 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:42.709 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:42.719 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358102.7149866, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:42.828 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358102.8256972, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:42.864 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:42.877 | PIPE     | src.lib.cortex.posfusproc:_the_thread:132 - loc {'timestamp': 1652358102.3758972, 'posA': 0.7931390404701233, 'posB': 6.910942554473877, 'rotA': 1.8112865686416626, 'rotB': 1.8112865686416626}
+2022-05-12 15:21:42.890 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358102.6977677, 'roll': -1.0166462743654847e-05, 'pitch': 0.00040366509347222745, 'yaw': 1.811286211013794, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
+2022-05-12 15:21:42.891 | PIPE     | src.lib.cortex.decisionproc:_the_thread:337 - POS -> [0.8245257597134767, 6.909140316381592, 1.8112868070602417, 0.000403972138883546, -8.061642802204005e-06]
+2022-05-12 15:21:42.958 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358102.957182, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:42.965 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:43.078 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358103.0741355, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:43.093 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -8 Intersection Det False
+2022-05-12 15:21:43.191 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358103.1881611, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:43.233 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -11 Intersection Det False
+2022-05-12 15:21:43.240 | PIPE     | src.lib.cortex.decisionproc:_the_thread:354 - SD -> {}
+2022-05-12 15:21:43.315 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358103.3092139, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:43.321 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:43.386 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:43.422 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358103.414021, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:43.483 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:43.508 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358103.5065784, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:43.579 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:43.618 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358103.6159747, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:43.693 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:43.726 | PIPE     | src.lib.cortex.posfusproc:_the_thread:132 - loc {'timestamp': 1652358103.2191842, 'posA': 0.8833727836608887, 'posB': 6.898993968963623, 'rotA': 1.811286211013794, 'rotB': 1.811286211013794}
+2022-05-12 15:21:43.741 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358103.7340763, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:43.743 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358103.7004826, 'roll': -6.263287104957271e-06, 'pitch': 0.00040444426122121513, 'yaw': 1.8112865686416626, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
+2022-05-12 15:21:43.744 | PIPE     | src.lib.cortex.decisionproc:_the_thread:337 - POS -> [0.8649636429407253, 6.910773655266062, 1.811286211013794, 0.00040366509347222745, -1.0166462743654847e-05]
+2022-05-12 15:21:43.854 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358103.8519065, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:43.885 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:43.976 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:43.983 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358103.9801095, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:44.070 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -1 Intersection Det False
+2022-05-12 15:21:44.094 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358104.090706, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:44.148 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:44.192 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358104.1911912, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:44.223 | PIPE     | src.lib.cortex.decisionproc:_the_thread:354 - SD -> {}
+2022-05-12 15:21:44.243 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 23 Intersection Det False
+2022-05-12 15:21:44.350 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358104.347692, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:44.450 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358104.4479382, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:44.525 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:44.556 | PIPE     | src.lib.cortex.posfusproc:_the_thread:132 - loc {'timestamp': 1652358104.0554793, 'posA': 0.8379707932472229, 'posB': 6.878198146820068, 'rotA': 1.8112854957580566, 'rotB': 1.8112854957580566}
+2022-05-12 15:21:44.566 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358104.4115057, 'roll': -1.1758368600567337e-05, 'pitch': 0.00040957602323032916, 'yaw': 1.8112859725952148, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
+2022-05-12 15:21:44.568 | PIPE     | src.lib.cortex.decisionproc:_the_thread:337 - POS -> [0.852853862281026, 6.886408241233769, 1.8112865686416626, 0.00040444426122121513, -6.263287104957271e-06]
+2022-05-12 15:21:44.575 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358104.5689268, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:44.642 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:44.700 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358104.6957297, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:44.716 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:44.798 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358104.7963686, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:44.802 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:44.905 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358104.900747, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:44.914 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:45.021 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:45.061 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358105.05606, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:45.109 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:45.171 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358105.168959, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:45.206 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:45.254 | PIPE     | src.lib.cortex.decisionproc:_the_thread:354 - SD -> {}
+2022-05-12 15:21:45.272 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358105.2659943, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:45.347 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:45.402 | PIPE     | src.lib.cortex.posfusproc:_the_thread:132 - loc {'timestamp': 1652358104.9004571, 'posA': 0.7405314445495605, 'posB': 6.8508076667785645, 'rotA': 1.8112854957580566, 'rotB': 1.8112854957580566}
+2022-05-12 15:21:45.415 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358105.102921, 'roll': -1.1665850252029486e-05, 'pitch': 0.0004089009889867157, 'yaw': 1.8112856149673462, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
+2022-05-12 15:21:45.416 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358105.4131799, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:45.417 | PIPE     | src.lib.cortex.decisionproc:_the_thread:337 - POS -> [0.7791011443059295, 6.8549305748111165, 1.8112859725952148, 0.00040957602323032916, -1.1758368600567337e-05]
+2022-05-12 15:21:45.453 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:45.552 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -10 Intersection Det False
+2022-05-12 15:21:45.568 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358105.5655742, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:45.678 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358105.6761286, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:45.737 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 23 Intersection Det False
+2022-05-12 15:21:45.886 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:45.916 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358105.9136271, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:45.962 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:46.022 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358106.0209763, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:46.066 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:46.115 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358106.1132474, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:46.166 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:46.211 | PIPE     | src.lib.cortex.decisionproc:_the_thread:354 - SD -> {}
+2022-05-12 15:21:46.216 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358106.2142286, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:46.314 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:46.329 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358106.327195, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:46.356 | PIPE     | src.lib.cortex.posfusproc:_the_thread:132 - loc {'timestamp': 1652358105.8386822, 'posA': 0.7491564750671387, 'posB': 6.887607574462891, 'rotA': 1.8112848997116089, 'rotB': 1.8112848997116089}
+2022-05-12 15:21:46.421 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -8 Intersection Det False
+2022-05-12 15:21:46.447 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358106.4419239, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:46.564 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358106.5627544, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:46.570 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:46.654 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:46.688 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358106.6852634, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:46.747 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:46.796 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358106.7943327, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:46.897 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358106.8107495, 'roll': -9.259898433811031e-06, 'pitch': 0.00040434804395772517, 'yaw': 1.8112845420837402, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
+2022-05-12 15:21:46.898 | PIPE     | src.lib.cortex.decisionproc:_the_thread:337 - POS -> [0.7495762450565464, 6.877795392535229, 1.8112856149673462, 0.0004089009889867157, -1.1665850252029486e-05]
+2022-05-12 15:21:46.915 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358106.913726, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:46.941 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:47.038 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358107.0352507, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:47.073 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:47.158 | PIPE     | src.lib.cortex.posfusproc:_the_thread:132 - loc {'timestamp': 1652358106.656589, 'posA': 0.872998058795929, 'posB': 6.7338385581970215, 'rotA': 1.8112844228744507, 'rotB': 1.8112844228744507}
+2022-05-12 15:21:47.162 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:47.168 | PIPE     | src.lib.cortex.decisionproc:_the_thread:337 - POS -> [0.8707766277996725, 6.736555170635325, 1.8112845420837402, 0.00040434804395772517, -9.259898433811031e-06]
+2022-05-12 15:21:47.171 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358107.1684914, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:47.181 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358107.1798537, 'roll': -7.418100722134113e-06, 'pitch': 0.00040377862751483917, 'yaw': 1.8112844228744507, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
+2022-05-12 15:21:47.275 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358107.274481, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:47.352 | PIPE     | src.lib.cortex.decisionproc:_the_thread:354 - SD -> {}
+2022-05-12 15:21:47.359 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:47.372 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358107.3694165, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:47.486 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358107.4738111, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:47.489 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -11 Intersection Det False
+2022-05-12 15:21:47.567 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:47.632 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358107.6302042, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:47.674 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:47.754 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:47.758 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358107.7567582, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:47.872 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358107.8701246, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:47.935 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:47.981 | PIPE     | src.lib.cortex.posfusproc:_the_thread:132 - loc {'timestamp': 1652358107.478549, 'posA': 0.8374727368354797, 'posB': 6.744403839111328, 'rotA': 1.8112848997116089, 'rotB': 1.8112848997116089}
+2022-05-12 15:21:47.996 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358107.866289, 'roll': -1.0380543244536966e-05, 'pitch': 0.00040402362355962396, 'yaw': 1.811284065246582, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
+2022-05-12 15:21:48.001 | PIPE     | src.lib.cortex.decisionproc:_the_thread:337 - POS -> [0.843124701338657, 6.738590648987838, 1.8112844228744507, 0.00040377862751483917, -7.418100722134113e-06]
+2022-05-12 15:21:48.005 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358107.9949317, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:48.113 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358108.1052163, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:48.131 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:48.229 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358108.2090366, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:48.279 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:48.333 | PIPE     | src.lib.cortex.decisionproc:_the_thread:354 - SD -> {}
+2022-05-12 15:21:48.340 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358108.3380933, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:48.418 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:48.444 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358108.4415448, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:48.527 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:48.541 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358108.5390859, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:48.659 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358108.6532712, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:48.700 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:48.756 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358108.7542768, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:48.877 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:48.881 | PIPE     | src.lib.cortex.posfusproc:_the_thread:132 - loc {'timestamp': 1652358108.3791592, 'posA': 0.7996314764022827, 'posB': 6.734472751617432, 'rotA': 1.8112837076187134, 'rotB': 1.8112837076187134}
+2022-05-12 15:21:48.890 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358108.8558588, 'roll': -9.893254173221067e-06, 'pitch': 0.00040408677887171507, 'yaw': 1.811284065246582, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
+2022-05-12 15:21:48.892 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358108.8888958, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:48.893 | PIPE     | src.lib.cortex.decisionproc:_the_thread:337 - POS -> [0.8034382144314682, 6.735599595522275, 1.811284065246582, 0.00040402362355962396, -1.0380543244536966e-05]
+2022-05-12 15:21:49.009 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358109.0022318, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:49.048 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:49.116 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358109.1140087, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:49.130 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -15 Intersection Det False
+2022-05-12 15:21:49.216 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:49.245 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358109.2428532, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:49.326 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 23 Intersection Det False
+2022-05-12 15:21:49.331 | PIPE     | src.lib.cortex.decisionproc:_the_thread:354 - SD -> {}
+2022-05-12 15:21:49.372 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358109.3685234, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:49.468 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:49.494 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358109.491155, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:49.606 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:49.628 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358109.6256835, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:49.715 | PIPE     | src.lib.cortex.posfusproc:_the_thread:132 - loc {'timestamp': 1652358109.2136843, 'posA': 0.8911886811256409, 'posB': 6.82655143737793, 'rotA': 1.8112835884094238, 'rotB': 1.8112835884094238}
+2022-05-12 15:21:49.732 | PIPE     | src.lib.cortex.decisionproc:_the_thread:337 - POS -> [0.8775308646938977, 6.819086620008276, 1.811284065246582, 0.00040408677887171507, -9.893254173221067e-06]
+2022-05-12 15:21:49.736 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358109.5871882, 'roll': -1.2149953363405075e-05, 'pitch': 0.00040903271292336285, 'yaw': 1.8112833499908447, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
+2022-05-12 15:21:49.756 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:49.768 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358109.7658818, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:49.839 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:49.900 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358109.8975153, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:49.981 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:50.044 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358110.0423257, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:50.081 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:50.173 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -14 Intersection Det False
+2022-05-12 15:21:50.178 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358110.168388, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:50.279 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:50.306 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358110.304563, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:50.381 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -2 Intersection Det False
+2022-05-12 15:21:50.430 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358110.4240277, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:50.431 | PIPE     | src.lib.cortex.decisionproc:_the_thread:354 - SD -> {}
+2022-05-12 15:21:50.482 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:50.534 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358110.530597, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:50.640 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:50.684 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358110.6831503, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:50.684 | PIPE     | src.lib.cortex.posfusproc:_the_thread:132 - loc {'timestamp': 1652358110.1828222, 'posA': 0.7484686970710754, 'posB': 6.795261859893799, 'rotA': 1.8112841844558716, 'rotB': 1.8112841844558716}
+2022-05-12 15:21:50.704 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358110.3747292, 'roll': -1.220748254127102e-05, 'pitch': 0.000408860418247059, 'yaw': 1.8112831115722656, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
+2022-05-12 15:21:50.704 | PIPE     | src.lib.cortex.decisionproc:_the_thread:337 - POS -> [0.7682548091121206, 6.80277576122675, 1.8112833499908447, 0.00040903271292336285, -1.2149953363405075e-05]
+2022-05-12 15:21:50.808 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358110.806895, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:50.870 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:50.939 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358110.9350724, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:51.060 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358111.0555785, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:51.064 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:51.165 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:51.179 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358111.1768973, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:51.233 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:51.303 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358111.2963047, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:51.353 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:51.419 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358111.4183805, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:51.432 | PIPE     | src.lib.cortex.decisionproc:_the_thread:354 - SD -> {}
+2022-05-12 15:21:51.540 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358111.5385065, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:51.547 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:51.613 | PIPE     | src.lib.cortex.posfusproc:_the_thread:132 - loc {'timestamp': 1652358111.1091666, 'posA': 0.7536631226539612, 'posB': 6.856590747833252, 'rotA': 1.811282753944397, 'rotB': 1.811282753944397}
+2022-05-12 15:21:51.634 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:51.642 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358111.4801629, 'roll': -1.1789661584771238e-05, 'pitch': 0.00040955416625365615, 'yaw': 1.8112834692001343, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
+2022-05-12 15:21:51.643 | PIPE     | src.lib.cortex.decisionproc:_the_thread:337 - POS -> [0.7493740887141732, 6.853985011546888, 1.8112831115722656, 0.000408860418247059, -1.220748254127102e-05]
+2022-05-12 15:21:51.656 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358111.6537952, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:51.770 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358111.7692585, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:51.773 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:51.845 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:51.871 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358111.8699424, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:51.960 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:51.980 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358111.9781053, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:52.094 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358112.0901146, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:52.100 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:52.204 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -9 Intersection Det False
+2022-05-12 15:21:52.247 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358112.2434049, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:52.298 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:52.366 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358112.3636773, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:52.410 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -2 Intersection Det False
+2022-05-12 15:21:52.459 | PIPE     | src.lib.cortex.posfusproc:_the_thread:132 - loc {'timestamp': 1652358111.9570804, 'posA': 0.8402233123779297, 'posB': 6.737607002258301, 'rotA': 1.811282753944397, 'rotB': 1.811282753944397}
+2022-05-12 15:21:52.474 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358112.150823, 'roll': -6.921385647729039e-06, 'pitch': 0.0004046627727802843, 'yaw': 1.8112832307815552, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
+2022-05-12 15:21:52.475 | PIPE     | src.lib.cortex.decisionproc:_the_thread:337 - POS -> [0.8245977814086254, 6.747689907648796, 1.8112834692001343, 0.00040955416625365615, -1.1789661584771238e-05]
+2022-05-12 15:21:52.486 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358112.480365, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:52.538 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:52.561 | PIPE     | src.lib.cortex.decisionproc:_the_thread:354 - SD -> {}
+2022-05-12 15:21:52.620 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:52.621 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358112.6152205, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:52.732 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358112.7299705, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:52.847 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358112.8447225, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:52.856 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:52.959 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358112.9577956, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:52.961 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -18 Intersection Det False
+2022-05-12 15:21:53.050 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:53.085 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358113.0829387, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:53.140 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:53.197 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358113.195651, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:53.209 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:53.334 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358113.3322792, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:53.342 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:53.360 | PIPE     | src.lib.cortex.posfusproc:_the_thread:132 - loc {'timestamp': 1652358112.859323, 'posA': 0.8049127459526062, 'posB': 6.728211402893066, 'rotA': 1.811282753944397, 'rotB': 1.811282753944397}
+2022-05-12 15:21:53.375 | PIPE     | src.lib.cortex.decisionproc:_the_thread:337 - POS -> [0.810604512785934, 6.721007091171413, 1.8112832307815552, 0.0004046627727802843, -6.921385647729039e-06]
+2022-05-12 15:21:53.375 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358113.2085698, 'roll': -9.677793059381656e-06, 'pitch': 0.00040420383447781205, 'yaw': 1.8112818002700806, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
+2022-05-12 15:21:53.447 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358113.4454236, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:53.503 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:53.578 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358113.56893, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:53.592 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -2 Intersection Det False
+2022-05-12 15:21:53.678 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358113.6770384, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:53.715 | PIPE     | src.lib.cortex.decisionproc:_the_thread:354 - SD -> {}
+2022-05-12 15:21:53.739 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:53.820 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358113.812231, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:53.838 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:53.917 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:53.924 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358113.922177, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:54.054 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:54.086 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358114.0845115, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:54.202 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358114.1957295, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:54.241 | PIPE     | src.lib.cortex.posfusproc:_the_thread:132 - loc {'timestamp': 1652358113.7347705, 'posA': 0.8051043748855591, 'posB': 6.737654685974121, 'rotA': 1.8112815618515015, 'rotB': 1.8112815618515015}
+2022-05-12 15:21:54.247 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:54.253 | PIPE     | src.lib.cortex.decisionproc:_the_thread:337 - POS -> [0.8066416663048798, 6.7349473018739054, 1.8112818002700806, 0.00040420383447781205, -9.677793059381656e-06]
+2022-05-12 15:21:54.253 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358113.9199295, 'roll': -7.324420039367396e-06, 'pitch': 0.0004044892266392708, 'yaw': 1.8112820386886597, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
+2022-05-12 15:21:54.344 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358114.3426418, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:54.413 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -11 Intersection Det False
+2022-05-12 15:21:54.472 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358114.4636714, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:54.517 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:54.577 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358114.574885, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:54.615 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 0 Intersection Det False
+2022-05-12 15:21:54.684 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358114.6819766, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:54.701 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 23 Intersection Det False
+2022-05-12 15:21:54.793 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358114.7913992, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:54.876 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:54.899 | PIPE     | src.lib.cortex.decisionproc:_the_thread:354 - SD -> {}
+2022-05-12 15:21:54.937 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358114.9344678, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:54.970 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:55.060 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -2 Intersection Det False
+2022-05-12 15:21:55.103 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358115.1006973, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:55.162 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle -23 Intersection Det False
+2022-05-12 15:21:55.164 | PIPE     | src.lib.cortex.posfusproc:_the_thread:132 - loc {'timestamp': 1652358114.6601026, 'posA': 0.7343880534172058, 'posB': 6.8349690437316895, 'rotA': 1.811281442642212, 'rotB': 1.811281442642212}
+2022-05-12 15:21:55.614 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358115.0323122, 'roll': -1.1763308975787368e-05, 'pitch': 0.000409063883125782, 'yaw': 1.8112810850143433, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
+2022-05-12 15:21:55.616 | PIPE     | src.lib.cortex.decisionproc:_the_thread:337 - POS -> [0.7438030833346747, 6.829609469410271, 1.8112820386886597, 0.0004044892266392708, -7.324420039367396e-06]
+2022-05-12 15:21:55.748 | PIPE     | src.lib.cortex.decisionproc:_the_thread:354 - SD -> {}
+2022-05-12 15:21:55.780 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358115.778772, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:56.158 | PIPE     | src.lib.cortex.decisionproc:_the_thread:354 - SD -> {}
+2022-05-12 15:21:56.177 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 23 Intersection Det False
+2022-05-12 15:21:56.408 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 23 Intersection Det False
+2022-05-12 15:21:56.428 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358116.422105, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:56.605 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 23 Intersection Det False
+2022-05-12 15:21:56.940 | PIPE     | src.lib.cortex.decisionproc:_the_thread:354 - SD -> {}
+2022-05-12 15:21:57.061 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 23 Intersection Det False
+2022-05-12 15:21:57.068 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358117.0653234, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:57.629 | PIPE     | src.lib.cortex.decisionproc:_the_thread:354 - SD -> {}
+2022-05-12 15:21:57.655 | PIPE     | src.lib.cortex.decisionproc:_the_thread:305 - LK -> Angle 23 Intersection Det False
+2022-05-12 15:21:57.768 | PIPE     | src.lib.cortex.decisionproc:_the_thread:322 - DIS -> {'timestamp': 1652358117.7632103, 'sonar1': 1.2000000476837158, 'sonar2': 1.2000000476837158}
+2022-05-12 15:21:58.383 | PIPE     | src.lib.cortex.posfusproc:_the_thread:132 - loc {'timestamp': 1652358117.8782284, 'posA': 0.9377071857452393, 'posB': 14.79672622680664, 'rotA': 1.8112828731536865, 'rotB': 1.8112828731536865}
+2022-05-12 15:21:58.395 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358116.8922536, 'roll': -1.333560931016109e-06, 'pitch': 0.00029118932434357703, 'yaw': 1.811282992362976, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
+2022-05-12 15:22:02.896 | PIPE     | src.lib.cortex.posfusproc:_the_thread:132 - loc {'timestamp': 1652358122.3941894, 'posA': 0.8579034805297852, 'posB': 14.824681282043457, 'rotA': 1.8112833499908447, 'rotB': 1.8112833499908447}
+2022-05-12 15:22:02.906 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358122.3938751, 'roll': -7.079004262777744e-06, 'pitch': 0.0004033808072563261, 'yaw': 1.8112833499908447, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
+2022-05-12 15:22:07.407 | PIPE     | src.lib.cortex.posfusproc:_the_thread:132 - loc {'timestamp': 1652358126.9058194, 'posA': 0.8780492544174194, 'posB': 14.699467658996582, 'rotA': 1.8112835884094238, 'rotB': 1.8112835884094238}
+2022-05-12 15:22:07.419 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358125.9953363, 'roll': -5.6634457905602176e-06, 'pitch': 0.000404649181291461, 'yaw': 1.8112833499908447, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
+2022-05-12 15:22:11.584 | PIPE     | src.lib.cortex.posfusproc:_the_thread:132 - loc {'timestamp': 1652358131.0828395, 'posA': 0.8852252960205078, 'posB': 14.822168350219727, 'rotA': 1.8112823963165283, 'rotB': 1.8112823963165283}
+2022-05-12 15:22:11.595 | PIPE     | src.lib.cortex.posfusproc:_the_thread:116 - imu {'timestamp': 1652358131.082844, 'roll': -7.060006737447111e-06, 'pitch': 0.00040346605237573385, 'yaw': 1.8112823963165283, 'accelx': 0.0, 'accely': 0.0, 'accelz': 0.0}
