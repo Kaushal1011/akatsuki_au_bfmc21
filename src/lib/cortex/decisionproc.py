@@ -386,7 +386,7 @@ class DecisionMakingProcess(WorkerProcess):
                 logger.log("XY", f"{self.state.x}, {self.state.y},")
                 logger.debug(f"Sonar Front: {self.state.front_distance}")
                 logger.debug(f"Sonar Side: {self.state.side_distance}")
-
+                # print(f"Final -> ({self.state.steering_angle, self.state.v})")
                 if len(outPs) > 0:
                     outPs[0].send((self.state.steering_angle, self.state.v))
                     # outPs[0].send((0.0, 0.0))

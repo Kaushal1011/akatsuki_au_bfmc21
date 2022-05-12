@@ -557,7 +557,9 @@ class ParkingBehaviour(BehaviourCallback):
                 d = math.sqrt(
                     (tx - car_state.rear_x) ** 2 + ((ty - car_state.rear_y) ** 2)
                 )
-                if d < 0.15:
+                if d>1:
+                    self.over=True
+                if d < 0.2:
                     self.phase = 5
                 di = self.reverse_chase(car_state, tx, ty)
                 return {"steer": di, "speed": -car_state.priority_speed}
@@ -566,7 +568,7 @@ class ParkingBehaviour(BehaviourCallback):
                 print("In Phase 5")
                 # reverse into parking
                 tx = 3.3 + self.offsetx
-                ty = 2.95
+                ty = 3.1
                 # tx = self.initx + 0.75 +  offsetx_1
                 # ty = self.inity + 1
                 print("In Phase 5", tx, ty)
@@ -574,15 +576,17 @@ class ParkingBehaviour(BehaviourCallback):
                     (tx - car_state.rear_x) ** 2 + (ty - car_state.rear_y) ** 2
                 )
                 print("curx,cury", car_state.rear_x, car_state.rear_y)
+                if d>1:
+                    self.over=True
                 if d < 0.225:
                     self.phase = 6
                 di = self.reverse_chase(car_state, tx, ty)
                 return {"steer": di, "speed": -car_state.priority_speed}
 
             elif self.phase == 6:
-                print("In Phase 5")
-                tx = 3.3 + self.offsetx
-                ty = 2.0
+                print("In Phase 6")
+                tx = 3.5 + self.offsetx
+                ty = 2.4
                 d = math.sqrt(
                     (tx - car_state.rear_x) ** 2 + (ty - car_state.rear_y) ** 2
                 )

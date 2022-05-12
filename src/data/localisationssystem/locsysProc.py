@@ -73,8 +73,6 @@ class LocalisationSystemProcess(WorkerProcess):
                     }
                     # print("LOC", data)
                     pub_loc.send_json(data, flags=zmq.NOBLOCK)
-
-                time.sleep(1)
             except KeyboardInterrupt:
                 break
 

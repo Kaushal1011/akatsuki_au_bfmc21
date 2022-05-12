@@ -14,5 +14,6 @@
   "home_loc": false,
   "preplan": false,
   "park": false,
-  "env_server":false
+  "env_server":false,
+  "loc_server":false
 }
