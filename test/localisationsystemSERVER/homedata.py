@@ -8,8 +8,9 @@ import socket
 from threading import Thread
 
 from workerprocess import WorkerProcess
+import joblib
 
-PI_IP = "192.168.186.89"
+PI_IP = "192.168.220.89"
 PORT = 8888
 
 
@@ -23,7 +24,8 @@ def localize(img: np.ndarray) -> Tuple[float, float]:
     # (2, 29), (54, 255), (74, 255)
     # 8 116 102
     # 20 252 210
-    frame_threshold = cv2.inRange(frame_HSV, (0, 200, 150), (30, 255, 255))
+    # HUE BLUE | 0 -> 30
+    frame_threshold = cv2.inRange(frame_HSV, (100, 150, 150), (180, 255, 255))
     # processed_img2 = cv2.bitwise_and(img,img, mask=frame_threshold)
     # get contours
     cnts = cv2.findContours(frame_threshold, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -111,6 +113,8 @@ class LocalisationServer:
         r = requests.get(
             "http://10.20.2.114/asp/video.cgi", auth=("admin", "admin"), stream=True
         )
+        rx = []
+        ry = []
         bytes1 = bytes()  # buffer
         if r.status_code == 200:
             for idx, chunk in enumerate(r.iter_content(chunk_size=100_000)):
@@ -132,7 +136,9 @@ class LocalisationServer:
                 height = 1280
                 # specify conjugate x,y coordinates (not y,x)
                 # input = np.float32([[61, 345], [616, 35], [1279, 51], [870, 676]])
-                input = np.float32([[0, 366], [582, 51], [1257, 66], [788, 715]])
+                # input = np.float32([[0, 366], [582, 51], [1257, 66], [788, 715]])
+                input = np.float32([[38, 344], [617, 38], [1279, 57], [860, 669]])
+
                 output = np.float32(
                     [[0, 0], [width - 1, 0], [width - 1, width - 1], [0, width - 1]]
                 )
@@ -155,6 +161,8 @@ class LocalisationServer:
                 )
                 x, y = localize(image)
                 if x and y:
+                    # rx.append(x)
+                    # ry.append(y)
                     data = {
                         "timestamp": time.time(),
                         "posA": x,
@@ -171,6 +179,7 @@ class LocalisationServer:
                     cv2.imshow("Track Image", imgOutput)
                     key = cv2.waitKey(1)
                     if key == 27 or key == 113:
+                        # joblib.dump({"x": rx, "y": ry}, "coordlist.z")
                         cv2.destroyAllWindows()
                         break
                     else:

@@ -1,4 +1,5 @@
 import datetime
+import json
 import math
 from multiprocessing import Pipe
 from multiprocessing.connection import Connection
@@ -9,7 +10,12 @@ from time import sleep
 from typing import Dict, List, Optional, Tuple
 import socket
 
+from src.config import get_config
+
+config = get_config()
+
 from src.lib.cortex.carstate import CarState
+from src.lib.perception.signdetection import loaded_model
 from src.templates.workerprocess import WorkerProcess
 from time import time
 from src.lib.cortex.action import (
@@ -20,9 +26,12 @@ from src.lib.cortex.action import (
     ControlSystemBehaviour,
     ObjectStopBehaviour,
     ParkingBehaviour,
+    RoadBlocked,
     StopBehvaiour,
     PriorityBehaviour,
     OvertakeBehaviour,
+    RoundAboutBehaviour,
+    TLBehaviour,
 )
 import joblib
 from loguru import logger
@@ -32,36 +41,6 @@ import zmq
 
 rx = []
 ry = []
-
-
-def get_last(inP: Pipe, delta_time: float = 1e-2):
-    timestamp, data = inP.recv()
-    while (time() - timestamp) > delta_time:
-        timestamp, data = inP.recv()
-    return timestamp, data
-
-
-def get_last_value(inP: Connection, required: bool = True):
-    timestamp, data = inP.recv()
-
-    while inP.poll():
-        timestamp, data = inP.recv()
-    return timestamp, data
-
-
-def get_last_lk_id(inP: Connection):
-    timestamp, lk, id = inP.recv()
-
-    while inP.poll():
-        timestamp, lk, id = inP.recv()
-    return timestamp, lk, id
-
-
-def get_last_distance(inP: Connection):
-    data = inP.recv()
-    while inP.poll():
-        data = inP.recv()
-    return data
 
 
 def trigger_behaviour(carstate: CarState, action_man: ActionManager):
@@ -88,18 +67,19 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
         stopaction = ActionBehaviour(name="stop", release_time=6.0, callback=stopobj)
         action_man.set_action(stopaction, action_time=3.0)
 
-    if carstate.detected["parking"] or triggerparking:
-        print("In parking trigger: ", triggerparking, carstate.detected["parking"])
+    if carstate.detected["parking"][0]:
+        print("In parking trigger: ", triggerparking, carstate.detected["parking"][0])
         # Parking
         parkobj = ParkingBehaviour(car_state=carstate)
         parkobjaction = ActionBehaviour(name="parking", callback=parkobj)
         action_man.set_action(parkobjaction, action_time=None, car_state=carstate)
 
+    # print("carstate-frnt: ", carstate.front_distance)
+    # print("carstate-can-overtake:", carstate.can_overtake)
     if (
-        carstate.front_distance
-        < 0.7
-        # and carstate.detected_car
-        # and carstate.can_overtake
+        carstate.front_distance < 0.7
+        and carstate.detected["car"][0]
+        and carstate.can_overtake
     ):
         print("Overtake Trigger")
         # overtake
@@ -109,37 +89,51 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
 
     if (
         carstate.front_distance < 0.6
-        and carstate.detected["car"]
+        and carstate.detected["car"][0]
         and not carstate.can_overtake
     ):
         # tailing or stop
         pass
 
-    if (
-        carstate.detected["roadblock"] or carstate.calc_distance_target_node() > 2
-    ):  # 10 cm
+    if carstate.detected["roadblock"][0] and carstate.front_distance < 0.45:  # 10 cm
         # replan closed road
-        pass
+        robobj = RoadBlocked(car_state=carstate)
+        robobjaction = ActionBehaviour(name="roadblocked", callback=robobj)
+        action_man.set_action(robobjaction, action_time=None, car_state=carstate)
 
-    if carstate.detected["stop"]:
+    if carstate.detected["roundabout"][0] or (
+        carstate.current_ptype == "roundabout" and action_man.l1_ab is None
+    ):
+        print("In round about trigger: ", carstate.current_ptype)
+        rabobj = RoundAboutBehaviour(car_state=carstate)
+        rabobjaction = ActionBehaviour(name="roundabout", callback=rabobj)
+        action_man.set_action(rabobjaction, action_time=None, car_state=carstate)
+
+    if carstate.detected["stop"][0]:
         # stop for t secs
         stopobj = StopBehvaiour()
         stopaction = ActionBehaviour(name="stop", release_time=6.0, callback=stopobj)
         action_man.set_action(stopaction, action_time=3.0)
 
-    if carstate.detected["priority"]:
+    if carstate.detected["priority"][0]:
+        pass
         # slowdown for t secs
-        priorityobj = PriorityBehaviour()
-        priorityaction = ActionBehaviour(
-            name="priority", release_time=6.0, callback=priorityobj
-        )
-        action_man.set_action(priorityaction, action_time=9.0)
+        # priorityobj = PriorityBehaviour()
+        # priorityaction = ActionBehaviour(
+        #     name="priority", release_time=6.0, callback=priorityobj
+        # )
+        # action_man.set_action(priorityaction, action_time=9.0)
 
-    if carstate.detected["crosswalk"]:
+    if carstate.detected["crosswalk"][0]:
         # stop detected pedestrain or crosswalk
         cwobj = CrosswalkBehavior(car_state=carstate)
         cwobjaction = ActionBehaviour(name="crosswalk", callback=cwobj)
         action_man.set_action(cwobjaction, action_time=None, car_state=carstate)
+
+    if carstate.detected["trafficlight"][0]:
+        tlobj = TLBehaviour(carstate=carstate)
+        tlaction = ActionBehaviour(name="trafficlight", callback=tlobj)
+        action_man.set_action(tlaction, action_time=None, carstate=carstate)
 
     if carstate.pitch > 0.2:
         # incline trigger ramp
@@ -167,14 +161,25 @@ ENVID = {
 }
 
 
-def send_data2env(car_state: CarState, detections: List[Tuple[str, float]]):
+def send_data2env(car_state: CarState, detections: dict):
     x = car_state.x
     y = car_state.y
     return [
         {"obstacle_id": ENVID[c], "x": x, "y": y}
-        for c, _ in detections
-        if not car_state.detected[c]
+        for c in detections.keys()
+        if not car_state.detected[c][0]
     ]
+
+
+def get_last(socket):
+    data = socket.recv_json()
+    count = 0
+    while socket.poll(timeout=0.05):
+        data = socket.recv_json()
+        count += 1
+        if count == 10:
+            break
+    return data
 
 
 class DecisionMakingProcess(WorkerProcess):
@@ -203,24 +208,26 @@ class DecisionMakingProcess(WorkerProcess):
         # data_path = pathlib.Path(
         #     pathlib.Path(__file__).parent.parent.parent.resolve(),
         #     "data",
-        #     "mid_course.z",
+        #     "new_course.z",
         # )
         # data = joblib.load(data_path)
         # cx = data["x"]
         # cy = data["y"]
         # coord_list = [x for x in zip(cx, cy)]
-        # coord_list = data[0]
+        # # coord_list = data[0]
         #################################################################
 
         # pass coordlist here from navigator config
         csobj = ControlSystemBehaviour(coord_list=self.state.navigator.coords)
+        # csobj = ControlSystemBehaviour(coord_list=coord_list)
+
         csaction = ActionBehaviour(name="cs", callback=csobj)
         self.actman.set_action(csaction)
 
         # pass coordlist here from navigator config
-        # stopobj = ObjectStopBehaviour()
-        # stopobjaction = ActionBehaviour(name="objstop", callback=stopobj)
-        # self.actman.set_action(stopobjaction)
+        stopobj = ObjectStopBehaviour()
+        stopobjaction = ActionBehaviour(name="objstop", callback=stopobj)
+        self.actman.set_action(stopobjaction)
 
     def run(self):
         """Apply the initializing methods and start the threads."""
@@ -287,15 +294,6 @@ class DecisionMakingProcess(WorkerProcess):
             sub_tl.connect("ipc:///tmp/vtl")
             sub_tl.setsockopt_string(zmq.SUBSCRIBE, "")
 
-        if "tel" in self.inPsnames:
-            # TODO : use zmq PUB/SUB
-            # context_tel = zmq.Context()
-            host = socket.gethostbyname(socket.gethostname())
-            port = 12345
-            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # TCP socket object
-            addr = (host, port)
-            sock.connect((host, port))
-
         while True:
             try:
                 # c = time()
@@ -303,10 +301,15 @@ class DecisionMakingProcess(WorkerProcess):
                 # t_lk = time()
                 if "lk" in self.inPsnames:
                     if sub_lk.poll(timeout=0.05):
-                        lk_angle, detected_intersection = sub_lk.recv_json()
+                        lk_angle, detected_intersection = get_last(sub_lk)
+                        logger.log(
+                            "PIPE",
+                            f"LK -> Angle {lk_angle} Intersection Det {detected_intersection}",
+                        )
                         print("LK -> ", lk_angle, detected_intersection)
                         self.state.update_lk_angle(lk_angle)
                         self.state.update_intersection(detected_intersection)
+                        print("LK angle", self.state.lanekeeping_angle)
                 # logger.log("PIPE", f"Recv->LK {lk_angle}")
                 # logger.log("SYNC", f"LK timedelta {time()- lk_timestamp}")
                 # # print(f"Time taken lk {(time() - t_lk):.4f}s {lk_angle}")
@@ -315,40 +318,47 @@ class DecisionMakingProcess(WorkerProcess):
                 # TODO
                 # t_sD = time()
                 if "dis" in self.inPsnames:
-                    if sub_dis.poll(timeout=0.1):
-                        distance_data = sub_dis.recv_json()
-                        final_data = (
-                            distance_data["sonar1"],
-                            distance_data["sonar2"],
-                            False,
-                            False,
-                            False,
+                    if sub_dis.poll(timeout=0.05):
+                        distance_data = get_last(sub_dis)
+                        logger.log(
+                            "PIPE",
+                            f"DIS -> {distance_data}",
                         )
                         print("DIS -> ", distance_data)
-                        logger.log("PIPE", f"Recv->DIS {final_data[0]},{final_data[1]}")
                         logger.log(
                             "SYNC", f"dis delta {time()- distance_data['timestamp']}"
                         )
-                        self.state.update_object_det(distance_data["sonar1"],distance_data["sonar2"] )
+                        self.state.update_object_det(
+                            distance_data["sonar1"], distance_data["sonar2"]
+                        )
 
                 if "pos" in self.inPsnames:
                     if sub_pos.poll(timeout=0.05):
-                        pos = sub_pos.recv_json()
-                        print(f"POS -> {pos}")
+                        pos = get_last(sub_pos)
+                        logger.log(
+                            "PIPE",
+                            f"POS -> {pos}",
+                        )
+                        # print(f"POS -> {pos}")
+                        # print(pos["timestamp"] - time.time())
                         if pos[0] == 0 and pos[1] == 0:
                             pass
                         else:
                             self.state.update_pos(*pos)
+
                     else:
                         self.state.update_pos_noloc()
 
                 if "sd" in self.inPsnames:
                     if sub_sd.poll(timeout=0.05):
-                        detections = sub_sd.recv_json()
+                        detections = get_last(sub_sd)
+                        logger.log("PIPE", f"SD -> {detections}")
                         print("SD ->", detections)
                         # send data to env server
                         if len(outPs) > 1:
                             for env_data in send_data2env(self.state, detections):
+                                print("ENV -> ", env_data)
+                                logger.log("PIPE", f"ENV -> {env_data}")
                                 outPs[1].send(env_data)
 
                         self.state.update_detected(detections)
@@ -358,13 +368,17 @@ class DecisionMakingProcess(WorkerProcess):
 
                 if "tl" in self.inPsnames:
                     if sub_tl.poll(timeout=0.05):
-                        trafficlights = sub_tl.recv()
-                        print(f"TL -> {trafficlights}")
+                        tl_data = sub_tl.recv()
+                        logger.log("PIPE", f"TL ->  {tl_data}")
+
+                        print(f"TL -> {tl_data}")
+
+                        self.state.update_tl(tl_data)
 
                 # # update car navigator, current ptype, current etype and current idx
 
                 trigger_behaviour(self.state, self.actman)
-
+                # print(self.state.detected)
                 speed, steer = self.actman(self.state)
                 self.state.v = speed
                 self.state.steering_angle = steer
@@ -373,11 +387,12 @@ class DecisionMakingProcess(WorkerProcess):
                 logger.log("XY", f"{self.state.x}, {self.state.y},")
                 logger.debug(f"Sonar Front: {self.state.front_distance}")
                 logger.debug(f"Sonar Side: {self.state.side_distance}")
-
+                # print(f"Final -> ({self.state.steering_angle, self.state.v})")
+                print("OUT",self.state.steering_angle, self.state.v)
                 if len(outPs) > 0:
-                    outPs[0].send((self.state.steering_angle, self.state.v))
-
-                sleep(0.2)
+                    # outPs[0].send((self.state.steering_angle, self.state.v))
+                    outPs[0].send((0.0, 0.0))
+                sleep(0.1)
 
             except Exception as e:
                 print("Decision Process error:")

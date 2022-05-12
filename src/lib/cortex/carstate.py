@@ -5,30 +5,55 @@ from time import time
 from src.lib.cortex.navigation import Navigator
 from typing import List, Tuple
 
-activity_config = {
-    "nodes": [
-        [86, 99],
-        [100, 145],
-        [61, 168],
-        [169, 229],
-        [230, 104],
-        [105, 465],
-        [466, 85],
-    ],
-    "activity": [
-        "navigation",
-        "roadblocked",
-        "parking",
-        "overtaking",
-        "highway",
-        "oneway",
-        "finish",
-    ],
+# activity_config = {
+#     "nodes": [
+#         [86, 99],
+#         [100, 145],
+#         [61, 168],
+#         [169, 229],
+#         [230, 104],
+#         [105, 465],
+#         [466, 85],
+#     ],
+#     "activity": [
+#         "navigation",
+#         "roadblocked",
+#         "parking",
+#         "overtaking",
+#         "highway",
+#         "oneway",
+#         "finish",
+#     ],
+# }
+
+# activity_config = {
+#     "nodes": [
+#         [86, 69],
+#         [110, 145],
+#         [61, 168],
+#         [169, 229],
+#         [230, 104],
+#         [105, 465],
+#         [466, 85],
+#     ],
+#     "activity": [
+#         "navigation",
+#         "roadblocked",
+#         "parking",
+#         "overtaking",
+#         "highway",
+#         "oneway",
+#         "finish",
+#     ],
+# }
+
+activity_config={
+    "nodes":[[86,158],[159,226],[227,105],[106,111],[70,85]],# [],[]],
+    "activity":["navigation","parking","highway","finish","finish2"] 
 }
 
-
 class CarState:
-    def __init__(self, max_v=0.10, dt=0.13, car_len=0.365, **kwargs) -> None:
+    def __init__(self, max_v=0.20, dt=0.13, car_len=0.365, **kwargs) -> None:
 
         self.max_v = max_v
         # position data
@@ -41,6 +66,8 @@ class CarState:
         self.car_len = car_len
         self.rear_x = self.x - ((car_len / 2) * math.cos(-self.yaw))
         self.rear_y = self.y - ((car_len / 2) * math.sin(-self.yaw))
+        self.f_x = 0
+        self.f_y = 0
 
         self.target_x = None
         self.target_y = None
@@ -61,19 +88,19 @@ class CarState:
 
         # sign detection
         self.detected = {
-            "car": False,
-            "crosswalk": False,
-            "highway_entry": False,
-            "highway_exit": False,
-            "no_entry": False,
-            "onewayroad": False,
-            "parking": False,
-            "pedestrian": False,
-            "priority": False,
-            "roadblock": False,
-            "roundabout": False,
-            "stop": False,
-            "trafficlight": False,
+            "car": (False, 0, (-1, 1)),
+            "crosswalk": (False, 0, (-1, 1)),
+            "highway_entry": (False, 0, (-1, 1)),
+            "highway_exit": (False, 0, (-1, 1)),
+            "no_entry": (False, 0, (-1, 1)),
+            "onewayroad": (False, 0, (-1, 1)),
+            "parking": (False, 0, (-1, 1)),
+            "pedestrian": (False, 0, (-1, 1)),
+            "priority": (False, 0, (-1, 1)),
+            "roadblock": (False, 0, (-1, 1)),
+            "roundabout": (False, 0, (-1, 1)),
+            "stop": (False, 0, (-1, 1)),
+            "trafficlight": (False, 0, (-1, 1)),
         }
 
         # distance sensor
@@ -97,8 +124,8 @@ class CarState:
         # control parameters
         self.steering_angle = 0.0
         self.v = max_v
-        self.priority_speed = 0.1
-        self.highway_speed = 0.25
+        self.priority_speed = 0.15
+        self.highway_speed = 0.275
 
         # activity type
 
@@ -152,10 +179,12 @@ class CarState:
         self.front_distance = front_distance
         self.side_distance = side_distance
 
-    def update_detected(self, detections: List[Tuple[str, float]]):
-        detected_classes = [c for c, _ in detections]
+    def update_detected(self, detections: dict):
         for c in self.detected.keys():
-            self.detected_intersection[c] = c in detected_classes
+            if c in detections:
+                self.detected[c] = (True, detections[c])
+            else:
+                self.detected[c] = (False, 0, (-1, -1))
 
     def update_tl(self, tl):
         self.tl = tl
@@ -165,21 +194,21 @@ class CarState:
 
     def asdict(self) -> dict:
         return {
-            "x": self.x,
-            "y": self.y,
-            "yaw": self.yaw,
-            "v": self.v,
-            "pitch": self.pitch,
-            "roll": self.roll,
-            "rear_x": self.rear_x,
-            "rear_y": self.rear_y,
-            "target_x": self.target_x,
-            "target_y": self.target_y,
-            "target_idx": self.target_ind,
-            "lk_angle": self.lanekeeping_angle,
-            "cs_angle": self.cs_angle,
-            "front_distance": self.front_distance,
-            "side_distance": self.side_distance,
+            "x": float(self.x),
+            "y": float(self.y),
+            "yaw": float(self.yaw),
+            "v": float(self.v),
+            "pitch": float(self.pitch),
+            "roll": float(self.roll),
+            "rear_x": float(self.rear_x),
+            "rear_y": float(self.rear_y),
+            "target_x": 0,  # float(self.target_x),
+            "target_y": 0,  # float(self.target_y),
+            "target_idx": 0,  # float(self.target_ind),
+            "lk_angle": float(self.lanekeeping_angle),
+            "cs_angle": float(self.cs_angle),
+            "front_distance": 0,  # float(self.front_distance),
+            "side_distance": 0,  # float(self.side_distance),
             "current_ptype": self.current_ptype,
             "current_target": self.current_target,
             "detected_intersection": self.detected_intersection,
@@ -197,4 +226,5 @@ class CarState:
             "stop": self.detected["stop"],
             "trafficlight": self.detected["trafficlight"],
             "active_behaviours": self.active_behaviours,
+            "steering_angle": float(self.steering_angle),
         }

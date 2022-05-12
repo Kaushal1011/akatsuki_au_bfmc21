@@ -8,6 +8,8 @@ import argparse
 from multiprocessing.connection import Connection
 
 from src import config as config_module
+from time import sleep
+import time
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -24,15 +26,19 @@ from src.hardware.camera.cameraprocess import CameraProcess
 from src.hardware.camera.SIMCameraProcess import SIMCameraProcess
 from src.lib.perception.lanekeepz import LaneKeepingProcess as LaneKeeping
 from src.lib.perception.signdetection import SignDetectionProcess
-from src.data.localisationssystem.home_locProc import LocalisationProcess
+
+# from src.data.localisationssystem.home_locProc import LocalisationProcess
+
 from src.data.localisationssystem.locsysProc import LocalisationSystemProcess
+
+# from src.data.localisationssystem.dummy_loc import LocalisationSystemProcess
 from src.data.server_sim import ServerSIM as LocSysSIM
 from src.data.server_sim import ServerSIM as IMUSIM
 from src.lib.cortex.posfusproc import PositionFusionProcess
-# from src.data.environmentalserver.environmental import EnvironmentalHandler
+from src.data.environmentalserver.environmental import EnvironmentalHandler
 from src.data.distance_sim import DistanceSIM
 from src.hardware.ultrasonic.distanceProc import DistanceProcess
-# from src.data.trafficlights.trafficProc import TrafficProcess
+from src.data.trafficlights.trafficProc import TrafficProcess
 from src.data.server_sim import ServerSIM as TrafficSIM
 from src.lib.actuator.momentcontrol import MovementControl
 from src.lib.actuator.sim_connect import SimulatorConnector
@@ -43,6 +49,7 @@ from src.utils.remotecontrol.RemoteControlReceiverProcess import (
     RemoteControlReceiverProcess,
 )
 from src.lib.cortex.decisionproc import DecisionMakingProcess
+from src.lib.perception.signdetection import loaded_model
 
 import sys
 from loguru import logger
@@ -65,17 +72,21 @@ logger.level("TIME", no=15)
 def filter(level: List[int]):
     return lambda r: r["level"].no in level or r["level"].no > 19
 
+def filter_level(level: List[int]):
+    return lambda r: r["level"].no in level
 
-TEST_PIPE = True
+
+LOG_STDOUT = False
 logger.remove()
-if TEST_PIPE:
-    logger.add(sys.stderr, filter=filter([18]))
+if LOG_STDOUT:
+    logger.add(
+        sys.stderr,
+        filter=filter([18]),
+        format="<level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+    )
 
-logger.add("file1.log", filter=lambda r: r["level"] == 14)
-# logger.level("LK", no=10, color="<blue>", icon='' )
-# logger.level("INT", no=10, color="<blue>", icon='' )
 
-
+logger.add(f"log/log_data_{time.time():.2f}", filter=filter_level([12]))
 # ========================================================================
 # SCRIPT USED FOR WIRING ALL COMPONENTS
 # ========================================================================
@@ -89,7 +100,7 @@ STREAM_PORT1 = 2244
 STREAM_PORT2 = 4422
 # ["cam", "lk", "sd"]
 
-streams = ["cam", "lk"]
+streams = ["cam"]
 # =============================== INITIALIZING PROCESSES =================================
 # Pipe collections
 allProcesses: List[Process] = []
@@ -106,20 +117,23 @@ if config["enableRc"]:
 
 
 # ===================================== PERCEPTION ===================================
-
-lkProc = LaneKeeping([], [], enable_stream=("lk" in streams))
-allProcesses.append(lkProc)
-dataFusionInputName.append("lk")
-camOutNames.append("lk")
 dataFusionOutPs: List[Connection] = []
+
+sDProc = None
+if config["enableLaneKeeping"]:
+    lkProc = LaneKeeping([], [], enable_stream=("lk" in streams))
+    allProcesses.append(lkProc)
+    dataFusionInputName.append("lk")
+    camOutNames.append("lk")
 
 if not config["enableSignDet"]:
     if "sd" in streams:
         streams.remove("sd")
 
 if config["enableSignDet"]:
+    print("Sign Detection will start in a while")
     sDProc = SignDetectionProcess([], [], [], enable_stream=("sd" in streams))
-    allProcesses.append(sDProc)
+    # allProcesses.append(sDProc)
     dataFusionInputName.append("sd")
     camOutNames.append("sd")
 
@@ -133,15 +147,15 @@ if config["enableSIM"]:
     allProcesses.append(locsysProc)
     posFusionInputName.append("loc")
 
-elif config["home_loc"]:
-    # LocSys -> Position Fusion
-    print(">>> Starting Home Localization process")
-    locsysProc = LocalisationProcess([], [])
-    allProcesses.append(locsysProc)
-    posFusionInputName.append("loc")
+# elif config["home_loc"]:
+#     # LocSys -> Position Fusion
+#     print(">>> Starting Home Localization process")
+#     locsysProc = LocalisationProcess([], [])
+#     allProcesses.append(locsysProc)
+#     posFusionInputName.append("loc")
+#
 
-
-elif config["using_server"]:
+elif config["loc_server"]:
     # LocSys -> Position Fusion
     locsysProc = LocalisationSystemProcess([], [])
     allProcesses.append(locsysProc)
@@ -155,11 +169,26 @@ if config["enableSIM"]:
     allProcesses.append(trafficProc)
     dataFusionInputName.append("tl")
 
-elif config["using_server"] and False:
+elif config["tl_server"]:
     # Traffic Semaphore -> Decision Making (data fusion)
     trafficProc = TrafficProcess([], [])
     allProcesses.append(trafficProc)
     dataFusionInputName.append("tl")
+
+
+#
+# ===================== Distance Sensor ==========================================
+# Distance Sensor -> Decision Making (data fusion)
+
+if config["enableSIM"]:
+    disProc = DistanceSIM([], [], 6666, log=False)
+    allProcesses.append(disProc)
+    dataFusionInputName.append("dis")
+
+elif isPI:
+    disProc = DistanceProcess([], [])
+    allProcesses.append(disProc)
+    dataFusionInputName.append("dis")
 
 # ========================= IMU ===================================================
 # IMU -> Position Fusino
@@ -175,25 +204,12 @@ else:
     posFusionInputName.append("imu")
 
 
-#
 # # ===================== Position Fusion ==========================================
 if len(posFusionInputName) > 0:
     posfzzProc = PositionFusionProcess([], [], inPsnames=posFusionInputName)
     allProcesses.append(posfzzProc)
     dataFusionInputName.append("pos")
 
-# ===================== Distance Sensor ==========================================
-# Distance Sensor -> Decision Making (data fusion)
-
-if config["enableSIM"]:
-    disProc = DistanceSIM([], [], 6666, log=True)
-    allProcesses.append(disProc)
-    dataFusionInputName.append("dis")
-
-elif isPI:
-    disProc = DistanceProcess([], [])
-    allProcesses.append(disProc)
-    dataFusionInputName.append("dis")
 
 # ==== Movement Control pipe
 # Decision Process -> Movement control
@@ -201,21 +217,25 @@ FzzMcR, FzzMcS = Pipe(duplex=False)
 dataFusionOutPs.append(FzzMcS)
 
 # ======================= Environment Server ======================================
-if config["using_server"]:
+if config["env_server"]:
     beacon = 23456
     id = 120
-    serverpublickey = "publickey_server_test.pem"
-    clientprivatekey = "privatekey_client_test.pem"
+    serverpublickey = "publickey_server.pem"
+    clientprivatekey = "privatekey_client.pem"
 
     gpsStR, gpsStS = Pipe(duplex=False)
 
     envhandler = EnvironmentalHandler(
         id, beacon, serverpublickey, gpsStR, clientprivatekey
     )
+    allProcesses.append(envhandler)
     dataFusionOutPs.append(gpsStS)
 
 
 # ======================= Decision Making =========================================
+# TODO enableTelemtry
+if False:
+    dataFusionInputName.append("tel")
 
 datafzzProc = DecisionMakingProcess([], dataFusionOutPs, inPsnames=dataFusionInputName)
 allProcesses.append(datafzzProc)
@@ -285,9 +305,22 @@ else:
 
 # ===================================== START PROCESSES ==================================
 print("Starting the processes!", allProcesses)
-for proc in allProcesses:
-    proc.daemon = True
-    proc.start()
+if sDProc is not None:
+    sDProc.daemon = True
+    sDProc.start()
+    while not loaded_model.value:
+        print("Waiting on sDProc")
+        sleep(1)
+
+    for proc in allProcesses:
+        proc.daemon = True
+        proc.start()
+    
+    allProcesses.append(sDProc)
+else:
+    for proc in allProcesses:
+        proc.daemon = True
+        proc.start()
 
 
 # ===================================== STAYING ALIVE ====================================
@@ -306,3 +339,13 @@ except KeyboardInterrupt:
             print("Process witouth stop", proc)
             proc.terminate()
             proc.join()
+    if sDProc is not None:
+        if hasattr(sDProc, "stop") and callable(getattr(sDProc, "stop")):
+            print("Process with stop", sDProc)
+            sDProc.stop()
+            sDProc.join()
+        else:
+            print("Process witouth stop", sDProc)
+            sDProc.terminate()
+            sDProc.join()
+    

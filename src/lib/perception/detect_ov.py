@@ -7,10 +7,11 @@ import time
 FONT = "Arial.ttf"  # https://ultralytics.com/assets/Arial.ttf
 
 AREA_THRESHOLD = {
-    "car": 5000,
-    "crosswalk": 5000,
-    "highway_entry": 5000,
-    "highway_exit": 5000,
+    "car": 15000,
+    "crosswalk": 7000,
+    "doll": 50,
+    "highway_entry": 7000,
+    "highway_exit": 7000,
     "no_entry": 5000,
     "onewayroad": 5000,
     "parking": 5000,
@@ -19,7 +20,7 @@ AREA_THRESHOLD = {
     "roadblock": 5000,
     "roundabout": 5000,
     "stop": 5000,
-    "trafficlight": 5000,
+    "trafficlight": 500,
 }
 
 
@@ -199,7 +200,6 @@ def nms(dets, scores, thresh):
 
 def scale_coords(img1_shape, coords, img0_shape, ratio_pad=None):
     # Rescale coords (xyxy) from img1_shape to img0_shape
-    print(f"Scaling from {img1_shape} -> {img0_shape}")
     if ratio_pad is None:  # calculate from img0_shape
         gain = min(
             img1_shape[0] / img0_shape[0], img1_shape[1] / img0_shape[1]
@@ -334,9 +334,16 @@ def non_max_suppression_np(
     return output
 
 
-def get_area(bbox: np.ndarray) -> list:
+def get_area_and_loc(bbox: np.ndarray) -> Tuple[list, list]:
     # (x1, y1, x2, y2)
-    return ((bbox[:, 2] - bbox[:, 0]) * (bbox[:, 3] - bbox[:, 1])).tolist()
+    loc = list(
+        zip(
+            ((bbox[:, 2] + bbox[:, 0]) / 2).tolist(),
+            ((bbox[:, 3] + bbox[:, 1]) / 2).tolist(),
+        )
+    )
+    area = ((bbox[:, 2] - bbox[:, 0]) * (bbox[:, 3] - bbox[:, 1])).tolist()
+    return area, loc
 
 
 def roi_func(img: np.ndarray) -> np.ndarray:
@@ -356,28 +363,28 @@ def roi_func(img: np.ndarray) -> np.ndarray:
     broi = 0
     # create stencil just the first time and then save for later use
     roi = [
-            (
-                int(luroi * ((img.shape[1] - 1))),
-                int(hroi * (img.shape[0] - 1)),
-            ),
-            (
-                int(lbroi * ((img.shape[1] - 1))),
-                int((img.shape[0] - 1) * (1 - broi)),
-            ),
-            (
-                int(rbroi * ((img.shape[1] - 1))),
-                int((img.shape[0] - 1) * (1 - broi)),
-            ),
-            (
-                int(ruroi * ((img.shape[1] - 1))),
-                int(hroi * (img.shape[0] - 1)),
-            ),
-        ]
+        (
+            int(luroi * ((img.shape[1] - 1))),
+            int(hroi * (img.shape[0] - 1)),
+        ),
+        (
+            int(lbroi * ((img.shape[1] - 1))),
+            int((img.shape[0] - 1) * (1 - broi)),
+        ),
+        (
+            int(rbroi * ((img.shape[1] - 1))),
+            int((img.shape[0] - 1) * (1 - broi)),
+        ),
+        (
+            int(ruroi * ((img.shape[1] - 1))),
+            int(hroi * (img.shape[0] - 1)),
+        ),
+    ]
     stencil = np.zeros_like(img, dtype="uint8")
-        # specify coordinates of the polygon
+    # specify coordinates of the polygon
     polygon = np.array(roi)
 
-        # fill polygon with ones
+    # fill polygon with ones
     cv2.fillConvexPoly(stencil, polygon, [255, 255, 255])
 
     img = cv2.bitwise_and(img, img, mask=stencil[:, :, 0])
@@ -387,6 +394,7 @@ def roi_func(img: np.ndarray) -> np.ndarray:
 map2label = [
     "car",
     "crosswalk",
+    "doll",
     "highway_entry",
     "highway_exit",
     "no_entry",
@@ -403,7 +411,7 @@ map2label = [
 
 class Detection:
     def __init__(
-        self, model_path: str = "sign_model_openvino_model/sign_model.xml"
+        self, model_path: str = "model32s255_openvino_model/model32s255.xml"
     ) -> None:
         ie = Core()
         model = ie.read_model(model=model_path)
@@ -418,11 +426,13 @@ class Detection:
         self, img: np.ndarray, bbox: bool = False
     ) -> Tuple[List[float], List[float], Optional[np.ndarray]]:
         img = roi_func(img)
-        if not img.shape == (640, 640, 3):
+        img_n = img[:, 160:]
+        
+        if not img_n.shape == (640, 640, 3):
             img_resized = cv2.resize(img, (640, 640))
 
-        x: np.ndarray = img_resized / 255
-        x = x.astype(np.float32)
+        # x: np.ndarray = img_resized / 255
+        x = img_resized.astype(np.float32)
         x = np.expand_dims(x.transpose(2, 0, 1), 0)
         request = self.compiled_model.create_infer_request()
         request.infer({self.input_layer_ir.any_name: x})
@@ -436,19 +446,30 @@ class Detection:
         pred_nms = pred_nms[0]
         pred_nms[:, :4] = scale_coords(x.shape[2:], pred_nms[:, :4], img.shape).round()
         classes = np.unique(pred_nms[:, -1]).tolist()
-        area = get_area(pred_nms[:, :4])
+        # print("classes", classes)
+        area, loc = get_area_and_loc(pred_nms[:, :4])
         if bbox:
             out_image = self.draw_bbox(pred_nms, classes=classes, image=img)
             classes = [map2label[int(x)] for x in classes]
-            detections = [
-                (c, a) for c, a in zip(classes, area) if a > AREA_THRESHOLD[c]
-            ]
+            detections = dict(
+                [
+                    (c, (a, l))
+                    for c, a, l in zip(classes, area, loc)
+                    if a > AREA_THRESHOLD[c]
+                ]
+            )
             return (detections, out_image)
         else:
             if classes:
                 classes = [map2label[int(x)] for x in classes]
-                return [(c, a) for c, a in zip(classes, area) if a > AREA_THRESHOLD[c]]
-            return [], []
+                return dict(
+                    [
+                        (c, (a, l))
+                        for c, a, l in zip(classes, area, loc)
+                        if a > AREA_THRESHOLD[c]
+                    ]
+                )
+            return {}
 
     def draw_bbox(
         self, pred_nms: np.ndarray, classes: Tuple[int], image: np.ndarray

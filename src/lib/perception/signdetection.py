@@ -8,6 +8,12 @@ from src.lib.perception.detect_ov import Detection
 from loguru import logger
 import zmq
 import numpy as np
+import cv2
+
+from multiprocessing import Value
+import ctypes
+
+loaded_model = Value(ctypes.c_bool, False)
 
 
 class SignDetectionProcess(WorkerProcess):
@@ -65,8 +71,10 @@ class SignDetectionProcess(WorkerProcess):
         count = 0
         self.detection = Detection()
         print(">>> Starting Sign Detection")
-        context_recv = zmq.Context()
+        global loaded_model
+        loaded_model.value = True
 
+        context_recv = zmq.Context()
         sub_cam = context_recv.socket(zmq.SUB)
         sub_cam.setsockopt(zmq.CONFLATE, 1)
         sub_cam.connect("ipc:///tmp/v4ls")
@@ -74,6 +82,7 @@ class SignDetectionProcess(WorkerProcess):
 
         context_send = zmq.Context()
         pub_sd = context_send.socket(zmq.PUB)
+        pub_sd.setsockopt(zmq.CONFLATE, 1)
         pub_sd.bind("ipc:///tmp/v61")
 
         if self.enable_steam:
@@ -88,19 +97,22 @@ class SignDetectionProcess(WorkerProcess):
                 data = sub_cam.recv()
                 data = np.frombuffer(data, dtype=np.uint8)
                 img = np.reshape(data, (480, 640, 3))
+                # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
                 # print("sD img recv")
                 # print(f"Sign Detection timedelta {time.time() - recv_time}")
-                logger.log("PIPE", f"recv image {time.time() - recv_time}")
                 count += 1
                 start_time = time.time()
+                #     detections, outimage = self.detection(img, bbox=True)
+                #     pub_sd.send_json(detections, flags=zmq.NOBLOCK)
+                #     pub_sd_img.send(outimage.tobytes(), flags=zmq.NOBLOCK)
+                # else:
+                detections, outimage = self.detection(img, bbox=True)
+                pub_sd.send_json(detections, flags=zmq.NOBLOCK)
                 if self.enable_steam:
-                    detections, outimage = self.detection(img, bbox=True)
-                    pub_sd.send_json(detections, flags=zmq.NOBLOCK)
                     pub_sd_img.send(outimage.tobytes(), flags=zmq.NOBLOCK)
-                else:
-                    detections = self.detection(img)
-                    pub_sd.send_json(detections, flags=zmq.NOBLOCK)
-                logger.log("SD", f"detections -> {detections}")
+
+                # logger.log("SD", f"detections -> {detections}")
 
             except Exception as e:
                 print("Sign Detection error:")

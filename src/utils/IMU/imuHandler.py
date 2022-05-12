@@ -33,7 +33,7 @@ import threading
 import signal
 import time
 
-from src.hardware.IMU import imu
+from src.hardware.IMU.imu import imu
 
 def exit_handler(signum, frame):
 	IMU.stop()
@@ -44,8 +44,7 @@ def main():
 	global IMU
 	signal.signal(signal.SIGTERM, exit_handler)
 	IMU = imu()
-	while True:
-		IMU.start()
+	IMU.start()
 
 if __name__ == "__main__":
 	main()

@@ -26,7 +26,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-from src.utils.camerastreamer.zmqRecieverProcess import CameraReceiverProcess
+from src.utils.camerastreamer.RecieverProcess import CameraReceiverProcess
 from multiprocessing import Event
 import argparse
 

@@ -43,7 +43,7 @@ except ImportError as e:
 
 
 class imu(threading.Thread):
-    def __init__(self, outPs):
+    def __init__(self):
         threading.Thread.__init__(self)
         self.running = True
 
@@ -67,7 +67,6 @@ class imu(threading.Thread):
 
         self.poll_interval = self.imu.IMUGetPollInterval()
         print("Recommended Poll Interval: %dmS\n" % self.poll_interval)
-        self.outPs = outPs
 
     def run(self):
         context_send = zmq.Context()
@@ -88,6 +87,7 @@ class imu(threading.Thread):
 
                 # fix yaw
                 yaw = yaw * math.pi / 180
+                yaw -= 1.54
                 if yaw > math.pi:
                     yaw = yaw - 2 * math.pi
                 self.yaw = -yaw
@@ -101,6 +101,7 @@ class imu(threading.Thread):
                     "accely": self.accely,
                     "accelz": self.accelz,
                 }
+                # print("IMU send", data)
                 pub_imu.send_json(data)
 
                 # time.sleep(self.poll_interval * 1.0 / 1000.0)

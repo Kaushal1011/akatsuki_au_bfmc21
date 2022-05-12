@@ -70,7 +70,7 @@ class Localize:
         self.uy = 0
         self.fix_dt = 0.1
         self.var_dt = 0.1
-        self.v=0
+        self.v = 0
 
         # last update time to calculate dt
         self.lupdate_i = 0
@@ -101,11 +101,11 @@ class Localize:
         self.lupdate_i = now()
 
         # should this - be here ?
-        self.accelx = -ax*10
-        self.accely = ay*10
-        self.accelz = az*10
-        print(self.accelx, self.accely, self.accelz)
-        
+        self.accelx = -ax * 10
+        self.accely = ay * 10
+        self.accelz = az * 10
+        # print(self.accelx, self.accely, self.accelz)
+
         if self.var_dt > 1:
             self.var_dt = 0.5
 
@@ -113,13 +113,12 @@ class Localize:
         self.ux = self.ux + self.accelx * self.var_dt
         self.uy = self.uy + self.accely * self.var_dt
 
-        # vector sum 
-        self.v = math.sqrt(self.ux**2 + self.uy**2)
+        # vector sum
+        self.v = math.sqrt(self.ux ** 2 + self.uy ** 2)
 
-        #self localise using imu
+        # self localise using imu
         self.ix = self.ix + self.v * math.cos(-self.iyaw) * self.var_dt
         self.iy = self.iy + self.v * math.sin(-self.iyaw) * self.var_dt
-        
 
         ##################################
         #          Bad Physics           #
@@ -245,7 +244,7 @@ class Localize:
 
             if len(self.g_arr) == 10:
                 # print("in here")
-                self.kf2.observation_covariance=10*self.kf2.observation_covariance
+                self.kf2.observation_covariance = 10 * self.kf2.observation_covariance
                 pass
 
         return rix, riy, self.iyaw, self.ipitch, self.iroll

@@ -9,6 +9,7 @@ from src.templates.workerprocess import WorkerProcess
 from multiprocessing import Pipe
 import zmq
 
+
 class LocalisationSystemProcess(WorkerProcess):
     # ================================ CAMERA PROCESS =====================================
     def __init__(self, inPs, outPs, daemon=True):
@@ -24,6 +25,7 @@ class LocalisationSystemProcess(WorkerProcess):
             daemon process flag, by default True
         """
         super(LocalisationSystemProcess, self).__init__(inPs, outPs, daemon=True)
+        self.outPs = outPs
 
     # ===================================== RUN ==========================================
     def run(self):
@@ -38,13 +40,13 @@ class LocalisationSystemProcess(WorkerProcess):
         )
         self.threads.append(trafficTh)
 
-    def runListener(self, outPs):
+    def runListener(self):
         # Get time stamp when starting tester
         # Create listener object
         beacon = 12345
-        id = 4
+        id = 84
         serverpublickey = pathlib.Path(
-            pathlib.Path(__file__).parent.resolve(), "publickey_server_test.pem"
+            pathlib.Path(__file__).parent.resolve(), "publickey_server.pem"
         )
         gpsStR, gpsStS = Pipe(duplex=False)
         locsys = LocalisationSystem(id, beacon, serverpublickey, gpsStS)
@@ -54,8 +56,9 @@ class LocalisationSystemProcess(WorkerProcess):
         # Wait until 60 seconds passed
         context_send = zmq.Context()
         pub_loc = context_send.socket(zmq.PUB)
+        pub_loc.setsockopt(zmq.CONFLATE, 1)
         pub_loc.bind("ipc:///tmp/v31")
-
+        print("Starting Localizaion Server")
         while True:
             try:
                 coora = gpsStR.recv()
@@ -68,9 +71,8 @@ class LocalisationSystemProcess(WorkerProcess):
                             coora["coor"][1].real, coora["coor"][1].imag
                         ),
                     }
+                    # print("LOC", data)
                     pub_loc.send_json(data, flags=zmq.NOBLOCK)
-                    
-                time.sleep(1)
             except KeyboardInterrupt:
                 break
 

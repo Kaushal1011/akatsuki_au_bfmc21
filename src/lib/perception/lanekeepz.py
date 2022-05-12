@@ -109,7 +109,6 @@ class LaneKeepingProcess(WorkerProcess):
                 img = np.reshape(data, (480, 640, 3))
 
                 # print("lk img recv")
-                logger.log("PIPE", "recv image")
                 t_r += time.time() - image_recv_start
                 count += 1
 
@@ -119,15 +118,18 @@ class LaneKeepingProcess(WorkerProcess):
                 )
                 compute_time = time.time()
                 # Apply image processing
+                # if self.enable_stream and False:
+                #     val, intersection_detected, outimage = self.lk(img, True)
+                #     angle = self.computeSteeringAnglePID(val)
+                #     pub_lk.send_json((angle, intersection_detected), flags=zmq.NOBLOCK)
+                #     pub_lk_img.send(outimage.tobytes(), flags=zmq.NOBLOCK)
+                # else:
+                val, intersection_detected = self.lk(img)
+                angle = self.computeSteeringAnglePID(val)
+                pub_lk.send_json((angle, intersection_detected), flags=zmq.NOBLOCK)
+
                 if self.enable_stream:
-                    val, intersection_detected, outimage = self.lk(img, True)
-                    angle = self.computeSteeringAnglePID(val)
-                    pub_lk.send_json((angle, intersection_detected), flags=zmq.NOBLOCK)
-                    pub_lk_img.send(outimage.tobytes(), flags=zmq.NOBLOCK)
-                else:
-                    val, intersection_detected = self.lk(img)
-                    angle = self.computeSteeringAnglePID(val)
-                    pub_lk.send_json((angle, intersection_detected), flags=zmq.NOBLOCK)
+                    pub_lk_img.send(img.tobytes(), flags=zmq.NOBLOCK)
 
                 # print("Timetaken by LK: ", time() - a)
         except Exception as e:

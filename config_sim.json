@@ -4,7 +4,6 @@
   "enableRc": false,
   "enableLaneKeeping": true,
   "enableSIM": true,
-  "enableIntersectionDet": true,
   "enableSignDet": true,
   "start_idx": "86",
   "end_idx": "200",
@@ -14,5 +13,7 @@
   "pi_ip": "0.0.0.0",
   "home_loc": false,
   "preplan": false,
-  "park":false
+  "park": false,
+  "env_server":false,
+  "loc_server":false
 }
