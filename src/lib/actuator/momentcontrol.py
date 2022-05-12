@@ -92,7 +92,7 @@ class MovementControl(WorkerProcess):
                 print("Listening error:")
                 print(e)
 
-    def _set_PID(self, outPs):
+    def _set_PIDnEncoder(self, outPs):
         """Set PID to True and configure PID"""
         pid_conf_data = {}
         pid_conf_data["action"] = "6"
@@ -105,9 +105,14 @@ class MovementControl(WorkerProcess):
         pid_activate_data["action"] = "4"
         pid_activate_data["activate"] = True
 
+        pid_activate_enc = {}
+        pid_activate_enc["action"] = "5"
+        pid_activate_enc["activate"] = True
+
         for outP in outPs:
             outP.send(pid_activate_data)
             outP.send(pid_conf_data)
+            outP.send(pid_activate_enc)
 
     def _singleUpdate(self, outPs):
         """Update the state of the controls"""

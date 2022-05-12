@@ -302,8 +302,11 @@ class DecisionMakingProcess(WorkerProcess):
                 if "lk" in self.inPsnames:
                     if sub_lk.poll(timeout=0.05):
                         lk_angle, detected_intersection = get_last(sub_lk)
-
-                        # print("LK -> ", lk_angle, detected_intersection)
+                        logger.log(
+                            "PIPE",
+                            f"LK -> Angle {lk_angle} Intersection Det {detected_intersection}",
+                        )
+                        print("LK -> ", lk_angle, detected_intersection)
                         self.state.update_lk_angle(lk_angle)
                         self.state.update_intersection(detected_intersection)
                 # logger.log("PIPE", f"Recv->LK {lk_angle}")
@@ -316,8 +319,11 @@ class DecisionMakingProcess(WorkerProcess):
                 if "dis" in self.inPsnames:
                     if sub_dis.poll(timeout=0.05):
                         distance_data = get_last(sub_dis)
-
-                        # print("DIS -> ", distance_data)
+                        logger.log(
+                            "PIPE",
+                            f"DIS -> Angle {distance_data}",
+                        )
+                        print("DIS -> ", distance_data)
                         logger.log(
                             "SYNC", f"dis delta {time()- distance_data['timestamp']}"
                         )
@@ -328,7 +334,11 @@ class DecisionMakingProcess(WorkerProcess):
                 if "pos" in self.inPsnames:
                     if sub_pos.poll(timeout=0.05):
                         pos = get_last(sub_pos)
-                        # print(f"POS -> {pos}")
+                        logger.log(
+                            "PIPE",
+                            f"POS -> {pos}",
+                        )
+                        print(f"POS -> {pos}")
                         # print(pos["timestamp"] - time.time())
                         if pos[0] == 0 and pos[1] == 0:
                             pass
@@ -341,8 +351,8 @@ class DecisionMakingProcess(WorkerProcess):
                 if "sd" in self.inPsnames:
                     if sub_sd.poll(timeout=0.05):
                         detections = get_last(sub_sd)
-
-                        # print("SD ->", detections)
+                        logger.log("PIPE", f"SD -> {detections}")
+                        print("SD ->", detections)
                         # send data to env server
                         if len(outPs) > 1:
                             for env_data in send_data2env(self.state, detections):
@@ -356,7 +366,9 @@ class DecisionMakingProcess(WorkerProcess):
                 if "tl" in self.inPsnames:
                     if sub_tl.poll(timeout=0.05):
                         tl_data = sub_tl.recv()
-                        # print(f"TL -> {tl_data}")
+                        logger.log("PIPE", "TL ->  {detections}")
+
+                        print(f"TL -> {tl_data}")
 
                         self.state.update_tl(tl_data)
 
@@ -374,8 +386,8 @@ class DecisionMakingProcess(WorkerProcess):
                 logger.debug(f"Sonar Side: {self.state.side_distance}")
 
                 if len(outPs) > 0:
-                    outPs[0].send((self.state.steering_angle, self.state.v))
-                    # outPs[0].send((0.0, 0.0))
+                    # outPs[0].send((self.state.steering_angle, self.state.v))
+                    outPs[0].send((0.0, 0.0))
                 # sleep(0.1)
 
             except Exception as e:

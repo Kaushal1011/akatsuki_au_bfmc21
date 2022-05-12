@@ -25,7 +25,8 @@ from src.hardware.camera.cameraprocess import CameraProcess
 from src.hardware.camera.SIMCameraProcess import SIMCameraProcess
 from src.lib.perception.lanekeepz import LaneKeepingProcess as LaneKeeping
 from src.lib.perception.signdetection import SignDetectionProcess
-from src.data.localisationssystem.home_locProc import LocalisationProcess
+
+# from src.data.localisationssystem.home_locProc import LocalisationProcess
 
 from src.data.localisationssystem.locsysProc import LocalisationSystemProcess
 
@@ -80,13 +81,13 @@ if TEST_PIPE:
         format="<level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
     )
 
-# logger.add(
-#     "file1.log",
-#     filter=lambda r: r["level"] == 14,
-#     format="<level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
-# )
-#
+logger.add(
+    "file1.log",
+    filter=lambda r: r["level"] == 14,
+    format="<level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+)
 
+logger.add("log_data", filter=filter([12]))
 # ========================================================================
 # SCRIPT USED FOR WIRING ALL COMPONENTS
 # ========================================================================
@@ -155,7 +156,7 @@ if config["enableSIM"]:
 #     posFusionInputName.append("loc")
 #
 
-if config["loc_server"]:
+elif config["loc_server"]:
     # LocSys -> Position Fusion
     locsysProc = LocalisationSystemProcess([], [])
     allProcesses.append(locsysProc)

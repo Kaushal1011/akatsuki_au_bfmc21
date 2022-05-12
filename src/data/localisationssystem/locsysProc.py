@@ -46,7 +46,7 @@ class LocalisationSystemProcess(WorkerProcess):
         beacon = 12345
         id = 84
         serverpublickey = pathlib.Path(
-            pathlib.Path(__file__).parent.resolve(), "publickey_server.pem"
+            pathlib.Path(__file__).parent.resolve(), "publickey_server_test.pem"
         )
         gpsStR, gpsStS = Pipe(duplex=False)
         locsys = LocalisationSystem(id, beacon, serverpublickey, gpsStS)

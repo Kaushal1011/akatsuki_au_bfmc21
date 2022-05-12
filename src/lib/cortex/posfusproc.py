@@ -129,6 +129,8 @@ class PositionFusionProcess(WorkerProcess):
                     gx = loc["posA"]
                     gy = loc["posB"]
                     gyaw = loc["rotA"] if "rotA" in loc.keys() else loc["radA"]
+                    logger.log("PIPE", f"loc {loc}")
+
                     # gyaw = gyaw
                     # gyaw = 2 * math.pi - (gyaw + math.pi)
 
