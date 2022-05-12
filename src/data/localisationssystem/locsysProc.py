@@ -46,7 +46,7 @@ class LocalisationSystemProcess(WorkerProcess):
         beacon = 12345
         id = 84
         serverpublickey = pathlib.Path(
-            pathlib.Path(__file__).parent.resolve(), "publickey_server_test.pem"
+            pathlib.Path(__file__).parent.resolve(), "publickey_server.pem"
         )
         gpsStR, gpsStS = Pipe(duplex=False)
         locsys = LocalisationSystem(id, beacon, serverpublickey, gpsStS)
@@ -71,7 +71,7 @@ class LocalisationSystemProcess(WorkerProcess):
                             coora["coor"][1].real, coora["coor"][1].imag
                         ),
                     }
-                    print("LOC", data)
+                    # print("LOC", data)
                     pub_loc.send_json(data, flags=zmq.NOBLOCK)
 
                 time.sleep(1)

@@ -321,7 +321,7 @@ class DecisionMakingProcess(WorkerProcess):
                         distance_data = get_last(sub_dis)
                         logger.log(
                             "PIPE",
-                            f"DIS -> Angle {distance_data}",
+                            f"DIS -> {distance_data}",
                         )
                         print("DIS -> ", distance_data)
                         logger.log(
@@ -356,6 +356,8 @@ class DecisionMakingProcess(WorkerProcess):
                         # send data to env server
                         if len(outPs) > 1:
                             for env_data in send_data2env(self.state, detections):
+                                print("ENV -> ", env_data)
+                                logger.log("PIPE", f"ENV -> {env_data}")
                                 outPs[1].send(env_data)
 
                         self.state.update_detected(detections)
@@ -366,7 +368,7 @@ class DecisionMakingProcess(WorkerProcess):
                 if "tl" in self.inPsnames:
                     if sub_tl.poll(timeout=0.05):
                         tl_data = sub_tl.recv()
-                        logger.log("PIPE", "TL ->  {detections}")
+                        logger.log("PIPE", f"TL ->  {tl_data}")
 
                         print(f"TL -> {tl_data}")
 
