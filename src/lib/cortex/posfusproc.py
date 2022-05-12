@@ -126,6 +126,7 @@ class PositionFusionProcess(WorkerProcess):
                 if "loc" in self.inPsnames:
                     loc: dict = sub_loc.recv_json()
                     # print("LOC -> ", loc)
+                    print(f"Loc Time delta {(time() - loc['timestamp']):.4f}")
                     gx = loc["posA"]
                     gy = loc["posB"]
                     gyaw = loc["rotA"] if "rotA" in loc.keys() else loc["radA"]
