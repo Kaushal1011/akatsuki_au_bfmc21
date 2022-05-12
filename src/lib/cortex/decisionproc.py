@@ -309,6 +309,7 @@ class DecisionMakingProcess(WorkerProcess):
                         print("LK -> ", lk_angle, detected_intersection)
                         self.state.update_lk_angle(lk_angle)
                         self.state.update_intersection(detected_intersection)
+                        print("LK angle", self.state.lanekeeping_angle)
                 # logger.log("PIPE", f"Recv->LK {lk_angle}")
                 # logger.log("SYNC", f"LK timedelta {time()- lk_timestamp}")
                 # # print(f"Time taken lk {(time() - t_lk):.4f}s {lk_angle}")
@@ -338,7 +339,7 @@ class DecisionMakingProcess(WorkerProcess):
                             "PIPE",
                             f"POS -> {pos}",
                         )
-                        print(f"POS -> {pos}")
+                        # print(f"POS -> {pos}")
                         # print(pos["timestamp"] - time.time())
                         if pos[0] == 0 and pos[1] == 0:
                             pass
@@ -387,10 +388,11 @@ class DecisionMakingProcess(WorkerProcess):
                 logger.debug(f"Sonar Front: {self.state.front_distance}")
                 logger.debug(f"Sonar Side: {self.state.side_distance}")
                 # print(f"Final -> ({self.state.steering_angle, self.state.v})")
+                print("OUT",self.state.steering_angle, self.state.v)
                 if len(outPs) > 0:
-                    outPs[0].send((self.state.steering_angle, self.state.v))
-                    # outPs[0].send((0.0, 0.0))
-                # sleep(0.1)
+                    # outPs[0].send((self.state.steering_angle, self.state.v))
+                    outPs[0].send((0.0, 0.0))
+                sleep(0.1)
 
             except Exception as e:
                 print("Decision Process error:")

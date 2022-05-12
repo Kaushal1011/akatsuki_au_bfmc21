@@ -7,6 +7,7 @@
 dataset
 log_data_*
 
+picam*
 # ignore data directory
 nbs/*/data
 nbs/yolov5

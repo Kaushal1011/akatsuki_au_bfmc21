@@ -68,7 +68,7 @@ class LaneKeep:
         lbroi: float = 0,
         rbroi: float = 1,
         hroi: float = 0.45,
-        broi: float = 0.06,
+        broi: float = 0.05,
     ):
         """Define LaneKeeping pipeline and parameters
 
@@ -148,13 +148,16 @@ class LaneKeep:
         if self.computation_method == "hough":
             if get_image:
                 angle, outimg = self.houghlines_angle(preprocess_img, get_img=get_image)
+                angle=self.get_road_ratio_angle(preprocess_img)
                 # angle = self.get_lane_error(preprocess_img)
                 # if len(cnts) > 0:
                 #     self.draw_intersection_bbox(outimg, cnts)
                 return angle, intersection_detected, outimg
 
             else:
-                angle = self.houghlines_angle(preprocess_img)
+                # angle = self.houghlines_angle(preprocess_img)
+                angle=self.get_road_ratio_angle(preprocess_img)
+                
                 # angle = self.get_lane_error(preprocess_img)
                 # angle_roadarea = self.graph_road_search(preprocess_img)
                 # print(angle, " ", angle_roadarea)
