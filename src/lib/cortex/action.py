@@ -292,11 +292,12 @@ class OvertakeBehaviour(BehaviourCallback):
 
 class LaneKeepBehaviour(BehaviourCallback):
     def __init__(self, **kwargs):
-        self.pid_con = PID(P=0.995, I=0.75, D=2.0)
+        self.pid_con = PID(P=1.4, I=0.35, D=0.7)
         self.last_angle = 0
 
     def __call__(self, car_state):
         angle = self.pid_con.update(car_state.lanekeeping_angle)
+        # angle = car_state.lanekeeping_angle
         angle = (angle + self.last_angle) / 2
         if angle > 23:
             angle = 23
@@ -304,14 +305,14 @@ class LaneKeepBehaviour(BehaviourCallback):
             angle = -23
         # print("Lanekeeping angle: ", car_state.lanekeeping_angle)
         # print("Lanekeeping angle: ", angle)
-        # return  {"steer":angle}
+        return  {"steer":angle}
         #if abs(car_state.cs_angle - angle) > 20 and car_state.current_ptype == "lk":
             # return {"steer": (angle+car_state.cs_angle*2)/3}
         #    return None
-        if car_state.current_ptype == "lk":
-            if abs(car_state.cs_angle - angle)>27:
-                return {"steer":(angle+car_state.cs_angle*5)/6}
-            return {"steer": (angle+car_state.cs_angle)/2}
+        #if car_state.current_ptype == "lk":
+        #    if abs(car_state.cs_angle - angle)>27:
+        #        return {"steer":(angle+car_state.cs_angle*5)/6}
+        #    return {"steer": (angle+car_state.cs_angle)/2}
         #    return None
 
     def set(self, **kwargs):
