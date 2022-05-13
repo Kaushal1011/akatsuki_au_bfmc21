@@ -62,7 +62,7 @@ def save_private_key(pk, filename):
     with open(filename, 'wb') as pem_out:
         pem_out.write(pem)
 
-def save_public_key(pk,filename:str):
+def save_public_key(pk,filename):
     """ Save public key
     
     Parameters
@@ -80,7 +80,7 @@ def save_public_key(pk,filename:str):
         pem_out.write(pem)
 
 
-def load_private_key(filename:str):
+def load_private_key(filename):
     """Import the private key
     
     Parameters
@@ -97,7 +97,7 @@ def load_private_key(filename:str):
     private_key = load_pem_private_key(pemlines, None, default_backend())
     return private_key
 
-def load_public_key(filename:str):
+def load_public_key(filename):
     """ Import the public key
     
     Parameters

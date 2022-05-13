@@ -27,8 +27,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 import sys
-
-
 sys.path.insert(0,'.')
 
 """ServerData class contains all parameter of server. It need to connect to the server.
