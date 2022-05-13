@@ -72,11 +72,12 @@ logger.level("TIME", no=15)
 def filter(level: List[int]):
     return lambda r: r["level"].no in level or r["level"].no > 19
 
+
 def filter_level(level: List[int]):
     return lambda r: r["level"].no in level
 
 
-LOG_STDOUT = True
+LOG_STDOUT = False
 logger.remove()
 if LOG_STDOUT:
     logger.add(
@@ -221,7 +222,7 @@ if config["env_server"]:
     beacon = 23456
     id = 100
     serverpublickey = "publickey_server.pem"
-    clientprivatekey = "privatekey_client.pem"
+    clientprivatekey = "privateckey_client.pem"
 
     gpsStR, gpsStS = Pipe(duplex=False)
 
@@ -315,7 +316,7 @@ if sDProc is not None:
     for proc in allProcesses:
         proc.daemon = True
         proc.start()
-    
+
     allProcesses.append(sDProc)
 else:
     for proc in allProcesses:
@@ -348,4 +349,3 @@ except KeyboardInterrupt:
             print("Process witouth stop", sDProc)
             sDProc.terminate()
             sDProc.join()
-    
