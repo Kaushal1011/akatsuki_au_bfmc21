@@ -63,8 +63,8 @@ class TLBehaviour(BehaviourCallback):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.loc = {
-            "s0": (1, 1),
-            "s1": (4, 4),
+            "s0": (1.1, 14),
+            "s1": (2, 11),
             "s2": (5, 5),
             "s3": (6, 6),
         }
@@ -77,15 +77,17 @@ class TLBehaviour(BehaviourCallback):
             min_d_sem = None
             for sem in self.loc.keys():
                 d = math.sqrt(
-                    (car_state.x - self.loc[sem]) ** 2
-                    + (car_state.y - self.loc[sem]) ** 2
+                    (car_state.x - self.loc[sem][0]) ** 2
+                    + (car_state.y - self.loc[sem][1]) ** 2
                 )
                 if d < min_d:
                     min_d = d
                     min_d_sem = sem
             self.current_tl = min_d_sem
-
-        if car_state.tl[self.current_tl] != 2:
+        print("Current TL", self.current_tl)
+        print(car_state.tl)
+        print("TL state", car_state.tl[self.current_tl])
+        if car_state.tl[self.current_tl] == 0:
             return {"speed": 0.0}
         else:
             self.over = True
@@ -305,14 +307,14 @@ class LaneKeepBehaviour(BehaviourCallback):
             angle = -23
         # print("Lanekeeping angle: ", car_state.lanekeeping_angle)
         # print("Lanekeeping angle: ", angle)
-        return  {"steer":angle}
+        # return  {"steer":angle}
         #if abs(car_state.cs_angle - angle) > 20 and car_state.current_ptype == "lk":
             # return {"steer": (angle+car_state.cs_angle*2)/3}
         #    return None
-        #if car_state.current_ptype == "lk":
-        #    if abs(car_state.cs_angle - angle)>27:
-        #        return {"steer":(angle+car_state.cs_angle*5)/6}
-        #    return {"steer": (angle+car_state.cs_angle)/2}
+        if car_state.current_ptype == "lk":
+           if abs(car_state.cs_angle - angle)>21:
+               return {"steer":(angle+car_state.cs_angle*5)/6}
+           return {"steer": angle}
         #    return None
 
     def set(self, **kwargs):
@@ -322,7 +324,7 @@ class LaneKeepBehaviour(BehaviourCallback):
 class ControlSystemBehaviour(BehaviourCallback):
     def __init__(self, coord_list):
         super().__init__()
-        self.cs = Pure_Pursuit(coord_list,Lfc=0.5)
+        self.cs = Pure_Pursuit(coord_list,Lfc=0.2)
 
     def __call__(self, car_state: CarState):
         ind, lf = self.cs.search_target_index(car_state)
@@ -824,6 +826,7 @@ class ActionManager:
             self.l2_ab,
             self.l3_ab,
             self.l4_ab,
+            self.tflight,
             self.objstop,
         ]
         speed = 0
@@ -892,7 +895,8 @@ class ActionManager:
             self.l4_ab = action
             self.l4_ab.set(action_time=action_time, **kwargs)
             return True
-        elif action.name == "tflight":
+        elif action.name == "trafficlight" and self.tflight is None:
+            print("TL state set")
             self.tflight = action
             self.tflight.set(action_time=action_time, **kwargs)
             return True

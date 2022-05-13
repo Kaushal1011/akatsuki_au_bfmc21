@@ -131,6 +131,7 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
         action_man.set_action(cwobjaction, action_time=None, car_state=carstate)
 
     if carstate.detected["trafficlight"][0]:
+        print("TL activated")
         tlobj = TLBehaviour(carstate=carstate)
         tlaction = ActionBehaviour(name="trafficlight", callback=tlobj)
         action_man.set_action(tlaction, action_time=None, carstate=carstate)
@@ -306,10 +307,10 @@ class DecisionMakingProcess(WorkerProcess):
                             "PIPE",
                             f"LK -> Angle {lk_angle} Intersection Det {detected_intersection}",
                         )
-                        print("LK -> ", lk_angle, detected_intersection)
+                        # print("LK -> ", lk_angle, detected_intersection)
                         self.state.update_lk_angle(lk_angle)
                         self.state.update_intersection(detected_intersection)
-                        print("LK angle", self.state.lanekeeping_angle)
+                        # print("LK angle", self.state.lanekeeping_angle)
                 # logger.log("PIPE", f"Recv->LK {lk_angle}")
                 # logger.log("SYNC", f"LK timedelta {time()- lk_timestamp}")
                 # # print(f"Time taken lk {(time() - t_lk):.4f}s {lk_angle}")
@@ -324,7 +325,7 @@ class DecisionMakingProcess(WorkerProcess):
                             "PIPE",
                             f"DIS -> {distance_data}",
                         )
-                        print("DIS -> ", distance_data)
+                        # print("DIS -> ", distance_data)
                         logger.log(
                             "SYNC", f"dis delta {time()- distance_data['timestamp']}"
                         )
@@ -353,7 +354,7 @@ class DecisionMakingProcess(WorkerProcess):
                     if sub_sd.poll(timeout=0.05):
                         detections = get_last(sub_sd)
                         logger.log("PIPE", f"SD -> {detections}")
-                        print("SD ->", detections)
+                        # print("SD ->", detections)
                         # send data to env server
                         if len(outPs) > 1:
                             for env_data in send_data2env(self.state, detections):
@@ -369,6 +370,7 @@ class DecisionMakingProcess(WorkerProcess):
                 if "tl" in self.inPsnames:
                     if sub_tl.poll(timeout=0.05):
                         tl_data = sub_tl.recv()
+                        tl_data = json.loads(tl_data.decode())
                         logger.log("PIPE", f"TL ->  {tl_data}")
 
                         print(f"TL -> {tl_data}")
@@ -390,8 +392,8 @@ class DecisionMakingProcess(WorkerProcess):
                 # print(f"Final -> ({self.state.steering_angle, self.state.v})")
                 print("OUT",self.state.steering_angle, self.state.v)
                 if len(outPs) > 0:
-                    # outPs[0].send((self.state.steering_angle, self.state.v))
-                    outPs[0].send((0.0, 0.0))
+                    outPs[0].send((self.state.steering_angle, self.state.v))
+                    # outPs[0].send((0.0, 0.0))
                 sleep(0.1)
 
             except Exception as e:

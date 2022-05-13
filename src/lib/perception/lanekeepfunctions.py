@@ -148,17 +148,17 @@ class LaneKeep:
         if self.computation_method == "hough":
             if get_image:
                 angle, outimg = self.houghlines_angle(preprocess_img, get_img=get_image)
-                angle=self.get_road_ratio_angle(preprocess_img)
-                # angle = self.get_lane_error(preprocess_img)
+                # angle=self.get_road_ratio_angle(preprocess_img)
+                angle = self.get_lane_error(preprocess_img)
                 # if len(cnts) > 0:
                 #     self.draw_intersection_bbox(outimg, cnts)
                 return angle, intersection_detected, outimg
 
             else:
-                # angle = self.houghlines_angle(preprocess_img)
-                angle=self.get_road_ratio_angle(preprocess_img)
+                angle = self.houghlines_angle(preprocess_img)
+                # angle=self.get_road_ratio_angle(preprocess_img)
                 
-                # angle = self.get_lane_error(preprocess_img)
+                angle = self.get_lane_error(preprocess_img)
                 # angle_roadarea = self.graph_road_search(preprocess_img)
                 # print(angle, " ", angle_roadarea)
                 #             angle = (angle*2 + angle_roadarea) / 3
@@ -335,8 +335,8 @@ class LaneKeep:
 
 def get_error_lane(mask_image):
     mid_y = mask_image.shape[0] // 2
-    pval = int(mid_y + 0.5 * (mask_image.shape[0] // 2))
-    mval = int(mid_y + 0.9 * (mask_image.shape[0] // 2))
+    pval = int(mid_y + 0.575 * (mask_image.shape[0] // 2))
+    mval = int(mid_y + 0.995 * (mask_image.shape[0] // 2))
     # print(pval,mval)
     img_new = mask_image[pval:mval, :]
     img_new = cv2.resize(

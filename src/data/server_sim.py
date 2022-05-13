@@ -61,7 +61,6 @@ class ServerSIM(WorkerProcess):
         context_send = zmq.Context()
         pub_sim = context_send.socket(zmq.PUB)
         pub_sim.bind(f"ipc:///tmp/v{self.file_id}")
-
         try:
             while True:
                 bts, addr = self.server_socket.recvfrom(1024)

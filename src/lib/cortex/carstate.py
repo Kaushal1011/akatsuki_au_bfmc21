@@ -26,31 +26,31 @@ from typing import List, Tuple
 #     ],
 # }
 
-# activity_config = {
-#     "nodes": [
-#         [86, 69],
-#         [110, 145],
-#         [61, 168],
-#         [169, 229],
-#         [230, 104],
-#         [105, 465],
-#         [466, 85],
-#     ],
-#     "activity": [
-#         "navigation",
-#         "roadblocked",
-#         "parking",
-#         "overtaking",
-#         "highway",
-#         "oneway",
-#         "finish",
-#     ],
-# }
-
-activity_config={
-    "nodes":[[86,158],[159,226],[227,105],[106,111],[70,85]],# [],[]],
-    "activity":["navigation","parking","highway","finish","finish2"] 
+activity_config = {
+    "nodes": [
+        [86, 69],
+        [110, 145],
+        [61, 168],
+        [169, 229],
+        [230, 104],
+        [105, 465],
+        [466, 85],
+    ],
+    "activity": [
+        "navigation",
+        "roadblocked",
+        "parking",
+        "overtaking",
+        "highway",
+        "oneway",
+        "finish",
+    ],
 }
+
+# activity_config={
+#     "nodes":[[86,158],[159,226],[227,105],[106,111],[70,85]],# [],[]],
+#     "activity":["navigation","parking","highway","finish","finish2"] 
+# }
 
 class CarState:
     def __init__(self, max_v=0.20, dt=0.13, car_len=0.365, **kwargs) -> None:
@@ -109,7 +109,7 @@ class CarState:
 
         self.target_ind = None
         # traffic light semaphore
-        self.tl = {}
+        self.tl = {"s0":0,"s1":0,"s2":0,"s3":0}
 
         # active behavious
         self.active_behaviours = []
