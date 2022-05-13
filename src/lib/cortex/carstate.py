@@ -101,6 +101,7 @@ class CarState:
             "roundabout": (False, 0, (-1, 1)),
             "stop": (False, 0, (-1, 1)),
             "trafficlight": (False, 0, (-1, 1)),
+            "doll":(False, 0, (-1, 1))
         }
 
         # distance sensor
