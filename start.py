@@ -76,7 +76,7 @@ def filter_level(level: List[int]):
     return lambda r: r["level"].no in level
 
 
-LOG_STDOUT = False
+LOG_STDOUT = True
 logger.remove()
 if LOG_STDOUT:
     logger.add(
@@ -219,7 +219,7 @@ dataFusionOutPs.append(FzzMcS)
 # ======================= Environment Server ======================================
 if config["env_server"]:
     beacon = 23456
-    id = 120
+    id = 81
     serverpublickey = "publickey_server.pem"
     clientprivatekey = "privatekey_client.pem"
 

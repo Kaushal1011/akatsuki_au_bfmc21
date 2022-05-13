@@ -159,6 +159,7 @@ ENVID = {
     "roundabout": 7,
     "stop": 1,
     "trafficlight": 9,
+    "doll":11
 }
 
 
@@ -307,7 +308,7 @@ class DecisionMakingProcess(WorkerProcess):
                             "PIPE",
                             f"LK -> Angle {lk_angle} Intersection Det {detected_intersection}",
                         )
-                        # print("LK -> ", lk_angle, detected_intersection)
+                        print("LK -> ", lk_angle, detected_intersection)
                         self.state.update_lk_angle(lk_angle)
                         self.state.update_intersection(detected_intersection)
                         # print("LK angle", self.state.lanekeeping_angle)
@@ -325,7 +326,7 @@ class DecisionMakingProcess(WorkerProcess):
                             "PIPE",
                             f"DIS -> {distance_data}",
                         )
-                        # print("DIS -> ", distance_data)
+                        print("DIS -> ", distance_data)
                         logger.log(
                             "SYNC", f"dis delta {time()- distance_data['timestamp']}"
                         )
@@ -340,7 +341,7 @@ class DecisionMakingProcess(WorkerProcess):
                             "PIPE",
                             f"POS -> {pos}",
                         )
-                        # print(f"POS -> {pos}")
+                        print(f"POS -> {pos}")
                         # print(pos["timestamp"] - time.time())
                         if pos[0] == 0 and pos[1] == 0:
                             pass
@@ -354,7 +355,7 @@ class DecisionMakingProcess(WorkerProcess):
                     if sub_sd.poll(timeout=0.05):
                         detections = get_last(sub_sd)
                         logger.log("PIPE", f"SD -> {detections}")
-                        # print("SD ->", detections)
+                        print("SD ->", detections)
                         # send data to env server
                         if len(outPs) > 1:
                             for env_data in send_data2env(self.state, detections):
@@ -373,7 +374,7 @@ class DecisionMakingProcess(WorkerProcess):
                         tl_data = json.loads(tl_data.decode())
                         logger.log("PIPE", f"TL ->  {tl_data}")
 
-                        print(f"TL -> {tl_data}")
+                        # print(f"TL -> {tl_data}")
 
                         self.state.update_tl(tl_data)
 
@@ -390,11 +391,11 @@ class DecisionMakingProcess(WorkerProcess):
                 logger.debug(f"Sonar Front: {self.state.front_distance}")
                 logger.debug(f"Sonar Side: {self.state.side_distance}")
                 # print(f"Final -> ({self.state.steering_angle, self.state.v})")
-                print("OUT",self.state.steering_angle, self.state.v)
+                # print("OUT",self.state.steering_angle, self.state.v)
                 if len(outPs) > 0:
                     outPs[0].send((self.state.steering_angle, self.state.v))
                     # outPs[0].send((0.0, 0.0))
-                sleep(0.1)
+                # sleep(0.1)
 
             except Exception as e:
                 print("Decision Process error:")
