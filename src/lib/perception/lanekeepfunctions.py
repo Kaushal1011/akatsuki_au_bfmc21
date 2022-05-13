@@ -63,12 +63,12 @@ class LaneKeep:
         adpt_Th_C: int = 4,
         canny_thres1: int = 50,
         canny_thres2: int = 150,
-        luroi: float = 0.0,
-        ruroi: float = 1,
+        luroi: float = 0.2,
+        ruroi: float = 0.8,
         lbroi: float = 0,
         rbroi: float = 1,
-        hroi: float = 0.45,
-        broi: float = 0.05,
+        hroi: float = 0.5,
+        broi: float = 0.0,
     ):
         """Define LaneKeeping pipeline and parameters
 
@@ -144,18 +144,18 @@ class LaneKeep:
         #     # print(type(cnts), type(cnts[0]))
         #     cv2.drawContours(mask, cnts, -1, 0, -1)
         # preprocess_img = cv2.bitwise_and(preprocess_img, preprocess_img, mask=mask)
-
+        print("LK call")
         if self.computation_method == "hough":
             if get_image:
-                angle, outimg = self.houghlines_angle(preprocess_img, get_img=get_image)
-                # angle=self.get_road_ratio_angle(preprocess_img)
+                # angle, outimg = self.houghlines_angle(preprocess_img, get_img=get_image)
+                #angle=self.get_road_ratio_angle(preprocess_img)
                 angle = self.get_lane_error(preprocess_img)
                 # if len(cnts) > 0:
                 #     self.draw_intersection_bbox(outimg, cnts)
                 return angle, intersection_detected, outimg
 
             else:
-                angle = self.houghlines_angle(preprocess_img)
+                # angle = self.houghlines_angle(preprocess_img)
                 # angle=self.get_road_ratio_angle(preprocess_img)
                 
                 angle = self.get_lane_error(preprocess_img)
@@ -228,7 +228,7 @@ class LaneKeep:
     #         mask = cv2.inRange(imgn, lower, upper)
     #         return mask
 
-    def intersection_det(self, img: np.ndarray, area_threshold=3_500):
+    def intersection_det(self, img: np.ndarray, area_threshold=6_500):
         # detect horizontal lines
         horizontal_size = img.shape[1] // 6
         horizontal_kernel = cv2.getStructuringElement(
@@ -335,7 +335,7 @@ class LaneKeep:
 
 def get_error_lane(mask_image):
     mid_y = mask_image.shape[0] // 2
-    pval = int(mid_y + 0.575 * (mask_image.shape[0] // 2))
+    pval = int(mid_y + 0.275 * (mask_image.shape[0] // 2))
     mval = int(mid_y + 0.995 * (mask_image.shape[0] // 2))
     # print(pval,mval)
     img_new = mask_image[pval:mval, :]
@@ -349,9 +349,9 @@ def get_error_lane(mask_image):
     midpoint = np.int(histogram.shape[0] / 2)
     leftxBase = np.argmax(histogram[:midpoint])
     rightxBase = np.argmax(histogram[midpoint:]) + midpoint
-    # print(leftxBase, midpoint, rightxBase)
+    print(leftxBase, midpoint, rightxBase)
     return (
-        (abs(rightxBase - midpoint) - abs(leftxBase - midpoint)) * 26.5 / (midpoint)
+        (abs(rightxBase - midpoint) - abs(leftxBase - midpoint)) * 25.5 / (midpoint)
     ) + 90
 
 

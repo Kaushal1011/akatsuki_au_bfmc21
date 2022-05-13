@@ -33,7 +33,7 @@ sys.path.insert(0,'.')
 
 import socket
 
-from utils import load_public_key, load_private_key, verify_data, sign_data
+from src.data.environmentalserver.utils import load_public_key, load_private_key, verify_data, sign_data
 
 class ServerSubscriber:
 	""" It has role to subscribe on the server, to create a connection and verify the server authentication.

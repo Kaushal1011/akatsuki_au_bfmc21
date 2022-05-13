@@ -393,9 +393,9 @@ class DecisionMakingProcess(WorkerProcess):
                 # print(f"Final -> ({self.state.steering_angle, self.state.v})")
                 # print("OUT",self.state.steering_angle, self.state.v)
                 if len(outPs) > 0:
-                    outPs[0].send((self.state.steering_angle, self.state.v))
-                    # outPs[0].send((0.0, 0.0))
-                # sleep(0.1)
+                    # outPs[0].send((self.state.steering_angle, self.state.v))
+                    outPs[0].send((0.0, 0.0))
+                sleep(0.03)
 
             except Exception as e:
                 print("Decision Process error:")

@@ -5,14 +5,14 @@
   "enableLaneKeeping": true,
   "enableSignDet": true,
   "enableSIM": false,
-  "loc_server": true,
-  "tl_server": true,
+  "loc_server": false,
+  "tl_server": false,
   "test_track": false,
   "env_server": false,
   "start_idx": "86",
   "end_idx": "40",
-  "pc_ip": "192.168.1.72",
-  "pi_ip": "192.168.1.100",
+  "pc_ip": "192.168.140.18",
+  "pi_ip": "192.168.140.89",
   "home_loc": false,
   "preplan": false
 }
