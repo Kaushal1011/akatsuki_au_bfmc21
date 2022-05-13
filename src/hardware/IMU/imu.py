@@ -87,7 +87,7 @@ class imu(threading.Thread):
 
                 # fix yaw
                 yaw = yaw * math.pi / 180
-                yaw -= 1.54
+                yaw -= 1.57
                 if yaw > math.pi:
                     yaw = yaw - 2 * math.pi
                 self.yaw = -yaw
