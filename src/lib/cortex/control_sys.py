@@ -95,7 +95,7 @@ class Pure_Pursuit:
 
         # Use Of Inverted Yaw Here
 
-        alpha = math.atan2(ty - state.rear_y, tx - state.rear_x) - (-state.yaw)
+        alpha = math.atan2(ty - state.y, tx - state.x) - (-state.yaw)
 
         # print("rear pts: ",state.x,state.y)
         # print("target and yaw :", tx,ty,state.yaw)

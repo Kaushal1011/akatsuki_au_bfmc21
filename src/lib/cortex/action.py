@@ -65,8 +65,8 @@ class TLBehaviour(BehaviourCallback):
         self.loc = {
             "s0": (1.1, 14),
             "s1": (2, 11),
-            "s2": (5, 5),
-            "s3": (6, 6),
+            "s2": (3, 11),
+            "s3": (4, 10),
         }
         self.current_tl = None
         self.over = False
@@ -312,9 +312,9 @@ class LaneKeepBehaviour(BehaviourCallback):
             # return {"steer": (angle+car_state.cs_angle*2)/3}
         #    return None
         if car_state.current_ptype == "lk":
-           if abs(car_state.cs_angle - angle)>21:
+           if abs(car_state.cs_angle - angle)>10:
                return {"steer":(angle+car_state.cs_angle*5)/6}
-           return {"steer": angle}
+           return {"steer":angle}
         #    return None
 
     def set(self, **kwargs):
@@ -324,7 +324,7 @@ class LaneKeepBehaviour(BehaviourCallback):
 class ControlSystemBehaviour(BehaviourCallback):
     def __init__(self, coord_list):
         super().__init__()
-        self.cs = Pure_Pursuit(coord_list,Lfc=0.2)
+        self.cs = Pure_Pursuit(coord_list,Lfc=0.27)
 
     def __call__(self, car_state: CarState):
         ind, lf = self.cs.search_target_index(car_state)
