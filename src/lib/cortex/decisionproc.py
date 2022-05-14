@@ -10,10 +10,6 @@ from time import sleep
 from typing import Dict, List, Optional, Tuple
 import socket
 
-from src.config import get_config
-
-config = get_config()
-
 from src.lib.cortex.carstate import CarState
 from src.lib.perception.signdetection import loaded_model
 from src.templates.workerprocess import WorkerProcess
@@ -34,6 +30,10 @@ from src.lib.cortex.action import (
     TLBehaviour,
     HighwayBehaviour
 )
+from src.config import get_config
+
+config = get_config()
+
 import joblib
 from loguru import logger
 import math
@@ -205,7 +205,13 @@ class DecisionMakingProcess(WorkerProcess):
         """
         super(DecisionMakingProcess, self).__init__(inPs, outPs)
         # pass navigator config
-        self.state = CarState()
+        if config["speed"]:
+            self.state = CarState(max_v=0.3)
+            print(self.state.max_v)
+        else:
+            self.state = CarState()
+            print(self.state.max_v)
+            
         self.inPsnames = inPsnames
         self.actman = ActionManager()
 
@@ -234,9 +240,10 @@ class DecisionMakingProcess(WorkerProcess):
         self.actman.set_action(csaction)
 
         # pass coordlist here from navigator config
-        stopobj = ObjectStopBehaviour()
-        stopobjaction = ActionBehaviour(name="objstop", callback=stopobj)
-        self.actman.set_action(stopobjaction)
+        if not config["speed"]:
+            stopobj = ObjectStopBehaviour()
+            stopobjaction = ActionBehaviour(name="objstop", callback=stopobj)
+            self.actman.set_action(stopobjaction)
 
     def run(self):
         """Apply the initializing methods and start the threads."""
@@ -386,8 +393,9 @@ class DecisionMakingProcess(WorkerProcess):
                         self.state.update_tl(tl_data)
 
                 # # update car navigator, current ptype, current etype and current idx
-
-                trigger_behaviour(self.state, self.actman)
+                if not config["speed"]:
+                    # print("Trigger behaviour called")
+                    trigger_behaviour(self.state, self.actman)
                 # print(self.state.detected)
                 speed, steer = self.actman(self.state)
                 self.state.v = speed
@@ -398,7 +406,7 @@ class DecisionMakingProcess(WorkerProcess):
                 logger.debug(f"Sonar Front: {self.state.front_distance}")
                 logger.debug(f"Sonar Side: {self.state.side_distance}")
                 # print(f"Final -> ({self.state.steering_angle, self.state.v})")
-                print("OUT",self.state.steering_angle, self.state.v)
+                print("OUT",self.state.steering_angle, self.state.v, self.state.front_distance)
                 if len(outPs) > 0:
                     # outPs[0].send((self.state.steering_angle, self.state.v))
                     outPs[0].send((0.0, 0.0))

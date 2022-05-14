@@ -5,6 +5,10 @@ from time import time
 from src.lib.cortex.navigation import Navigator
 from typing import List, Tuple
 
+from src.config import get_config
+
+config = get_config()
+
 # activity_config = {
 #     "nodes": [
 #         [86, 99],
@@ -47,11 +51,19 @@ from typing import List, Tuple
 #     ],
 # }
 # 
-activity_config={
+
+if config["speed"]:
+     activity_config = {
+    "nodes":[[86,220],[221,85]],# [],[]],
+    "activity":["navigation","finish"] 
+}
+else:
+   activity_config = {
     "nodes":[[86,158],[159,226],[227,345],[346,105],[106,111],[70,85]],# [],[]],
     "activity":["navigation","parking","tohighway","highway","finish","finish2"] 
 }
 
+print(activity_config)
 class CarState:
     def __init__(self, max_v=0.20, dt=0.13, car_len=0.365, **kwargs) -> None:
 
@@ -189,9 +201,6 @@ class CarState:
 
     def update_tl(self, tl):
         self.tl = tl
-
-    def __repr__(self) -> str:
-        return f"{datetime.datetime.now()}| {self.steering_angle:.4f}, {self.det_intersection}, {self.x:.4f}, {self.y:.4f}, {self.yaw:.4f}"
 
     def asdict(self) -> dict:
         return {

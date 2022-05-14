@@ -15,5 +15,5 @@
   "pi_ip": "192.168.140.89",
   "home_loc": false,
   "preplan": false,
-  "speed":false
+  "speed":true
 }
