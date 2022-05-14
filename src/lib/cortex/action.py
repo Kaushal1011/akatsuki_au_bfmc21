@@ -294,7 +294,7 @@ class OvertakeBehaviour(BehaviourCallback):
 
 class LaneKeepBehaviour(BehaviourCallback):
     def __init__(self, **kwargs):
-        self.pid_con = PID(P=0.995, I=0.25, D=0.1)
+        self.pid_con = PID(P=1.4, I=0.35, D=0.7)
         self.last_angle = 0
 
     def __call__(self, car_state):
@@ -305,8 +305,8 @@ class LaneKeepBehaviour(BehaviourCallback):
             angle = 23
         elif angle < -23:
             angle = -23
-        print("Lanekeeping angle: ", car_state.lanekeeping_angle)
-        print("Lanekeeping angle: ", angle)
+        # print("Lanekeeping angle: ", car_state.lanekeeping_angle)
+        # print("Lanekeeping angle: ", angle)
         # return  {"steer":angle}
         #if abs(car_state.cs_angle - angle) > 20 and car_state.current_ptype == "lk":
             # return {"steer": (angle+car_state.cs_angle*2)/3}
@@ -314,7 +314,11 @@ class LaneKeepBehaviour(BehaviourCallback):
 #         if car_state.current_ptype == "lk":
 #            if abs(car_state.cs_angle - angle)>10:
 #                return {"steer":(angle+car_state.cs_angle*5)/6}
-        return {"steer":angle}
+
+        if car_state.current_ptype == "lk":
+           if abs(car_state.cs_angle - angle)>10:
+               return {"steer":(angle+car_state.cs_angle*5)/6}
+           return {"steer":angle}
         #    return None
 
     def set(self, **kwargs):
@@ -324,7 +328,7 @@ class LaneKeepBehaviour(BehaviourCallback):
 class ControlSystemBehaviour(BehaviourCallback):
     def __init__(self, coord_list):
         super().__init__()
-        self.cs = Pure_Pursuit(coord_list,Lfc=0.47)
+        self.cs = Pure_Pursuit(coord_list,Lfc=0.36)
 
     def __call__(self, car_state: CarState):
         ind, lf = self.cs.search_target_index(car_state)
@@ -507,7 +511,7 @@ class ParkingBehaviour(BehaviourCallback):
 
                 # tx = self.initx + 0.5 + offsetx_1
                 # ty = self.inity
-                tx = 3.4 + self.offsetx +0.3
+                tx = 3.4 + self.offsetx
                 ty = 2.0
 
                 print("In Phase 1", tx, ty)
@@ -540,7 +544,7 @@ class ParkingBehaviour(BehaviourCallback):
                 # go to safe spot for reverse
                 # tx = self.initx + 0.5 +  offsetx_1
                 # ty = self.inity - 0.35
-                tx = 3.8 + self.offsetx+0.3
+                tx = 3.8 + self.offsetx
                 ty = 1.75
                 print("In Phase 3", tx, ty)
                 d = math.sqrt(
@@ -554,7 +558,7 @@ class ParkingBehaviour(BehaviourCallback):
             elif self.phase == 4:
                 # tx = self.initx + 0.75 + offsetx_1
                 # ty = self.inity + 0.35
-                tx = 3.3 + self.offsetx+0.3
+                tx = 3.3 + self.offsetx
                 ty = 2.6
                 print("In Phase 4", tx, ty)
                 d = math.sqrt(
@@ -570,7 +574,7 @@ class ParkingBehaviour(BehaviourCallback):
             elif self.phase == 5:
                 print("In Phase 5")
                 # reverse into parking
-                tx = 3.3 + self.offsetx+0.3
+                tx = 3.3 + self.offsetx
                 ty = 3.1
                 # tx = self.initx + 0.75 +  offsetx_1
                 # ty = self.inity + 1
@@ -588,7 +592,7 @@ class ParkingBehaviour(BehaviourCallback):
 
             elif self.phase == 6:
                 print("In Phase 6")
-                tx = 3.4 + self.offsetx+0.3
+                tx = 3.4 + self.offsetx
                 ty = 2.2
                 d = math.sqrt(
                     (tx - car_state.rear_x) ** 2 + (ty - car_state.rear_y) ** 2

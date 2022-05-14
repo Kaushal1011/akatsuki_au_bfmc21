@@ -63,12 +63,12 @@ class LaneKeep:
         adpt_Th_C: int = 4,
         canny_thres1: int = 50,
         canny_thres2: int = 150,
-        luroi: float = 0.2,
-        ruroi: float = 0.8,
+        luroi: float = 0.0,
+        ruroi: float = 1,
         lbroi: float = 0,
         rbroi: float = 1,
-        hroi: float = 0.5,
-        broi: float = 0.0,
+        hroi: float = 0.45,
+        broi: float = 0.05,
     ):
         """Define LaneKeeping pipeline and parameters
 
@@ -144,7 +144,7 @@ class LaneKeep:
         #     # print(type(cnts), type(cnts[0]))
         #     cv2.drawContours(mask, cnts, -1, 0, -1)
         # preprocess_img = cv2.bitwise_and(preprocess_img, preprocess_img, mask=mask)
-        print("LK call")
+        # print("LK call")
         if self.computation_method == "hough":
             if get_image:
                 angle, outimg = self.houghlines_angle(preprocess_img, get_img=get_image)
@@ -335,7 +335,7 @@ class LaneKeep:
 
 def get_error_lane(mask_image):
     mid_y = mask_image.shape[0] // 2
-    pval = int(mid_y + 0.275 * (mask_image.shape[0] // 2))
+    pval = int(mid_y + 0.575 * (mask_image.shape[0] // 2))
     mval = int(mid_y + 0.995 * (mask_image.shape[0] // 2))
     # print(pval,mval)
     img_new = mask_image[pval:mval, :]
@@ -351,7 +351,7 @@ def get_error_lane(mask_image):
     rightxBase = np.argmax(histogram[midpoint:]) + midpoint
     print(leftxBase, midpoint, rightxBase)
     return (
-        (abs(rightxBase - midpoint) - abs(leftxBase - midpoint)) * 25.5 / (midpoint)
+        (abs(rightxBase - midpoint) - abs(leftxBase - midpoint)) * 26.5 / (midpoint)
     ) + 90
 
 
