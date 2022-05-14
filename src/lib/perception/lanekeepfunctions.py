@@ -349,7 +349,7 @@ def get_error_lane(mask_image):
     midpoint = np.int(histogram.shape[0] / 2)
     leftxBase = np.argmax(histogram[:midpoint])
     rightxBase = np.argmax(histogram[midpoint:]) + midpoint
-    print(leftxBase, midpoint, rightxBase)
+    # print(leftxBase, midpoint, rightxBase)
     return (
         (abs(rightxBase - midpoint) - abs(leftxBase - midpoint)) * 26.5 / (midpoint)
     ) + 90

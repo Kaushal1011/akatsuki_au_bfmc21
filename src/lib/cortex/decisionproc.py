@@ -308,7 +308,7 @@ class DecisionMakingProcess(WorkerProcess):
                             "PIPE",
                             f"LK -> Angle {lk_angle} Intersection Det {detected_intersection}",
                         )
-                        print("LK -> ", lk_angle, detected_intersection)
+                        # print("LK -> ", lk_angle, detected_intersection)
                         self.state.update_lk_angle(lk_angle)
                         self.state.update_intersection(detected_intersection)
                         # print("LK angle", self.state.lanekeeping_angle)

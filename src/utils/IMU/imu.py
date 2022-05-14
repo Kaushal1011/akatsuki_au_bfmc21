@@ -105,7 +105,7 @@ class imu(threading.Thread):
 
                 # time.sleep(self.poll_interval * 1.0 / 1000.0)
 
-            time.sleep(0.5)
+            time.sleep(0.05)
 
     def stop(self):
         self.running = False

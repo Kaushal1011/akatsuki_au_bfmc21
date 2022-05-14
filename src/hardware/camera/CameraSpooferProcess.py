@@ -50,7 +50,7 @@ from typing import List
 class CameraSpooferProcess(WorkerProcess):
 
     # ================================ INIT ===============================================
-    def __init__(self, outPsname: List[str], videoDir, ext=".avi"):
+    def __init__(self, outPsname: List[str], videoDir, ext=".h264"):
         """Processed used for spoofing a camera/ publishing a video stream from a folder
         with videos
 
