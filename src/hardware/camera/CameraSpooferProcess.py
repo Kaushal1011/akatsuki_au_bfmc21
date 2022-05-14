@@ -35,7 +35,7 @@ import cv2
 import numpy as np
 import zmq
 from src.templates.workerprocess import WorkerProcess
-
+from typing import List
 # from multiprocessing import shared_memory
 # import SharedArray as sa
 
@@ -50,7 +50,7 @@ from src.templates.workerprocess import WorkerProcess
 class CameraSpooferProcess(WorkerProcess):
 
     # ================================ INIT ===============================================
-    def __init__(self, inPs, outPs, videoDir, ext=".avi"):
+    def __init__(self, inPs, outPsname: List[str], videoDir, ext=".h264"):
         """Processed used for spoofing a camera/ publishing a video stream from a folder
         with videos
 
@@ -65,12 +65,14 @@ class CameraSpooferProcess(WorkerProcess):
         ext : str, optional
             the extension of the file, by default '.h264'
         """
-        super(CameraSpooferProcess, self).__init__(inPs, outPs)
+        super(CameraSpooferProcess, self).__init__()
 
         # params
         self.videoSize = (640, 480)
         self.videoDir = videoDir
         self.videos = self.open_files(self.videoDir, ext=ext)
+
+        self.outPsname = outPsname
 
     # ===================================== INIT VIDEOS ==================================
     def open_files(self, inputDir, ext):
@@ -110,9 +112,23 @@ class CameraSpooferProcess(WorkerProcess):
         videos : list(string)
             The list of files with the videos.
         """
-        context = zmq.Context()
-        pub_cam = context.socket(zmq.PUB)
-        pub_cam.bind("ipc:///tmp/v4l")
+        if "lk" in self.outPsname:
+            context_lk = zmq.Context()
+            pub_cam_lk = context_lk.socket(zmq.PUB)
+            pub_cam_lk.setsockopt(zmq.CONFLATE, 1)
+            pub_cam_lk.bind("ipc:///tmp/v4l")
+
+        if "sd" in self.outPsname:
+            context_sd = zmq.Context()
+            pub_cam_sd = context_sd.socket(zmq.PUB)
+            pub_cam_sd.setsockopt(zmq.CONFLATE, 1)
+            pub_cam_sd.bind("ipc:///tmp/v4ls")
+
+        if "stream" in self.outPsname:
+            context_stream = zmq.Context()
+            pub_cam_stream = context_stream.socket(zmq.PUB)
+            pub_cam_stream.setsockopt(zmq.CONFLATE, 1)
+            pub_cam_stream.bind("ipc:///tmp/v4lc")
 
         while True:
             for video in videos:
@@ -123,9 +139,17 @@ class CameraSpooferProcess(WorkerProcess):
                     stamp = time.time()
                     if ret:
                         frame: np.ndarray = cv2.resize(frame, self.videoSize)
-                        send_start_time = time.time()
-                        pub_cam.send(frame.tobytes(), flags=zmq.NOBLOCK)
-                        print("CameraSpoofer")
-                    else:
-                        break
+                        
+                    if "lk" in self.outPsname:
+                        pub_cam_lk.send(frame, flags=zmq.NOBLOCK)
+                        # print("cam -> lk")
+
+                    if "stream" in self.outPsname:
+                        pub_cam_stream.send(frame, flags=zmq.NOBLOCK)
+                        # print("cam -> stream")
+
+                    if "sd" in self.outPsname:
+                        pub_cam_sd.send(frame, flags=zmq.NOBLOCK)
+                    
+
                 cap.release()
