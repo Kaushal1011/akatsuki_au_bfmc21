@@ -27,6 +27,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 from src.templates.threadwithstop import ThreadWithStop
+import zmq
 
 class ReadThread(ThreadWithStop):
     def __init__(self,f_serialCon,f_logFile):
@@ -45,6 +46,10 @@ class ReadThread(ThreadWithStop):
         self.buff=""
         self.isResponse=False
         self.__subscribers={}
+        context_send = zmq.Context()
+        self.pub_enc = context_send.socket(zmq.PUB)
+        self.pub_enc.bind(f"ipc:///tmp/enc")
+        
     
     def run(self):
         """ It's represent the activity of the read thread, to read the messages.
@@ -79,7 +84,11 @@ class ReadThread(ThreadWithStop):
         f_response : string
             The response received from the other device without the key. 
         """
+        if f_response[0] == "@" and f_response[1:3] == "5:" and f_response[3:6] != "ack":
+            self.pub_enc.send_string(f_response, flags=zmq.NOBLOCK)
+            # print("Serial",f_response)
         l_key=f_response[1:5]
+        
         if l_key in self.__subscribers:
             subscribers = self.__subscribers[l_key]
             for outP in subscribers:

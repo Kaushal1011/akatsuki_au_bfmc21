@@ -305,8 +305,8 @@ class LaneKeepBehaviour(BehaviourCallback):
             angle = 23
         elif angle < -23:
             angle = -23
-        print("Lanekeeping angle: ", car_state.lanekeeping_angle)
-        print("Lanekeeping angle: ", angle)
+        # print("Lanekeeping angle: ", car_state.lanekeeping_angle)
+        # print("Lanekeeping angle: ", angle)
         # return  {"steer":angle}
         #if abs(car_state.cs_angle - angle) > 20 and car_state.current_ptype == "lk":
             # return {"steer": (angle+car_state.cs_angle*2)/3}

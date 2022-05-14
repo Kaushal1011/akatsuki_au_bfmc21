@@ -295,12 +295,48 @@ class DecisionMakingProcess(WorkerProcess):
             # sub_dis.setsockopt(zmq.CONFLATE, 1)
             sub_tl.connect("ipc:///tmp/vtl")
             sub_tl.setsockopt_string(zmq.SUBSCRIBE, "")
-
+        
+        context_recv_imu = zmq.Context()
+        sub_imu = context_recv_imu.socket(zmq.SUB)
+        sub_imu.setsockopt(zmq.CONFLATE, 1)
+        sub_imu.connect("ipc:///tmp/imu")
+        sub_imu.setsockopt_string(zmq.SUBSCRIBE, "")
+            
+        context_recv_enc = zmq.Context()
+        sub_enc = context_recv_enc.socket(zmq.SUB)
+        sub_dis.setsockopt(zmq.CONFLATE, 1)
+        sub_enc.connect("ipc:///tmp/enc")
+        sub_enc.setsockopt_string(zmq.SUBSCRIBE, "")
+        lttime = None
+        last_yaw = 0.0
         while True:
             try:
                 # c = time()
                 # start_time = time()
                 # t_lk = time()
+                
+                # encoder based localization
+                try:
+                    enc = sub_enc.recv_string()
+                    if sub_imu.poll(timeout=0.01):
+                        last_yaw = sub_imu.recv_json()["yaw"]
+                    if lttime is None:
+                        dt = 0.01
+                    else:
+                        dt=time()-lttime
+                    lttime=time()
+                    print(float(enc[3:-2]), last_yaw)
+                    self.state.nolocx = self.state.nolocx + (float(enc[3:-2])/100) * math.cos(-last_yaw) * dt
+                    self.state.nolocy = self.state.nolocy + (float(enc[3:-2])/100) * math.sin(-last_yaw) * dt
+#                     self.state.nolocx = self.state.nolocx + 0.1 * math.cos(-last_yaw) * dt
+#                     self.state.nolocy = self.state.nolocy + 0.1 * math.sin(-last_yaw) * dt
+                    print(self.state.nolocx, self.state.nolocy)
+                    # done
+                except Exception as e:
+                    print(e)
+                    
+                # do error checks
+                
                 if "lk" in self.inPsnames:
                     if sub_lk.poll(timeout=0.05):
                         lk_angle, detected_intersection = get_last(sub_lk)
@@ -308,7 +344,7 @@ class DecisionMakingProcess(WorkerProcess):
                             "PIPE",
                             f"LK -> Angle {lk_angle} Intersection Det {detected_intersection}",
                         )
-                        print("LK -> ", lk_angle, detected_intersection)
+                        # print("LK -> ", lk_angle, detected_intersection)
                         self.state.update_lk_angle(lk_angle)
                         self.state.update_intersection(detected_intersection)
                         # print("LK angle", self.state.lanekeeping_angle)
@@ -326,7 +362,7 @@ class DecisionMakingProcess(WorkerProcess):
                             "PIPE",
                             f"DIS -> {distance_data}",
                         )
-                        print("DIS -> ", distance_data)
+                        # print("DIS -> ", distance_data)
                         logger.log(
                             "SYNC", f"dis delta {time()- distance_data['timestamp']}"
                         )
@@ -341,7 +377,7 @@ class DecisionMakingProcess(WorkerProcess):
                             "PIPE",
                             f"POS -> {pos}",
                         )
-                        print(f"POS -> {pos}")
+                        # print(f"POS -> {pos}")
                         # print(pos["timestamp"] - time.time())
                         if pos[0] == 0 and pos[1] == 0:
                             pass
@@ -355,7 +391,7 @@ class DecisionMakingProcess(WorkerProcess):
                     if sub_sd.poll(timeout=0.05):
                         detections = get_last(sub_sd)
                         logger.log("PIPE", f"SD -> {detections}")
-                        print("SD ->", detections)
+                        # print("SD ->", detections)
                         # send data to env server
                         if len(outPs) > 1:
                             for env_data in send_data2env(self.state, detections):
@@ -394,6 +430,7 @@ class DecisionMakingProcess(WorkerProcess):
                 # print("OUT",self.state.steering_angle, self.state.v)
                 if len(outPs) > 0:
                     # outPs[0].send((self.state.steering_angle, self.state.v))
+                    # outPs[0].send((0.0, 0.0))
                     outPs[0].send((0.0, 0.0))
                 sleep(0.03)
 

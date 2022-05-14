@@ -112,7 +112,7 @@ class MovementControl(WorkerProcess):
         for outP in outPs:
             outP.send(pid_activate_data)
             outP.send(pid_conf_data)
-            # outP.send(pid_activate_enc)
+            outP.send(pid_activate_enc)
 
     def _singleUpdate(self, outPs):
         """Update the state of the controls"""

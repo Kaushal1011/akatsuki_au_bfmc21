@@ -73,6 +73,10 @@ class imu(threading.Thread):
         pub_imu = context_send.socket(zmq.PUB)
         pub_imu.bind(f"ipc:///tmp/v21")
 
+        context_send2 = zmq.Context()
+        pub_imu_dec = context_send2.socket(zmq.PUB)
+        pub_imu_dec.bind(f"ipc:///tmp/imu")
+
         while self.running is True:
             if self.imu.IMURead():
                 self.data = self.imu.getIMUData()
@@ -87,7 +91,7 @@ class imu(threading.Thread):
 
                 # fix yaw
                 yaw = yaw * math.pi / 180
-                yaw -= 1.57
+#                 yaw -= 1.57
                 if yaw > math.pi:
                     yaw = yaw - 2 * math.pi
                 self.yaw = -yaw
@@ -103,10 +107,11 @@ class imu(threading.Thread):
                 }
                 # print("IMU send", data)
                 pub_imu.send_json(data)
+                pub_imu_dec.send_json(data)
 
                 # time.sleep(self.poll_interval * 1.0 / 1000.0)
 
-            time.sleep(0.5)
+            time.sleep(0.01)
 
     def stop(self):
         self.running = False

@@ -52,7 +52,7 @@ class CameraThread(ThreadWithStop):
         # streaming options
         self._stream = io.BytesIO()
 
-        self.recordMode = True
+        self.recordMode = False
 
         # output
         self.outPs = outPs

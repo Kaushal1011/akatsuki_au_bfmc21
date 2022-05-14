@@ -58,7 +58,7 @@ class CarState:
         self.max_v = max_v
         # position data
         # 0.75, 4.8
-        self.x = 0.8
+        self.x = 0
         self.y = 14.8
         self.yaw = 1.57
         self.pitch = 0
@@ -68,6 +68,8 @@ class CarState:
         self.rear_y = self.y - ((car_len / 2) * math.sin(-self.yaw))
         self.f_x = 0
         self.f_y = 0
+        self.nolocx=-0.3
+        self.nolocy=0
 
         self.target_x = None
         self.target_y = None
@@ -163,10 +165,10 @@ class CarState:
         self.last_update_time = time()
         self.x = self.x + self.v * math.cos(-self.yaw) * dt
         self.y = self.y + self.v * math.sin(-self.yaw) * dt
-        self.yaw = (
-            self.yaw
-            - self.v / self.car_len * math.tan(self.steering_angle * math.pi / 180) * dt
-        )
+#         self.yaw = (
+#             self.yaw
+#             - self.v / self.car_len * math.tan(self.steering_angle * math.pi / 180) * dt
+#         )
         self.rear_x = self.x - ((self.car_len / 2) * math.cos(-self.yaw))
         self.rear_y = self.y - ((self.car_len / 2) * math.sin(-self.yaw))
 
