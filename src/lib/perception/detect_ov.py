@@ -411,7 +411,7 @@ map2label = [
 
 class Detection:
     def __init__(
-        self, model_path: str = "model32s255_openvino_model/model32s255.xml"
+        self, model_path: str = "final_openvino_model/final.xml"
     ) -> None:
         ie = Core()
         model = ie.read_model(model=model_path)
