@@ -358,7 +358,7 @@ class DecisionMakingProcess(WorkerProcess):
                         # print(f"POS -> {pos}")
                         # print(pos["timestamp"] - time.time())
                         if pos[0] == 0 and pos[1] == 0:
-                            pass
+                            self.state.update_pos_noloc()
                         else:
                             self.state.update_pos(*pos)
 
@@ -375,6 +375,7 @@ class DecisionMakingProcess(WorkerProcess):
                             for env_data in send_data2env(self.state, detections):
                                 print("ENV -> ", env_data)
                                 logger.log("PIPE", f"ENV -> {env_data}")
+                                logger.log("ENV",f"{env_data}")
                                 outPs[1].send(env_data)
 
                         self.state.update_detected(detections)
@@ -406,11 +407,11 @@ class DecisionMakingProcess(WorkerProcess):
                 logger.debug(f"Sonar Front: {self.state.front_distance}")
                 logger.debug(f"Sonar Side: {self.state.side_distance}")
                 # print(f"Final -> ({self.state.steering_angle, self.state.v})")
-                print("OUT",self.state.steering_angle, self.state.v, self.state.front_distance)
+                # print("OUT",self.state.steering_angle, self.state.v)
                 if len(outPs) > 0:
-                    # outPs[0].send((self.state.steering_angle, self.state.v))
-                    outPs[0].send((0.0, 0.0))
-                sleep(0.03)
+                    outPs[0].send((self.state.steering_angle, self.state.v))
+                    # outPs[0].send((0.0, 0.0))
+                # sleep(0.03)
 
             except Exception as e:
                 print("Decision Process error:")

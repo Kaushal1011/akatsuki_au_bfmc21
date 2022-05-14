@@ -203,7 +203,7 @@ class Localize:
             )
             self.i_state_means.append(imean)
             self.i_state_covariances.append(icov)
-
+            rgx,rgy =0, 0
             rix, riy = imean[0], imean[2]
             if len(self.i_arr) < 10:
                 rix, riy = self.ix, self.iy
@@ -247,4 +247,4 @@ class Localize:
                 self.kf2.observation_covariance = 10 * self.kf2.observation_covariance
                 pass
 
-        return rix, riy, self.iyaw, self.ipitch, self.iroll
+        return rgx, rgy, self.iyaw, self.ipitch, self.iroll

@@ -67,6 +67,7 @@ logger.level("PIPE", no=12, icon="==")
 logger.level("SYNC", no=13, color="<yellow>")
 logger.level("XY", no=14)
 logger.level("TIME", no=15)
+logger.level("ENV", no=16)
 
 
 def filter(level: List[int]):
@@ -77,7 +78,7 @@ def filter_level(level: List[int]):
     return lambda r: r["level"].no in level
 
 
-LOG_STDOUT = False
+LOG_STDOUT = True
 logger.remove()
 if LOG_STDOUT:
     logger.add(
@@ -88,6 +89,7 @@ if LOG_STDOUT:
 
 
 logger.add(f"log/log_data_{time.time():.2f}", filter=filter_level([12]))
+logger.add(f"log/env_data_{time.time():.2f}", filter=filter_level([16]))
 # ========================================================================
 # SCRIPT USED FOR WIRING ALL COMPONENTS
 # ========================================================================
