@@ -50,7 +50,7 @@ from typing import List
 class CameraSpooferProcess(WorkerProcess):
 
     # ================================ INIT ===============================================
-    def __init__(self, inPs, outPsname: List[str], videoDir, ext=".h264"):
+    def __init__(self, outPsname: List[str], videoDir, ext=".avi"):
         """Processed used for spoofing a camera/ publishing a video stream from a folder
         with videos
 
@@ -65,7 +65,7 @@ class CameraSpooferProcess(WorkerProcess):
         ext : str, optional
             the extension of the file, by default '.h264'
         """
-        super(CameraSpooferProcess, self).__init__()
+        super(CameraSpooferProcess, self).__init__([],[])
 
         # params
         self.videoSize = (640, 480)
