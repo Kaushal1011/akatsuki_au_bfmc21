@@ -48,8 +48,8 @@ from typing import List, Tuple
 # }
 # 
 activity_config={
-    "nodes":[[86,158],[159,226],[227,105],[106,111],[70,85]],# [],[]],
-    "activity":["navigation","parking","highway","finish","finish2"] 
+    "nodes":[[86,158],[159,226],[227,345],[346,105],[106,111],[70,85]],# [],[]],
+    "activity":["navigation","parking","tohighway","highway","finish","finish2"] 
 }
 
 class CarState:

@@ -32,6 +32,7 @@ from src.lib.cortex.action import (
     OvertakeBehaviour,
     RoundAboutBehaviour,
     TLBehaviour,
+    HighwayBehaviour
 )
 import joblib
 from loguru import logger
@@ -112,17 +113,17 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
     if carstate.detected["stop"][0]:
         # stop for t secs
         stopobj = StopBehvaiour()
-        stopaction = ActionBehaviour(name="stop", release_time=6.0, callback=stopobj)
-        action_man.set_action(stopaction, action_time=3.0)
+        stopaction = ActionBehaviour(name="stop", release_time=5.0, callback=stopobj)
+        action_man.set_action(stopaction, action_time=5.0)
 
     if carstate.detected["priority"][0]:
         pass
         # slowdown for t secs
-        # priorityobj = PriorityBehaviour()
-        # priorityaction = ActionBehaviour(
-        #     name="priority", release_time=6.0, callback=priorityobj
-        # )
-        # action_man.set_action(priorityaction, action_time=9.0)
+        priorityobj = PriorityBehaviour()
+        priorityaction = ActionBehaviour(
+             name="priority", release_time=7.0, callback=priorityobj
+         )
+        action_man.set_action(priorityaction, action_time=11.0)
 
     if carstate.detected["crosswalk"][0]:
         # stop detected pedestrain or crosswalk
@@ -136,6 +137,12 @@ def trigger_behaviour(carstate: CarState, action_man: ActionManager):
         tlaction = ActionBehaviour(name="trafficlight", callback=tlobj)
         action_man.set_action(tlaction, action_time=None, carstate=carstate)
 
+    if carstate.detected["highway_entry"][0] or carstate.activity_type=="highway":
+        hwobj = HighwayBehaviour(car_state=carstate)
+        hwobjaction = ActionBehaviour(name="hw", callback=hwobj)
+        action_man.set_action(hwobjaction, action_time=None, car_state=carstate)
+        
+        
     if carstate.pitch > 0.2:
         # incline trigger ramp
         pass
@@ -326,7 +333,7 @@ class DecisionMakingProcess(WorkerProcess):
                             "PIPE",
                             f"DIS -> {distance_data}",
                         )
-                        print("DIS -> ", distance_data)
+                        # print("DIS -> ", distance_data)
                         logger.log(
                             "SYNC", f"dis delta {time()- distance_data['timestamp']}"
                         )
@@ -341,7 +348,7 @@ class DecisionMakingProcess(WorkerProcess):
                             "PIPE",
                             f"POS -> {pos}",
                         )
-                        print(f"POS -> {pos}")
+                        # print(f"POS -> {pos}")
                         # print(pos["timestamp"] - time.time())
                         if pos[0] == 0 and pos[1] == 0:
                             pass
@@ -391,7 +398,7 @@ class DecisionMakingProcess(WorkerProcess):
                 logger.debug(f"Sonar Front: {self.state.front_distance}")
                 logger.debug(f"Sonar Side: {self.state.side_distance}")
                 # print(f"Final -> ({self.state.steering_angle, self.state.v})")
-                # print("OUT",self.state.steering_angle, self.state.v)
+                print("OUT",self.state.steering_angle, self.state.v)
                 if len(outPs) > 0:
                     # outPs[0].send((self.state.steering_angle, self.state.v))
                     outPs[0].send((0.0, 0.0))

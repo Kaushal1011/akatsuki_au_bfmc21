@@ -87,7 +87,7 @@ class TLBehaviour(BehaviourCallback):
         print("Current TL", self.current_tl)
         print(car_state.tl)
         print("TL state", car_state.tl[self.current_tl])
-        if car_state.tl[self.current_tl] == 0:
+        if car_state.tl[self.current_tl] != 2:
             return {"speed": 0.0}
         else:
             self.over = True
@@ -126,7 +126,7 @@ class HighwayBehaviour(BehaviourCallback):
         self.exit_highway = False
 
     def __call__(self, car_state: CarState):
-        if car_state.detected["highway_exit"][0]:
+        if car_state.detected["highway_exit"][0] or car_state.activity_type!="highway":
             self.exit_highway = True
 
         return {"speed": car_state.highway_speed}
@@ -316,7 +316,7 @@ class LaneKeepBehaviour(BehaviourCallback):
 #                return {"steer":(angle+car_state.cs_angle*5)/6}
 
         if car_state.current_ptype == "lk":
-           if abs(car_state.cs_angle - angle)>10:
+           if abs(car_state.cs_angle - angle)>7:
                return {"steer":(angle+car_state.cs_angle*5)/6}
            return {"steer":angle}
         #    return None
@@ -376,9 +376,13 @@ class ObjectStopBehaviour(BehaviourCallback):
         thyh=480
 
         if car_state.detected["pedestrian"][0]:
-            # x,y=car_state.detected["pedestrian"][2]
-            print(car_state.detected["pedestrian"])
+            x,y=car_state.detected["pedestrian"][1][1]
+            # print("Pedestrain", car_state.detected["pedestrian"])
             x,y=0,0
+            
+            if car_state.front_distance < 0.3 and car_state.detected["car"][0]:
+                return {"speed": 0.0}
+            
             if x>thxl and x<thxh and y>thyl and y<thyh:
                 return {"speed": 0.0}
             else:

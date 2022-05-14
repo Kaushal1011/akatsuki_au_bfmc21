@@ -7,20 +7,20 @@ import time
 FONT = "Arial.ttf"  # https://ultralytics.com/assets/Arial.ttf
 
 AREA_THRESHOLD = {
-    "car": 15000,
-    "crosswalk": 7000,
-    "doll": 50,
-    "highway_entry": 7000,
-    "highway_exit": 7000,
-    "no_entry": 5000,
-    "onewayroad": 5000,
-    "parking": 5000,
-    "pedestrian": 5000,
-    "priority": 5000,
-    "roadblock": 5000,
-    "roundabout": 5000,
-    "stop": 5000,
-    "trafficlight": 500,
+    "car": 10_000,
+    "crosswalk": 3000,
+    "doll": 3000,
+    "highway_entry": 3000,
+    "highway_exit": 3000,
+    "no_entry": 3000,
+    "onewayroad": 3000,
+    "parking": 3000,
+    "pedestrian": 3000,
+    "priority": 3000,
+    "roadblock": 3000,
+    "roundabout": 3000,
+    "stop": 3000,
+    "trafficlight": 10_000,
 }
 
 
@@ -394,7 +394,6 @@ def roi_func(img: np.ndarray) -> np.ndarray:
 map2label = [
     "car",
     "crosswalk",
-    "doll",
     "highway_entry",
     "highway_exit",
     "no_entry",
@@ -405,7 +404,7 @@ map2label = [
     "roadblock",
     "roundabout",
     "stop",
-    "trafficlight",
+    "trafficlight"
 ]
 
 
